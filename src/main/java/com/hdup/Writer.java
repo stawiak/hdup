@@ -20,7 +20,7 @@ public class Writer {
 
         HTable table = new HTable(config, "test");
         table.setAutoFlush(false);
-        table.setWriteBufferSize(100);
+        //table.setWriteBufferSize(100);  this is 2 Mb by default
 
         byte[] rowkey = RowKeyUtil.createRowKey(customer, location, circuit, timestamp);
         Put p = new Put(rowkey);
