@@ -25,23 +25,20 @@ public class MyJob extends Configured implements Tool {
     public static class MapClass extends Mapper<LongWritable, Text, Text, Text> {
 
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-
             String[] citation = value.toString().split(",");
             context.write(new Text(citation[1]), new Text(citation[0]));
-
         }
     }
 
     public static class Reduce extends Reducer<Text, Text, Text, Text> {
-        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 
+        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             String csv = "";
             for (Text val:values) {
                 if (csv.length() > 0) csv += ",";
                 csv += val.toString();
             }
             context.write(key, new Text(csv));
-
         }
     }
 

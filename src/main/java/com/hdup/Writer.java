@@ -19,6 +19,8 @@ public class Writer {
         config.set("hbase.zookeeper.quorum", "localhost");
 
         HTable table = new HTable(config, "test");
+        table.setAutoFlush(false);
+        table.setWriteBufferSize(100);
 
         byte[] rowkey = RowKeyUtil.createRowKey(customer, location, circuit, timestamp);
         Put p = new Put(rowkey);
@@ -26,6 +28,8 @@ public class Writer {
         p.add(Bytes.toBytes("data"), Bytes.toBytes("power"),Bytes.toBytes(msmt));
         table.put(p);
 
+        // this should be called at the end of batch write
+        table.close();
     }
 
 }
