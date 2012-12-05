@@ -11,6 +11,7 @@ public class WriterTest {
 
     @Test
     public void testWrite() throws Exception {
-        writer.write("a", "b", "c", 22L, 7);
+        for(int i = 0; i < 10; i++)
+            writer.write("a", "b", "c", i + 22L, i + 7);
     }
 }

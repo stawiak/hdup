@@ -18,8 +18,7 @@ public class Writer {
         Configuration config = HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", "localhost");
 
-        HTable table = null;
-        table = new HTable(config, "test");
+        HTable table = new HTable(config, "test");
 
         byte[] rowkey = RowKeyUtil.createRowKey(customer, location, circuit, timestamp);
         Put p = new Put(rowkey);

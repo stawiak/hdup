@@ -17,11 +17,10 @@ public class Scanner {
         Configuration config = HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", "localhost");
 
-        HTable table = null;
-        table = new HTable(config, "test");
+        HTable table = new HTable(config, "test");
 
-        byte[] startRowKey = RowKeyUtil.createRowKey(customer, location, circuit, start);
-        byte[] endRowKey = RowKeyUtil.createRowKey(customer, location, circuit, end);
+        byte[] startRowKey = RowKeyUtil.createRowKey(customer, location, circuit, end);
+        byte[] endRowKey = RowKeyUtil.createRowKey(customer, location, circuit, start);
 
         Scan scan = new Scan(startRowKey, endRowKey);
 

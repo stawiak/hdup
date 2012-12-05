@@ -11,6 +11,6 @@ public class ScannerTest {
 
     @Test
     public void testScan() throws Exception {
-        scanner.scan("a", "b", "c", 20L, 32L);
+        scanner.scan("a", "b", "c", 2L, 32L);
     }
 }
