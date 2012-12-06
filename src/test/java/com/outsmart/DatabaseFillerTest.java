@@ -1,9 +1,7 @@
-package com.hdup;
+package com.outsmart;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * @author Vadim Bobrov

@@ -1,4 +1,4 @@
-package com.hdup;
+package com.outsmart;
 
 import java.util.Random;
 

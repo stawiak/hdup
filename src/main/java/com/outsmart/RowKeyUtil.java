@@ -1,4 +1,4 @@
-package com.hdup;
+package com.outsmart;
 
 import org.apache.hadoop.hbase.util.Bytes;
 
