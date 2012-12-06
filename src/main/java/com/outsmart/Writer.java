@@ -17,9 +17,9 @@ public class Writer {
 
     public Writer() throws IOException {
         Configuration config = HBaseConfiguration.create();
-        config.set("hbase.zookeeper.quorum", "localhost");
+        config.set("hbase.zookeeper.quorum", Settings.HOST);
 
-        table = new HTable(config, "test");
+        table = new HTable(config, Settings.TABLE_NAME);
         table.setAutoFlush(false);
         //table.setWriteBufferSize(100);  this is 2 Mb by default
     }
@@ -29,7 +29,7 @@ public class Writer {
         byte[] rowkey = RowKeyUtil.createRowKey(customer, location, wireid, timestamp);
         Put p = new Put(rowkey);
 
-        p.add(Bytes.toBytes("data"), Bytes.toBytes("power"),Bytes.toBytes(msmt));
+        p.add(Bytes.toBytes(Settings.COLUMN_FAMILY_NAME), Bytes.toBytes(Settings.QUALIFIER_NAME),Bytes.toBytes(msmt));
         table.put(p);
     }
 

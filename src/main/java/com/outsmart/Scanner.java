@@ -16,9 +16,9 @@ public class Scanner {
 
     public Scanner() throws IOException {
         Configuration config = HBaseConfiguration.create();
-        config.set("hbase.zookeeper.quorum", "localhost");
+        config.set("hbase.zookeeper.quorum", Settings.HOST);
 
-        table = new HTable(config, "test");
+        table = new HTable(config, Settings.TABLE_NAME);
     }
 
     public void scan(String customer, String location, String circuit, Long start, Long end) throws IOException {
@@ -28,7 +28,7 @@ public class Scanner {
 
         Scan scan = new Scan(startRowKey, endRowKey);
 
-        scan.addColumn(Bytes.toBytes("data"), Bytes.toBytes("power"));
+        scan.addColumn(Bytes.toBytes(Settings.COLUMN_FAMILY_NAME), Bytes.toBytes(Settings.QUALIFIER_NAME));
 
         ResultScanner results = table.getScanner(scan);
         Result res = null;
@@ -37,7 +37,7 @@ public class Scanner {
 
             while((res = results.next()) != null) {
                 byte[] row = res.getRow();
-                byte[] value = res.getValue(Bytes.toBytes("data"), Bytes.toBytes("power"));
+                byte[] value = res.getValue(Bytes.toBytes(Settings.COLUMN_FAMILY_NAME), Bytes.toBytes(Settings.QUALIFIER_NAME));
                 long msmt = Bytes.toLong(value);
                 System.out.println(msmt);
             }
