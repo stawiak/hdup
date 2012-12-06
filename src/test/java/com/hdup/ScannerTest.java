@@ -1,5 +1,6 @@
 package com.hdup;
 
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -7,10 +8,15 @@ import org.junit.Test;
  */
 public class ScannerTest {
 
-    private Scanner scanner = new Scanner();
+    private Scanner scanner;
+
+    @Before
+    public void setUp() throws Exception {
+        scanner = new Scanner();
+    }
 
     @Test
     public void testScan() throws Exception {
-        scanner.scan("a", "b", "c", 2L, 32L);
+        scanner.scan("customer2", "location2", "wire1", 2000L, 2500L);
     }
 }

@@ -24,12 +24,24 @@ public class DataGenerator {
         return CUSTOMERS[random.nextInt(20)];
     }
 
+    public String getCustomer(int i) {
+        return CUSTOMERS[i];
+    }
+
     public String getRandomLocation() {
         return LOCATIONS[random.nextInt(2)];
     }
 
+    public String getLocation(int i) {
+        return LOCATIONS[i];
+    }
+
     public String getRandomWireId() {
         return WIREIDS[random.nextInt(300)];
+    }
+
+    public String getWireId(int i) {
+        return WIREIDS[i];
     }
 
     public long getRandomMeasurement() {

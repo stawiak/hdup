@@ -1,5 +1,6 @@
 package com.hdup;
 
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -7,7 +8,12 @@ import org.junit.Test;
  */
 public class WriterTest {
 
-    private Writer writer = new Writer();
+    private Writer writer;
+
+    @Before
+    public void setUp() throws Exception {
+        writer = new Writer();
+    }
 
     @Test
     public void testWrite() throws Exception {

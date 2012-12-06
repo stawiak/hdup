@@ -12,12 +12,16 @@ import java.io.IOException;
  */
 public class Scanner {
 
-    public void scan(String customer, String location, String circuit, Long start, Long end) throws IOException {
+    private HTable table;
 
+    public Scanner() throws IOException {
         Configuration config = HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", "localhost");
 
-        HTable table = new HTable(config, "test");
+        table = new HTable(config, "test");
+    }
+
+    public void scan(String customer, String location, String circuit, Long start, Long end) throws IOException {
 
         byte[] startRowKey = RowKeyUtil.createRowKey(customer, location, circuit, end);
         byte[] endRowKey = RowKeyUtil.createRowKey(customer, location, circuit, start);
@@ -34,7 +38,7 @@ public class Scanner {
             while((res = results.next()) != null) {
                 byte[] row = res.getRow();
                 byte[] value = res.getValue(Bytes.toBytes("data"), Bytes.toBytes("power"));
-                int msmt = Bytes.toInt(value);
+                long msmt = Bytes.toLong(value);
                 System.out.println(msmt);
             }
         } finally {
