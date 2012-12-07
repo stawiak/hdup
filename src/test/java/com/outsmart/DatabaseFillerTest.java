@@ -1,5 +1,6 @@
 package com.outsmart;
 
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,6 +27,12 @@ public class DatabaseFillerTest {
     @Test
     public void testFill() throws Exception {
         databaseFiller.fill("customer2", "location2", "wire1", 1000000);
+    }
+
+    @Test
+    public void testFillEven() throws Exception {
+        //for(int i = 1; i < 31; i++)
+            databaseFiller.fillEven(new DateTime("2012-01-02"), new DateTime("2012-01-03"), 2);
     }
 
 }

@@ -4,6 +4,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 
@@ -19,6 +20,10 @@ public class Scanner {
         config.set("hbase.zookeeper.quorum", Settings.HOST);
 
         table = new HTable(config, Settings.TABLE_NAME);
+    }
+
+    public void scan(String customer, String location, String circuit, DateTime start, DateTime end) throws IOException {
+        scan(customer, location, circuit, start.getMillis(), end.getMillis());
     }
 
     public void scan(String customer, String location, String circuit, Long start, Long end) throws IOException {

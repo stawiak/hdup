@@ -1,5 +1,6 @@
 package com.outsmart;
 
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,4 +20,10 @@ public class ScannerTest {
     public void testScan() throws Exception {
         scanner.scan("customer2", "location2", "wire1", 2000L, 2500L);
     }
+
+    @Test
+    public void testScanDates() throws Exception {
+        scanner.scan("customer1", "location1", "wire1", new DateTime("2012-02-04"), new DateTime("2012-02-05"));
+    }
+
 }
