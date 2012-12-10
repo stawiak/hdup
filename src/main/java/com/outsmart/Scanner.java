@@ -1,5 +1,6 @@
 package com.outsmart;
 
+import com.google.common.primitives.Longs;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.*;
@@ -7,6 +8,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Vadim Bobrov
@@ -22,12 +25,13 @@ public class Scanner {
         table = new HTable(config, Settings.TABLE_NAME);
     }
 
-    public void scan(String customer, String location, String circuit, DateTime start, DateTime end) throws IOException {
-        scan(customer, location, circuit, start.getMillis(), end.getMillis());
+    public long[] scan(String customer, String location, String circuit, DateTime start, DateTime end) throws IOException {
+        return scan(customer, location, circuit, start.getMillis(), end.getMillis());
     }
 
-    public void scan(String customer, String location, String circuit, Long start, Long end) throws IOException {
+    public long[] scan(String customer, String location, String circuit, Long start, Long end) throws IOException {
 
+        List<Long> output = new ArrayList();
         byte[] startRowKey = RowKeyUtil.createRowKey(customer, location, circuit, end);
         byte[] endRowKey = RowKeyUtil.createRowKey(customer, location, circuit, start);
 
@@ -45,13 +49,18 @@ public class Scanner {
                 byte[] value = res.getValue(Bytes.toBytes(Settings.COLUMN_FAMILY_NAME), Bytes.toBytes(Settings.QUALIFIER_NAME));
                 long msmt = Bytes.toLong(value);
                 System.out.println(msmt);
+                output.add(msmt);
             }
         } finally {
             results.close();
 
         }
 
+        return Longs.toArray(output);
+    }
 
+    public int[] raz() {
+        return new int[]{1,2,3};
     }
 
 }

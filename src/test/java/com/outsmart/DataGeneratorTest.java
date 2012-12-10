@@ -2,7 +2,7 @@ package com.outsmart;
 
 import org.junit.Test;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
 /**
  * @author Vadim Bobrov
