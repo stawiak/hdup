@@ -23,7 +23,7 @@ public class ScannerTest {
 
     @Test
     public void testScanDates() throws Exception {
-        scanner.scan("customer1", "location1", "wire1", new DateTime("2012-02-04"), new DateTime("2012-02-05"));
+        scanner.scan("customer1", "location1", "wire1", new DateTime("2012-01-01"), new DateTime("2012-01-03"));
     }
 
 }

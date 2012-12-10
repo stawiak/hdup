@@ -48,6 +48,7 @@ public class Scanner {
             }
         } finally {
             results.close();
+
         }
 
 
