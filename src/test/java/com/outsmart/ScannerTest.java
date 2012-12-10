@@ -13,7 +13,7 @@ public class ScannerTest {
 
     @Before
     public void setUp() throws Exception {
-        scanner = new Scanner();
+        scanner = new ScannerImpl();
     }
 
     @Test

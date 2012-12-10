@@ -7,9 +7,12 @@ import org.scalatest.FunSuite
 */
 class GrabberTest extends FunSuite {
 
-  test("pop is invoked on a non-empty stack") {
+  test("returns the results of a single scanner") {
 
-    assert(2 === 2)
+    val grabber : Grabber = new Grabber(new TestScannerServiceImpl())
+
+    val res = grabber.grab("customer1", "location1", "wireid1", Array[(String, String)]{("2012-01-01", "2012-01-05")} )
+    assert(res.length === 3)
 
   }
 
