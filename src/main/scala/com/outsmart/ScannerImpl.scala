@@ -1,7 +1,6 @@
 package com.outsmart
 
 import org.apache.hadoop.hbase.client.{Result, Scan, HTable}
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.joda.time.DateTime
 import org.apache.hadoop.hbase.util.Bytes
@@ -15,16 +14,16 @@ class ScannerImpl extends Scanner {
   config.set("hbase.zookeeper.quorum", Settings.HOST)
   val table = new HTable(config, Settings.TABLE_NAME)
 
-  def scan(customer : String, location : String, circuit : String, start : DateTime, end : DateTime) : Array[Measurement] = {
-    scan(customer, location, circuit, start.getMillis, end.getMillis)
+  def scan(customer : String, location : String, wireid : String, start : DateTime, end : DateTime) : Array[Measurement] = {
+    scan(customer, location, wireid, start.getMillis, end.getMillis)
   }
 
-  def scan(customer : String, location : String, circuit : String, start : Long, end : Long) : Array[Measurement] = {
+  def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[Measurement] = {
 
     var output = List[Measurement]()
 
-    val startRowKey = RowKeyUtils.createRowKey(customer, location, circuit, end)
-    val endRowKey = RowKeyUtils.createRowKey(customer, location, circuit, start)
+    val startRowKey = RowKeyUtils.createRowKey(customer, location, wireid, end)
+    val endRowKey = RowKeyUtils.createRowKey(customer, location, wireid, start)
 
     val scan = new Scan(startRowKey, endRowKey)
 

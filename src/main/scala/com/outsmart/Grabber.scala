@@ -13,6 +13,7 @@ class Grabber(scannerService : ScannerService) {
 
   /**
    * Given the set of start and end periods retrieve the data
+   * for a customer, location and wireid
    * @param periods array of start and end times
    * @return
    */
