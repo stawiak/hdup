@@ -9,11 +9,11 @@ import org.apache.hadoop.hbase.util.Bytes
 /**
  * @author Vadim Bobrov
 */
-class ScanerImpl extends Scaner {
+class ScannerImpl extends Scanner {
 
   val config = HBaseConfiguration.create()
-  config.set("hbase.zookeeper.quorum", Setting.HOST)
-  val table = new HTable(config, Setting.TABLE_NAME)
+  config.set("hbase.zookeeper.quorum", Settings.HOST)
+  val table = new HTable(config, Settings.TABLE_NAME)
 
   def scan(customer : String, location : String, circuit : String, start : DateTime, end : DateTime) : Array[Measurement] = {
     scan(customer, location, circuit, start.getMillis, end.getMillis)
@@ -28,7 +28,7 @@ class ScanerImpl extends Scaner {
 
     val scan = new Scan(startRowKey, endRowKey)
 
-    scan.addColumn(Bytes.toBytes(Setting.COLUMN_FAMILY_NAME), Bytes.toBytes(Setting.QUALIFIER_NAME))
+    scan.addColumn(Bytes.toBytes(Settings.COLUMN_FAMILY_NAME), Bytes.toBytes(Settings.QUALIFIER_NAME))
 
     val results = table.getScanner(scan)
 
@@ -37,7 +37,7 @@ class ScanerImpl extends Scaner {
     println("init scanner")
 
     while((res = results.next()) != null) {
-      val value = res.getValue(Bytes.toBytes(Setting.COLUMN_FAMILY_NAME), Bytes.toBytes(Setting.QUALIFIER_NAME))
+      val value = res.getValue(Bytes.toBytes(Settings.COLUMN_FAMILY_NAME), Bytes.toBytes(Settings.QUALIFIER_NAME))
       output = new Measurement(Bytes.toLong(value), RowKeyUtils.getTimestamp(res.getRow)) :: output
     }
 

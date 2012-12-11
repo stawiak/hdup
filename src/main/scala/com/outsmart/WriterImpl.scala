@@ -8,15 +8,15 @@ import org.apache.hadoop.hbase.util.Bytes
 /**
  * @author Vadim Bobrov
 */
-class WriterImpl {
+class WriterImpl extends Writer {
 
   val config = HBaseConfiguration.create()
-  config.set("hbase.zookeeper.quorum", Setting.HOST)
+  config.set("hbase.zookeeper.quorum", Settings.HOST)
   var table: HTable = null
 
 
   def open() {
-    table = new HTable(config, Setting.TABLE_NAME)
+    table = new HTable(config, Settings.TABLE_NAME)
     table.setAutoFlush(false)
     //table.setWriteBufferSize(100)  this is 2 Mb by default
   }
@@ -26,7 +26,7 @@ class WriterImpl {
     val rowkey = RowKeyUtils.createRowKey(customer, location, wireid, timestamp)
     val p = new Put(rowkey)
 
-    p.add(Bytes.toBytes(Setting.COLUMN_FAMILY_NAME), Bytes.toBytes(Setting.QUALIFIER_NAME),Bytes.toBytes(value))
+    p.add(Bytes.toBytes(Settings.COLUMN_FAMILY_NAME), Bytes.toBytes(Settings.QUALIFIER_NAME),Bytes.toBytes(value))
     table.put(p)
   }
 

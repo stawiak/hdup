@@ -5,7 +5,7 @@ import org.joda.time.DateTime
 /**
  * @author Vadim Bobrov
 */
-class TestScanerImpl extends Scaner{
+class TestScanerImpl extends Scanner{
   def scan(customer: String, location: String, circuit: String, start: DateTime, end: DateTime): Array[Measurement] = {
     scan(customer, location, circuit, start.getMillis, end.getMillis)
   }

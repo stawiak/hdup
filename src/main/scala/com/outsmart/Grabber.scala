@@ -7,7 +7,7 @@ import org.joda.time.DateTime
 /**
  * @author Vadim Bobrov
 */
-class Grabber(scannerService : ScanerService) {
+class Grabber(scannerService : ScannerService) {
 
   //TODO: should return timestamp as well
 

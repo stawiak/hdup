@@ -3,7 +3,7 @@ package com.outsmart
 /**
  * @author Vadim Bobrov
 */
-object Setting {
+object Settings {
 
   val TABLE_NAME = "msmt"
   val COLUMN_FAMILY_NAME = "d"    // stands for data

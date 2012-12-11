@@ -5,7 +5,7 @@ import org.joda.time.DateTime
 /**
  * @author Vadim Bobrov
 */
-trait Scaner {
+trait Scanner {
   def scan(customer : String, location : String, circuit : String, start : DateTime, end : DateTime) : Array[Measurement]
   def scan(customer : String, location : String, circuit : String, start : Long, end : Long) : Array[Measurement]
 }
