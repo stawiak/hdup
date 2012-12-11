@@ -3,8 +3,8 @@ package com.outsmart
 /**
  * @author Vadim Bobrov
 */
-trait ScannerService {
+trait ScanerService {
 
-  def getScanner() : Scanner
+  def getScanner() : Scaner
 
 }

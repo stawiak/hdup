@@ -5,7 +5,7 @@ import org.joda.time.DateTime
 /**
  * @author Vadim Bobrov
 */
-class DataFiller(dataGen : DataGen, writer : Writer) {
+class DataFiller(dataGen : DataGen, writer : WriterImpl) {
 
   /**
    * fills the database with random crap

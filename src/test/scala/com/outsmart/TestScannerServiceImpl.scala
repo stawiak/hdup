@@ -3,6 +3,6 @@ package com.outsmart
 /**
   * @author Vadim Bobrov
  */
-class TestScannerServiceImpl extends ScannerService {
-   def getScanner(): Scanner =  new TestScannerImpl()
+class TestScannerServiceImpl extends ScanerService {
+   def getScanner(): Scaner =  new TestScanerImpl()
  }
