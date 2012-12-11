@@ -21,20 +21,20 @@ class Grabber(scannerService : ScannerService) {
 
     // dispatch scanners in parallel
     periods foreach (arg => {
-      Console.println("starting scanner")
+      println("starting scanner")
 
       val f = future {
         val res : Array[Long] = scannerService.getScanner().scan(customer, location, wireid, new DateTime(arg._1), new DateTime(arg._2))
         res
       }
 
-      futures = futures ::: List(f)
+      futures = f::futures
     })
 
     var results = List[Long]()
 
     futures foreach ( f => {
-      f() foreach (l => results = results ::: List(l))
+      f() foreach (l => results = l::results)
     })
 
     results

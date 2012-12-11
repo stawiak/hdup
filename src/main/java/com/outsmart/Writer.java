@@ -15,7 +15,7 @@ public class Writer {
 
     private HTable table;
 
-    public Writer() throws IOException {
+    public void open() throws IOException {
         Configuration config = HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", Settings.HOST);
 
