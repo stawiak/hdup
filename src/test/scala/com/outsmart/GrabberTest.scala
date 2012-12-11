@@ -16,8 +16,10 @@ class GrabberTest extends FunSuite {
     ))
 
     assert(res.length === 3)
-    val a : Measurement = new Measurement(1,2 )
-
+    // the values are supplied in reverse order
+    assert(res(0).value === 3)
+    assert(res(1).value === 2)
+    assert(res(2).value === 1)
   }
 
 
@@ -30,7 +32,7 @@ class GrabberTest extends FunSuite {
     ))
 
     assert(res.length === 6)
-
+    println(res)
   }
 
 
