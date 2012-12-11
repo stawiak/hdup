@@ -36,10 +36,12 @@ class ScannerImpl extends Scanner {
 
     println("init scanner")
 
-    while((res = results.next()) != null) {
+    val iterator = Iterator.continually(results.next()).takeWhile(_ != null)
+
+    iterator foreach (res => {
       val value = res.getValue(Bytes.toBytes(Settings.COLUMN_FAMILY_NAME), Bytes.toBytes(Settings.QUALIFIER_NAME))
       output = new Measurement(Bytes.toLong(value), RowKeyUtils.getTimestamp(res.getRow)) :: output
-    }
+    })
 
     results.close()
     output.toArray

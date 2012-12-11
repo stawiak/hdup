@@ -5,7 +5,7 @@ import util.Random
 /**
  * @author Vadim Bobrov
 */
-class DataGen {
+class DataGenerator {
 
   val CUSTOMERS =  new Array[String](20)
   val LOCATIONS =  Array[String]("location0", "location1")
