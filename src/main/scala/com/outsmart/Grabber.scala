@@ -9,8 +9,6 @@ import org.joda.time.DateTime
 */
 class Grabber(scannerService : ScannerService) {
 
-  //TODO: should return timestamp as well
-
   /**
    * Given the set of start and end periods retrieve the data
    * for a customer, location and wireid
@@ -22,9 +20,9 @@ class Grabber(scannerService : ScannerService) {
 
     // dispatch scanners in parallel
     periods foreach (arg => {
-      println("starting scanner")
 
       val f = future {
+        println("starting scanner in thread " + Thread.currentThread().getId + " for " + customer + ", " + location + ", " + wireid + " from " + arg._1 + " to " + arg._2)
         val res : Array[Measurement] = scannerService.getScanner().scan(customer, location, wireid, new DateTime(arg._1), new DateTime(arg._2))
         res
       }
