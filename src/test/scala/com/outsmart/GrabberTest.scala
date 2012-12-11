@@ -16,6 +16,7 @@ class GrabberTest extends FunSuite {
     ))
 
     assert(res.length === 3)
+    val a : Measurement = new Measurement(1,2 )
 
   }
 

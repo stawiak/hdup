@@ -9,9 +9,9 @@ import org.apache.hadoop.hbase.util.Bytes
 */
 class WriterImpl extends Writer {
 
-  val config = HBaseConfiguration.create()
+  private val config = HBaseConfiguration.create()
   config.set("hbase.zookeeper.quorum", Settings.HOST)
-  var table: HTable = null
+  private var table: HTable = null
 
 
   def open() {

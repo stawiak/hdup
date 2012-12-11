@@ -7,19 +7,17 @@ import util.Random
 */
 class DataGenerator {
 
-  val CUSTOMERS =  new Array[String](20)
-  val LOCATIONS =  Array[String]("location0", "location1")
-  val WIREIDS =  new Array[String](300)
+  private val CUSTOMERS =  new Array[String](20)
+  private val LOCATIONS =  Array[String]("location0", "location1")
+  private val WIREIDS =  new Array[String](300)
 
-  {
-    for (i <- 0 until 20)
-      CUSTOMERS(i) = "customer" + i
+  for (i <- 0 until 20)
+    CUSTOMERS(i) = "customer" + i
 
-    for (i <- 0 until 300)
-      WIREIDS(i) = "wireid" + i
-  }
+  for (i <- 0 until 300)
+    WIREIDS(i) = "wireid" + i
 
-  val random : Random = new Random()
+  private val random : Random = new Random()
 
   def getRandomCustomer = CUSTOMERS(random.nextInt(20))
   def getRandomLocation = LOCATIONS(random.nextInt(2))

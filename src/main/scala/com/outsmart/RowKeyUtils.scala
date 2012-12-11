@@ -9,7 +9,7 @@ import scala.Byte
 */
 object RowKeyUtils {
 
-  val SIZEOF_STRING = 16
+  private val SIZEOF_STRING = 16
 
   /**
    * create rowkey using customer, location, wireid and reversed timestamp
