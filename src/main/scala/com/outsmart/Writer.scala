@@ -4,8 +4,6 @@ package com.outsmart
 /**
  * @author Vadim Bobrov
 */
-trait Writer {
-  def open()
+trait Writer extends OpenClosable {
   def write(customer : String, location : String, wireid : String, timestamp : Long, value : Long)
-  def close()
 }
