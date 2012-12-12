@@ -16,10 +16,10 @@ class GrabberTest extends FunSuite {
     ))
 
     assert(res.length === 3)
-    // the values are supplied in reverse order
-    assert(res(0).value === 3)
+
+    assert(res(0).value === 1)
     assert(res(1).value === 2)
-    assert(res(2).value === 1)
+    assert(res(2).value === 3)
   }
 
 
