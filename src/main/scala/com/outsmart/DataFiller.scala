@@ -14,12 +14,14 @@ class DataFiller(dataGen : DataGenerator, writer : WriterImpl) {
    * @param records number of records
    */
   def fillRandom(records : Int) {
-    withOpenClose({
+    withOpenClose(writer) {
+
       for (i <- 0 until records) {
           writer.write(dataGen.getRandomCustomer, dataGen.getRandomLocation, dataGen.getRandomWireId, i.asInstanceOf[Long], dataGen.getRandomMeasurement)
           if (i % 1000 == 0) println(i)
        }
-    }, writer)
+
+    }
 
   }
 
@@ -28,12 +30,14 @@ class DataFiller(dataGen : DataGenerator, writer : WriterImpl) {
    * @param records number of records
    */
   def fill(customer:String, location:String, wireid:String, records : Int) {
-    withOpenClose({
+    withOpenClose(writer) {
+
       for (i <- 0 until records) {
         writer.write(customer, location, wireid, i.asInstanceOf[Long], 888)
         if (i % 1000 == 0) println(i)
       }
-    }, writer)
+
+    }
   }
 
   /**
@@ -44,7 +48,8 @@ class DataFiller(dataGen : DataGenerator, writer : WriterImpl) {
    * @param value value to fill
    */
   def fillEven(start:DateTime, end:DateTime, value:Long) {
-    withOpenClose({
+    withOpenClose(writer) {
+
       for(l <- start.getMillis until end.getMillis by 300000) {
         if (l % (3600000 * 24) == 0)
           println("filling for " + new DateTime(l))
@@ -52,7 +57,8 @@ class DataFiller(dataGen : DataGenerator, writer : WriterImpl) {
         for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 30)
               writer.write(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value)
       }
-    }, writer)
+
+    }
   }
 
 }

@@ -5,7 +5,7 @@ package com.outsmart
 */
 object Util {
 
-  def withOpenClose(op: => Unit, oc : OpenClosable ) {
+  def withOpenClose(oc : OpenClosable)(op: => Unit) {
     oc.open
 
     try{
