@@ -57,7 +57,7 @@ class DataFiller(dataGen : DataGenerator, writer : WriterImpl) {
 
       for (i <- 0 until 20) {
         for (j <- 0 until 2)
-          for (k <- 0 until 300)
+          for (k <- 0 until 30)
             writer.write(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value)
       }
     }

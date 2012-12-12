@@ -12,7 +12,7 @@ class ScannerImpl extends Scanner {
 
   private val config = HBaseConfiguration.create()
   config.set("hbase.zookeeper.quorum", Settings.Host)
-  private val table = new HTable(config, Settings.TABLE_NAME)
+  private val table = new HTable(config, Settings.TableName)
 
   def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[Measurement] = {
 

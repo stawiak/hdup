@@ -15,7 +15,7 @@ class WriterImpl extends Writer {
 
 
   def open() {
-    table = new HTable(config, Settings.TABLE_NAME)
+    table = new HTable(config, Settings.TableName)
     table.setAutoFlush(false)
     //table.setWriteBufferSize(100)  this is 2 Mb by default
   }
