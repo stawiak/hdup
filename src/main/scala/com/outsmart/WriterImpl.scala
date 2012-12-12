@@ -10,7 +10,7 @@ import org.apache.hadoop.hbase.util.Bytes
 class WriterImpl extends Writer {
 
   private val config = HBaseConfiguration.create()
-  config.set("hbase.zookeeper.quorum", Settings.HOST)
+  config.set("hbase.zookeeper.quorum", Settings.Host)
   private var table: HTable = null
 
 
@@ -25,7 +25,7 @@ class WriterImpl extends Writer {
     val rowkey = RowKeyUtils.createRowKey(customer, location, wireid, timestamp)
     val p = new Put(rowkey)
 
-    p.add(Bytes.toBytes(Settings.COLUMN_FAMILY_NAME), Bytes.toBytes(Settings.QUALIFIER_NAME),Bytes.toBytes(value))
+    p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.QualifierName),Bytes.toBytes(value))
     table.put(p)
   }
 
