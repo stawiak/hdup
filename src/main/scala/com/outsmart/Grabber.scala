@@ -16,8 +16,11 @@ class Grabber(scannerService : ScannerService) {
    * @return
    */
   def grab(customer : String, location : String, wireid : String, periods : Array[(String, String)]) : Array[Measurement] = {
-    // println("starting scanner in thread " + Thread.currentThread().getId + " for " + customer + ", " + location + ", " + wireid + " from " + arg._1 + " to " + arg._2)
-    periods map (arg => future {scannerService.getScanner().scan(customer, location, wireid, new DateTime(arg._1), new DateTime(arg._2))}) map (_.apply()) flatten
+    periods map (arg => future { runScan(arg) }) map (_.apply()) flatten
   }
 
+  private def runScan(arg : (String, String)) {
+    println("starting scanner in thread " + Thread.currentThread().getId + " for " + customer + ", " + location + ", " + wireid + " from " + arg._1 + " to " + arg._2)
+    scannerService.getScanner().scan(customer, location, wireid, new DateTime(arg._1), new DateTime(arg._2))
+  }
 }
