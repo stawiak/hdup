@@ -12,8 +12,8 @@ object Measurement {
 
 
   /**
-   * given a number of measurements find the exact minute
-   * boundary below and over
+   * given a number of measurements find the closest exact
+   * minute boundary below and over
    * @param arg measurements
    * @return    tuple of longs representing time in milliseconds since epoch
    */
@@ -24,5 +24,21 @@ object Measurement {
     (first - (first % 60000), last + 60000 - (last % 60000))
   }
 
+  /**
+   * given a number of measurements find the exact minute
+   * point approximations
+   * @param arg measurements
+   * @return    array of approximations from lower to higher point in the original array
+   */
+  def minuteApprx(arg: Array[Measurement]) : Seq[Measurement] = {
+    val borders = minuteBoundary(arg)
 
+    for (ts <- borders._1 to borders._2 by 60000)
+    yield new Measurement(apprx(ts, arg), ts)
+  }
+
+
+  def apprx(ts:Long, arg: Array[Measurement]) : Long = {
+    return 0; //TODO: !!!!!!!!!
+  }
 }
