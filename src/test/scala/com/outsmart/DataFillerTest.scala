@@ -2,6 +2,7 @@ package com.outsmart
 
 import org.scalatest.FunSuite
 import org.joda.time.DateTime
+import java.util.concurrent.TimeUnit
 
 /**
  * @author Vadim Bobrov
@@ -12,7 +13,7 @@ class DataFillerTest extends FunSuite {
     val start = System.currentTimeMillis()
     val dataFiller = new DataFiller(new DataGenerator, new WriterImpl)
     dataFiller.fillEven(new DateTime("2012-05-01"), new DateTime("2012-05-31"), 555)
-    println("filled in " + (System.currentTimeMillis() - start)/60000 + " min")
+    println("filled in " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - start) + " min")
   }
 
 
