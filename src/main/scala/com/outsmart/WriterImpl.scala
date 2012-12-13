@@ -9,15 +9,11 @@ import org.apache.hadoop.hbase.util.Bytes
 */
 class WriterImpl extends Writer {
 
-  private val config = HBaseConfiguration.create()
-  config.set("hbase.zookeeper.quorum", Settings.Host)
   private var table: HTable = null
 
 
   def open() {
-    table = new HTable(config, Settings.TableName)
-    table.setAutoFlush(false)
-    //table.setWriteBufferSize(100)  this is 2 Mb by default
+    table = TableFactory.getTable()
   }
 
   def write(customer : String, location : String, wireid : String, timestamp : Long, value : Long) {

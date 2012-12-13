@@ -10,11 +10,9 @@ import org.apache.hadoop.hbase.util.Bytes
 */
 class ScannerImpl extends Scanner {
 
-  private val config = HBaseConfiguration.create()
-  config.set("hbase.zookeeper.quorum", Settings.Host)
-  private val table = new HTable(config, Settings.TableName)
-
   def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[Measurement] = {
+
+    val table = TableFactory.getTable()
 
     var output = List[Measurement]()
 
