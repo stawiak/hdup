@@ -17,10 +17,10 @@ object Measurement {
    * @param arg measurements
    * @return    tuple of longs representing time in milliseconds since epoch
    */
-  def minuteBoundary(arg: Array[Measurement]) : (Long, Long) = {
+  def minuteBoundary(arg: Seq[Measurement]) : (Long, Long) = {
     val sorted = arg sortWith (_.timestamp < _.timestamp)
-    val first = sorted(0).timestamp
-    val last = sorted(sorted.length - 1).timestamp
+    val first = (sorted head).timestamp
+    val last = (sorted last).timestamp
     (first - (first % 60000), last + 60000 - (last % 60000))
   }
 
@@ -30,7 +30,7 @@ object Measurement {
    * @param arg measurements
    * @return    array of approximations from lower to higher point in the original array
    */
-  def minuteApprx(arg: Array[Measurement]) : Seq[Measurement] = {
+  def minuteApprx(arg: Seq[Measurement]) : Seq[Measurement] = {
     val borders = minuteBoundary(arg)
 
     for (ts <- borders._1 to borders._2 by 60000)
@@ -38,7 +38,7 @@ object Measurement {
   }
 
 
-  def apprx(ts:Long, arg: Array[Measurement]) : Long = {
+  def apprx(ts:Long, arg: Seq[Measurement]) : Long = {
     return 0; //TODO: !!!!!!!!!
   }
 }
