@@ -3,6 +3,7 @@ package com.outsmart
 import actors.Future
 import actors.Futures._
 import org.joda.time.DateTime
+import collection.GenSeq
 
 /**
  * @author Vadim Bobrov
@@ -15,8 +16,8 @@ class Grabber(scannerService : ScannerService) {
    * @param periods array of start and end times
    * @return
    */
-  def grab(customer : String, location : String, wireid : String, periods : Array[(String, String)]) : Array[Measurement] = {
-    periods map (period => future { runScan(customer, location, wireid, period) }) flatMap (_())
+  def grab(customer : String, location : String, wireid : String, periods : Seq[(String, String)]) : GenSeq[Measurement] = {
+    periods.par map (runScan(customer, location, wireid, _)) flatten
   }
 
   private def runScan(customer : String, location : String, wireid : String, arg : (String, String)) : Array[Measurement] = {
