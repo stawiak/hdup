@@ -32,7 +32,7 @@ class GrabberTest extends FunSuite {
     ))
 
     assert(res.length == 6)
-    println(res)
+    res foreach println
   }
 
 
