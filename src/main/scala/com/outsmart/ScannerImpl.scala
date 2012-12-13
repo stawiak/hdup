@@ -31,7 +31,7 @@ class ScannerImpl extends Scanner {
 
     println("init scanner")
 
-    val iterator = Iterator.continually(results.next()).takeWhile(_ != null)
+    val iterator = Iterator.continually(results.next()) takeWhile (_ != null)
 
     iterator foreach (res => {
       val value = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.QualifierName))
