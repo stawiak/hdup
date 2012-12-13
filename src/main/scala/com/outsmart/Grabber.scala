@@ -16,7 +16,7 @@ class Grabber(scannerService : ScannerService) {
    * @return
    */
   def grab(customer : String, location : String, wireid : String, periods : Array[(String, String)]) : Array[Measurement] = {
-    periods map (period => future { runScan(customer, location, wireid, period) }) flatMap (_.apply())
+    periods map (period => future { runScan(customer, location, wireid, period) }) flatMap (_())
   }
 
   private def runScan(customer : String, location : String, wireid : String, arg : (String, String)) : Array[Measurement] = {
