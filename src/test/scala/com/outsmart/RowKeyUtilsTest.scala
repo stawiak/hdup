@@ -1,5 +1,6 @@
 package com.outsmart
 
+import dao.RowKeyUtils
 import org.scalatest.FunSuite
 
 /**

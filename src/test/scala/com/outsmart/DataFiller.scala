@@ -1,8 +1,10 @@
 package com.outsmart
 
+import dao.WriterImpl
 import org.joda.time.DateTime
 import org.joda.time
-import com.outsmart.Util.withOpenClose
+import util.Util
+import Util.withOpenClose
 
 /**
  * @author Vadim Bobrov

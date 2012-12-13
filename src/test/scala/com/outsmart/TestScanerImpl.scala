@@ -1,5 +1,6 @@
 package com.outsmart
 
+import dao.Scanner
 import org.joda.time.DateTime
 
 /**

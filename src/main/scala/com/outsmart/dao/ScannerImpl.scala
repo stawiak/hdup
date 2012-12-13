@@ -1,9 +1,9 @@
-package com.outsmart
+package com.outsmart.dao
 
 import org.apache.hadoop.hbase.client.{Result, Scan, HTable}
-import org.apache.hadoop.hbase.HBaseConfiguration
-import org.joda.time.DateTime
 import org.apache.hadoop.hbase.util.Bytes
+import com.outsmart.{Settings, Measurement}
+
 
 /**
  * @author Vadim Bobrov

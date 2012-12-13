@@ -1,4 +1,4 @@
-package com.outsmart
+package com.outsmart.dao
 
 import org.apache.hadoop.hbase.util.Bytes
 import java.security.MessageDigest

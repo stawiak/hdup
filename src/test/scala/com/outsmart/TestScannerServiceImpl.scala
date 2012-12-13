@@ -1,5 +1,7 @@
 package com.outsmart
 
+import dao.{ScannerService, Scanner}
+
 /**
   * @author Vadim Bobrov
  */

@@ -2,6 +2,7 @@ package com.outsmart
 
 import actors.Future
 import actors.Futures._
+import dao.ScannerService
 import org.joda.time.DateTime
 
 /**

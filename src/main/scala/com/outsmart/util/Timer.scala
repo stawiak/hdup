@@ -1,4 +1,4 @@
-package com.outsmart
+package com.outsmart.util
 
 /**
  * @author Vadim Bobrov

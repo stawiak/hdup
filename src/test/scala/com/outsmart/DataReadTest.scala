@@ -1,5 +1,6 @@
 package com.outsmart
 
+import dao.ScannerServiceImpl
 import org.scalatest.FunSuite
 
 /**

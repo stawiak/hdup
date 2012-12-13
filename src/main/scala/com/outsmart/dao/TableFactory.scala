@@ -1,7 +1,8 @@
-package com.outsmart
+package com.outsmart.dao
 
 import org.apache.hadoop.hbase.client.HTable
 import org.apache.hadoop.hbase.HBaseConfiguration
+import com.outsmart.Settings
 
 /**
  * @author Vadim Bobrov

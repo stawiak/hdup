@@ -1,5 +1,6 @@
 package com.outsmart
 
+import dao.WriterImpl
 import org.scalatest.FunSuite
 import org.joda.time.DateTime
 import java.util.concurrent.TimeUnit

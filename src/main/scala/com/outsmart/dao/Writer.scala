@@ -1,5 +1,6 @@
-package com.outsmart
+package com.outsmart.dao
 
+import com.outsmart.util.OpenClosable
 
 /**
  * @author Vadim Bobrov

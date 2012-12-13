@@ -1,6 +1,7 @@
-package com.outsmart
+package com.outsmart.dao
 
 import org.joda.time.DateTime
+import com.outsmart.Measurement
 
 /**
  * @author Vadim Bobrov

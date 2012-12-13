@@ -1,6 +1,6 @@
 package com.outsmart
 
-import util.Random
+import scala.util.Random
 
 /**
  * @author Vadim Bobrov
