@@ -3,8 +3,9 @@ package com.outsmart
 /**
  * @author Vadim Bobrov
 */
-class Measurement(val value : Long, val timestamp : Long) {
+class Measurement(val value : Long, val timestamp : Long) extends Ordered[Measurement] {
   override def toString = "ts: " + timestamp + " value: " + value
+  override def compare(that : Measurement) : Int = { this.timestamp.compareTo(that.timestamp)}
 }
 
 object Measurement {
