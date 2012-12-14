@@ -5,7 +5,11 @@ package com.outsmart
 */
 class Measurement(val value : Long, val timestamp : Long) extends Ordered[Measurement] {
   override def toString = "ts: " + timestamp + " value: " + value
-  override def compare(that : Measurement) : Int = { this.timestamp - that.timestamp}
+  override def compare(that : Measurement) : Int = {
+    if(this.timestamp - that.timestamp == 0) 0
+    else if ((this.timestamp - that.timestamp < 0)) -1
+    else 1
+  }
 }
 
 object Measurement {
