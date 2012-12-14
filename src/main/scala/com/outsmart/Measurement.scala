@@ -5,7 +5,7 @@ package com.outsmart
 */
 class Measurement(val value : Long, val timestamp : Long) extends Ordered[Measurement] {
   override def toString = "ts: " + timestamp + " value: " + value
-  override def compare(that : Measurement) : Int = { this.timestamp.compareTo(that.timestamp)}
+  override def compare(that : Measurement) : Int = { this.timestamp - that.timestamp}
 }
 
 object Measurement {
@@ -19,6 +19,7 @@ object Measurement {
    * @return    tuple of longs representing time in milliseconds since epoch
    */
   def minuteBoundary(arg: Seq[Measurement]) : (Long, Long) = {
+    // don't need to specify ordering method anymore
     val sorted = arg sortWith (_.timestamp < _.timestamp)
     val first = (sorted head).timestamp
     val last = (sorted last).timestamp
