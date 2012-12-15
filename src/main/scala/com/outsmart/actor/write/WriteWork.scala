@@ -1,10 +1,10 @@
 package com.outsmart.actor.write
 
-import com.outsmart.measurement.MeasuredValue
+import com.outsmart.measurement.{Measurement, MeasuredValue}
 
 /**
  * @author Vadim Bobrov
  */
-class WriteWork(val measurements : Array[MeasuredValue]) {
+class WriteWork(val measurements : Array[Measurement]) {
 
 }

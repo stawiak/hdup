@@ -1,10 +1,11 @@
 package com.outsmart.dao
 
 import com.outsmart.util.OpenClosable
+import com.outsmart.measurement.Measurement
 
 /**
  * @author Vadim Bobrov
 */
 trait Writer extends OpenClosable {
-  def write(customer : String, location : String, wireid : String, timestamp : Long, value : Long)
+  def write(msmt: Measurement)
 }

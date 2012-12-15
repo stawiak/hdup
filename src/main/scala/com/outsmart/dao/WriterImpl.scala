@@ -3,6 +3,7 @@ package com.outsmart.dao
 import org.apache.hadoop.hbase.client.{Put, HTable}
 import org.apache.hadoop.hbase.util.Bytes
 import com.outsmart.Settings
+import com.outsmart.measurement.Measurement
 
 /**
  * @author Vadim Bobrov
@@ -41,12 +42,12 @@ class WriterImpl extends Writer {
     the remote servers
     */
 
-  def write(customer : String, location : String, wireid : String, timestamp : Long, value : Long) {
+  def write(msmt: Measurement) {
 
-    val rowkey = RowKeyUtils.createRowKey(customer, location, wireid, timestamp)
+    val rowkey = RowKeyUtils.createRowKey(msmt.customer, msmt.location, msmt.wireid, msmt.timestamp)
     val p = new Put(rowkey)
 
-    p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.QualifierName),Bytes.toBytes(value))
+    p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.QualifierName),Bytes.toBytes(msmt.value))
     // alternatively use
     // void put(List<Put> puts) throws IOException
     table.put(p)

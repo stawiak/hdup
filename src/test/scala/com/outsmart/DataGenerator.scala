@@ -1,5 +1,6 @@
 package com.outsmart
 
+import measurement.Measurement
 import scala.util.Random
 
 /**
@@ -22,7 +23,7 @@ class DataGenerator {
   def getRandomCustomer = CUSTOMERS(random.nextInt(20))
   def getRandomLocation = LOCATIONS(random.nextInt(2))
   def getRandomWireId = WIREIDS(random.nextInt(300))
-  def getRandomMeasurement = random.nextLong()
+  def getRandomMeasurement = new Measurement(getRandomCustomer, getRandomLocation, getRandomWireId, random.nextLong(), random.nextLong())
 
   def getCustomer(i : Int) = CUSTOMERS(i)
   def getLocation(i : Int) = LOCATIONS(i)
