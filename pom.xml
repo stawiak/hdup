@@ -17,6 +17,14 @@
         <log4j.version>1.2.16</log4j.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>typesafe</id>
+            <name>Typesafe repository</name>
+            <url>http://repo.akka.io/releases</url>
+        </repository>
+    </repositories>
+
     <dependencies>
 
         <dependency>
