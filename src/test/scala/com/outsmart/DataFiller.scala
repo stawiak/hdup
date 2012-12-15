@@ -1,15 +1,14 @@
 package com.outsmart
 
-import dao.WriterImpl
+import dao.{Writer}
 import org.joda.time.DateTime
-import org.joda.time
 import util.Util
 import Util.withOpenClose
 
 /**
  * @author Vadim Bobrov
 */
-class DataFiller(dataGen : DataGenerator, writer : WriterImpl) {
+class DataFiller(dataGen : DataGenerator, writer : Writer) {
 
   /**
    * fills the database with random crap

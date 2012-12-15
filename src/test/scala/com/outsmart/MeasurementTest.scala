@@ -1,7 +1,8 @@
 package com.outsmart
 
+import measurement.MeasuredValue
 import org.scalatest.FunSuite
-import com.outsmart.Measurement._
+import MeasuredValue._
 
 /**
  * @author Vadim Bobrov
@@ -10,11 +11,11 @@ class MeasurementTest extends FunSuite {
 
   test("lower minute") {
     assert(minuteBoundary(Array(
-      new Measurement(1, 120325),
-      new Measurement(1, 130325),
-      new Measurement(1, 120326),
-      new Measurement(1, 120325),
-      new Measurement(1, 215159991)
+      new MeasuredValue(1, 120325),
+      new MeasuredValue(1, 130325),
+      new MeasuredValue(1, 120326),
+      new MeasuredValue(1, 120325),
+      new MeasuredValue(1, 215159991)
     )) == (120000, 215160000))
   }
 
