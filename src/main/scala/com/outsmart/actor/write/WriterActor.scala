@@ -15,7 +15,7 @@ class WriterActor(val writer : Writer) extends Actor {
        withOpenClose(writer) {
          work.measurements foreach writer.write
        }
-       sender ! WorkDone()
+       sender ! WorkDone
 
    }
 

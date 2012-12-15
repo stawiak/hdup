@@ -8,4 +8,9 @@ import com.outsmart.measurement.Measurement
 */
 trait Writer extends OpenClosable {
   def write(msmt: Measurement)
+
+}
+
+object Writer {
+  def create() : Writer = new WriterImpl()
 }
