@@ -3,7 +3,6 @@ package com.outsmart.actor.write
 import akka.actor._
 import com.outsmart.measurement.Measurement
 import com.outsmart.Settings
-import com.outsmart.dao.WriterImpl
 
 /**
  * @author Vadim Bobrov
