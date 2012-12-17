@@ -1,6 +1,6 @@
 package com.outsmart.dao
 
-import org.apache.hadoop.hbase.client.{Put, HTable}
+import org.apache.hadoop.hbase.client.{HTableInterface, Put, HTable}
 import org.apache.hadoop.hbase.util.Bytes
 import com.outsmart.Settings
 import com.outsmart.measurement.Measurement
@@ -10,7 +10,7 @@ import com.outsmart.measurement.Measurement
 */
 class WriterImpl extends Writer {
 
-  private var table: HTable = null
+  private var table: HTableInterface = null
 
 
   def open() {

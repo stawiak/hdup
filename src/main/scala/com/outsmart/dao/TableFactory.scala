@@ -1,8 +1,9 @@
 package com.outsmart.dao
 
-import org.apache.hadoop.hbase.client.HTable
+import org.apache.hadoop.hbase.client.{HTableInterface, HTablePool, HTableFactory, HTable}
 import org.apache.hadoop.hbase.HBaseConfiguration
 import com.outsmart.Settings
+import org.apache.hadoop.hbase.util.Bytes
 
 /**
  * @author Vadim Bobrov
@@ -17,6 +18,7 @@ object TableFactory {
 
   private val config = HBaseConfiguration.create()
   config.set("hbase.zookeeper.quorum", Settings.Host)
+  private val hTablePool = new HTablePool(config, 100)
 
 
   /** If you were ever required to access the write buffer content, you would find that
@@ -35,11 +37,12 @@ object TableFactory {
     and therefore there will be no copy of it that can be used to recover from
     this situation.
   */
-  def getTable() : HTable = {
+  def getTable() : HTableInterface = {
     println("giving table")
     try {
-      val table = new HTable(config, Settings.TableName)
-      table.setAutoFlush(false)
+      val table : HTableInterface = hTablePool.getTable(Settings.TableName)
+
+      //table.setAutoFlush(false)
       //table.setWriteBufferSize(100)  this is 2 Mb by default
       table
     } catch {
