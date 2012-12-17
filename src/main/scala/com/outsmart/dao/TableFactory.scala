@@ -36,9 +36,14 @@ object TableFactory {
     this situation.
   */
   def getTable() : HTable = {
-    val table = new HTable(config, Settings.TableName)
-    table.setAutoFlush(false)
-    //table.setWriteBufferSize(100)  this is 2 Mb by default
-    table
+    println("giving table")
+    try {
+      val table = new HTable(config, Settings.TableName)
+      table.setAutoFlush(false)
+      //table.setWriteBufferSize(100)  this is 2 Mb by default
+      table
+    } catch {
+      case e: Exception => {println("caught exception " + e); null}
+    }
   }
 }
