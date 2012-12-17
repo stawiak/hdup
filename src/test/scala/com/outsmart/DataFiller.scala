@@ -5,6 +5,7 @@ import measurement.Measurement
 import org.joda.time.DateTime
 import util.Util
 import Util.withOpenClose
+import akka.actor.ActorRef
 
 /**
  * @author Vadim Bobrov
@@ -58,6 +59,27 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
 
         for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 30)
               writer.write(new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value))
+      }
+
+    }
+  }
+
+  /**
+   * fill the database with data spread evenly among all customers, locations and wires
+   * from start time to end time every 5 minutes
+   * @param start start time
+   * @param end end time
+   * @param value value to fill
+   */
+  def fillEvenParallel(start:DateTime, end:DateTime, value:Long, actor: ActorRef) {
+    withOpenClose(writer) {
+
+      for(l <- start.getMillis until end.getMillis by 300000) {
+        if (l % (3600000 * 24) == 0)
+          //println("filling for " + new DateTime(l))
+
+        for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300)
+          actor ! new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value)
       }
 
     }

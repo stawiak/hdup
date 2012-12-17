@@ -26,8 +26,10 @@ class MasterActor(val numberOfWorkers : Int) extends Actor {
       // ←
       if(measurements.length == Settings.BatchSize)
         workerRouter ! WriteWork(measurements)
-      else
+      else {
+        println("sending batch to write")
         measurements = msmt :: measurements
+      }
     }
 
     case WorkDone => {}

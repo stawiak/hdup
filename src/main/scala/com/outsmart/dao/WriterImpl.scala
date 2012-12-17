@@ -51,6 +51,7 @@ class WriterImpl extends Writer {
     // alternatively use
     // void put(List<Put> puts) throws IOException
     table.put(p)
+    println("write successful")
   }
 
 

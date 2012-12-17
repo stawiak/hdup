@@ -46,7 +46,7 @@ object TableFactory {
   def getTable : HTableInterface = {
     println("giving table")
     try {
-      val table : HTableInterface = pool.getTable(Settings.TableName)
+      val table : HTableInterface = pool.getTable(Bytes.toBytes(Settings.TableName))
 
       //table.setAutoFlush(false)
       //table.setWriteBufferSize(100)  this is 2 Mb by default

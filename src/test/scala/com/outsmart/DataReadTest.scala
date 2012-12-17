@@ -12,7 +12,7 @@ class DataReadTest extends FunSuite{
     val grabber : Grabber = new Grabber(new ScannerServiceImpl())
 
     val res = grabber.grab("customer1", "location1", "wireid1", Array[(String, String)](
-      ("2012-01-01", "2012-01-05")
+      ("2012-01-01", "2012-01-031")
     ))
 
     println(res.length)
