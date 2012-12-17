@@ -2,7 +2,8 @@ package com.outsmart.dao
 
 import org.apache.hadoop.hbase.client.{Result, Scan, HTable}
 import org.apache.hadoop.hbase.util.Bytes
-import com.outsmart.{Settings, Measurement}
+import com.outsmart.{Settings}
+import com.outsmart.measurement.MeasuredValue
 
 
 /**
@@ -27,11 +28,11 @@ class ScannerImpl extends Scanner {
     family—based on a specific sorting pattern
    */
 
-  def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[Measurement] = {
+  def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[MeasuredValue] = {
 
     val table = TableFactory.getTable()
 
-    var output = List[Measurement]()
+    var output = List[MeasuredValue]()
 
     val startRowKey = RowKeyUtils.createRowKey(customer, location, wireid, end)
     val endRowKey = RowKeyUtils.createRowKey(customer, location, wireid, start)
@@ -51,7 +52,7 @@ class ScannerImpl extends Scanner {
     iterator foreach (res => {
       val value = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.QualifierName))
       val row = res.getRow
-      output = new Measurement(Bytes.toLong(value), RowKeyUtils.getTimestamp(row)) :: output
+      output = new MeasuredValue(Bytes.toLong(value), RowKeyUtils.getTimestamp(row)) :: output
     })
 
     results.close()

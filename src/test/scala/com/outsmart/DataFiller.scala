@@ -1,15 +1,15 @@
 package com.outsmart
 
-import dao.WriterImpl
+import dao.{Writer}
+import measurement.Measurement
 import org.joda.time.DateTime
-import org.joda.time
 import util.Util
 import Util.withOpenClose
 
 /**
  * @author Vadim Bobrov
 */
-class DataFiller(dataGen : DataGenerator, writer : WriterImpl) {
+class DataFiller(dataGen : DataGenerator, writer : Writer) {
 
   /**
    * fills the database with random crap
@@ -19,7 +19,7 @@ class DataFiller(dataGen : DataGenerator, writer : WriterImpl) {
     withOpenClose(writer) {
 
       for (i <- 0 until records) {
-          writer.write(dataGen.getRandomCustomer, dataGen.getRandomLocation, dataGen.getRandomWireId, i.asInstanceOf[Long], dataGen.getRandomMeasurement)
+          writer.write(dataGen.getRandomMeasurement)
           if (i % 1000 == 0) println(i)
        }
 
@@ -35,7 +35,7 @@ class DataFiller(dataGen : DataGenerator, writer : WriterImpl) {
     withOpenClose(writer) {
 
       for (i <- 0 until records) {
-        writer.write(customer, location, wireid, i.asInstanceOf[Long], 888)
+        writer.write(new Measurement(customer, location, wireid, i.asInstanceOf[Long], 888))
         if (i % 1000 == 0) println(i)
       }
 
@@ -57,7 +57,7 @@ class DataFiller(dataGen : DataGenerator, writer : WriterImpl) {
           println("filling for " + new DateTime(l))
 
         for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 30)
-              writer.write(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value)
+              writer.write(new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value))
       }
 
     }

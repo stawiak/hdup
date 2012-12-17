@@ -3,6 +3,7 @@ package com.outsmart
 import actors.Future
 import actors.Futures._
 import dao.ScannerService
+import measurement.MeasuredValue
 import org.joda.time.DateTime
 
 /**
@@ -16,11 +17,11 @@ class Grabber(scannerService : ScannerService) {
    * @param periods array of start and end times
    * @return
    */
-  def grab(customer : String, location : String, wireid : String, periods : Array[(String, String)]) : Array[Measurement] = {
+  def grab(customer : String, location : String, wireid : String, periods : Array[(String, String)]) : Array[MeasuredValue] = {
     periods map (period => future { runScan(customer, location, wireid, period) }) flatMap (_())
   }
 
-  private def runScan(customer : String, location : String, wireid : String, arg : (String, String)) : Array[Measurement] = {
+  private def runScan(customer : String, location : String, wireid : String, arg : (String, String)) : Array[MeasuredValue] = {
     println("starting scanner in thread " + Thread.currentThread().getId + " for " + customer + ", " + location + ", " + wireid + " from " + arg._1 + " to " + arg._2)
     scannerService.getScanner().scan(customer, location, wireid, new DateTime(arg._1), new DateTime(arg._2))
   }
