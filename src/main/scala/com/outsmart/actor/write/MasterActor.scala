@@ -10,33 +10,44 @@ import akka.routing.RoundRobinRouter
 /**
  * @author Vadim Bobrov
  */
+case object Flush
 case object Stop
-case object WorkDone
+case class WorkDone(val count: Int)
 case class WriteWork(val measurements: Seq[Measurement])
 
-class MasterActor(val numberOfWorkers : Int) extends Actor {
+class MasterActor(val numberOfWorkers : Int, val listener: ActorRef) extends Actor {
 
+  var count: Int = 0
   var measurements = List[Measurement]()
-  //TODO: remove WriterImpl
-  val workerRouter = context.actorOf(Props(new WriterActor(Writer.create())).withRouter(RoundRobinRouter(numberOfWorkers)), name = "workerRouter")
+  //val workerRouter = context.actorOf(Props(new WriterActor(Writer.create())).withRouter(RoundRobinRouter(numberOfWorkers)), name = "workerRouter")
+  val workerRouter = context.actorOf(Props(new WriterActor(Writer.create())))
 
   protected def receive: Receive = {
 
     case msmt : Measurement => {
-      // ←
-      if(measurements.length == Settings.BatchSize)
-        workerRouter ! WriteWork(measurements)
-      else {
+
+      if(measurements.length == Settings.BatchSize) {
         println("sending batch to write")
+        workerRouter ! WriteWork(measurements)
+      } else
         measurements = msmt :: measurements
-      }
     }
 
-    case WorkDone => {}
+    case workDone: WorkDone => {
+      count += workDone.count
+    }
 
-    case Stop =>
+    case Flush =>  {
+      println("flushing the rest " + measurements.length)
+      workerRouter ! WriteWork(measurements)
+    }
+
+
+    case Stop => {
+      println("received stop")
       // Stops this actor and all its supervised children
       context.stop(self)
+    }
 
   }
 

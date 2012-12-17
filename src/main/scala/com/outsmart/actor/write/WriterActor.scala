@@ -11,12 +11,14 @@ import Util.withOpenClose
 class WriterActor(val writer : Writer) extends Actor {
 
    protected def receive: Receive = {
-     case work: WriteWork =>
+     case work: WriteWork => {
+
        withOpenClose(writer) {
          work.measurements foreach writer.write
        }
-       sender ! WorkDone
 
+       sender ! WorkDone(work.measurements.length)
+     }
    }
 
  }

@@ -18,7 +18,7 @@ class WriterImpl extends Writer {
   }
 
   /**
-    (alternatively see Batch operations to group updates
+    (alternatively see Batch operations to group updates)
 
       Those Put instances that have failed on the server side are kept in the local write buffer.
     They will be retried the next time the buffer is flushed. You can also access them using
@@ -28,8 +28,8 @@ class WriterImpl extends Writer {
     an exception that leaves the operations preceding the faulty one in the client buffer.
 
     The list-based put() call uses the client-side write buffer to insert all puts
-    into the local buffer and then to call flushCache() implicitly. While in-
-    serting each instance of Put, the client API performs the mentioned
+    into the local buffer and then to call flushCache() implicitly. While
+    inserting each instance of Put, the client API performs the mentioned
     check. If it fails, for example, at the third put out of five—the first two
     are added to the buffer while the last two are not. It also then does not
     trigger the flush command at all.
@@ -51,7 +51,6 @@ class WriterImpl extends Writer {
     // alternatively use
     // void put(List<Put> puts) throws IOException
     table.put(p)
-    println("write successful")
   }
 
 

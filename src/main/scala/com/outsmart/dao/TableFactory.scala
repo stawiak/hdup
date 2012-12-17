@@ -44,13 +44,8 @@ object TableFactory {
     this situation.
   */
   def getTable : HTableInterface = {
-    println("giving table")
     try {
-      val table : HTableInterface = pool.getTable(Bytes.toBytes(Settings.TableName))
-
-      //table.setAutoFlush(false)
-      //table.setWriteBufferSize(100)  this is 2 Mb by default
-      table
+      pool.getTable(Bytes.toBytes(Settings.TableName))
     } catch {
       case e: Exception => {println("caught exception " + e); null}
     }
@@ -62,7 +57,7 @@ class NoFlushInterfaceFactory extends HTableInterfaceFactory {
   def createHTableInterface(config : Configuration, tableName : Array[Byte]) : HTableInterface = {
     try {
       val table = new HTable(config, tableName)
-      table.setAutoFlush(false)
+      //table.setAutoFlush(false)
       table
     } catch {
       case e : IOException => throw new RuntimeException(e)
