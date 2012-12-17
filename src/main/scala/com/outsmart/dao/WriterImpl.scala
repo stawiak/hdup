@@ -14,7 +14,7 @@ class WriterImpl extends Writer {
 
 
   def open() {
-    table = TableFactory.getTable()
+    table = TableFactory.getTable
   }
 
   /**

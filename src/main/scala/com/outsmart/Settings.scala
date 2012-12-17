@@ -10,6 +10,7 @@ object Settings {
   val QualifierName = "p"        // stands for power
 
   val BatchSize = 1000          // writer batch size
+  val TablePoolSize = 100
 
   val Host = "192.168.152.128"
   //val Host = "10.0.0.158"
