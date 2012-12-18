@@ -2,7 +2,7 @@ package com.outsmart
 
 import actor.write._
 import akka.actor.{Props, Actor}
-import dao.{Writer, TestWriterImpl}
+import dao.{Writer}
 import measurement.Measurement
 
 /**

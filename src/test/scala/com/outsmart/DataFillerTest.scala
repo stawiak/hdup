@@ -44,7 +44,7 @@ class DataFillerTest extends FunSuite {
   test("even fill parallel simple") {
     val system = ActorSystem("test")
 
-    val master = system.actorOf(Props[WriteMasterActor], name = "master")
+    val master = system.actorOf(Props(new WriteMasterActor(Writer.create)), name = "master")
     for (i <- 0 until 1000)
       master ! new Measurement("b", "c", "d" + i, 2, 2)
 
