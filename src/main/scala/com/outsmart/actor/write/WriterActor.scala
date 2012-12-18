@@ -17,7 +17,7 @@ class WriterActor(val writer : Writer) extends Actor {
          work.measurements foreach writer.write
        }
 
-       sender ! WorkDone(work.measurements.length)
+       sender ! WorkDone
      }
    }
 

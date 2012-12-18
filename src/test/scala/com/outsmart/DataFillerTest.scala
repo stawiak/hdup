@@ -28,15 +28,17 @@ class DataFillerTest extends FunSuite {
     // Create an Akka system
     val system = ActorSystem("test")
 
-    val master = system.actorOf(Props(new MasterActor(10, null)), name = "master")
+    val testDriverActor = system.actorOf(Props(new TestDriverActor()), name = "testdriver")
     val dataFiller = new DataFiller(new DataGenerator, Writer.create())
 
-    dataFiller.fillEvenParallel(new DateTime("2012-06-01"), new DateTime("2012-06-05"), 66, master)
+    dataFiller.fillEvenParallel(new DateTime("2012-06-01"), new DateTime("2012-06-05"), 66, testDriverActor)
 
     //master ! Stop
     //system.shutdown()
-    master ! Flush
+    testDriverActor ! Flush
     println("filled in " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis - start) + " min")
+
+    system.awaitTermination()
 
   }
 
