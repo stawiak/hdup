@@ -16,9 +16,8 @@ class TestDriverActor extends Actor {
   protected def receive: Receive = {
 
     case WorkDone => {
-      // Stops this actor and all its supervised children
-      println("received WorkDone from master")
       println("writer called " + TestWriterImpl.counter + " times")
+      // Stops this actor and all its supervised children
       context.stop(self)
       context.system.shutdown()
     }
@@ -27,8 +26,5 @@ class TestDriverActor extends Actor {
       master ! msg
     }
 
-
   }
-
-
 }
