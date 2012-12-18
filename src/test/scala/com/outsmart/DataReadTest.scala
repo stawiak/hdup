@@ -35,10 +35,9 @@ class DataReadTest extends FunSuite{
 
   test("simple scanner test") {
     val scanner = new ScannerServiceImpl().getScanner()
-
     val res = scanner.scan("customer1", "location1", "wireid1", 1, 1)
-
     println(res.length)
+    assert(res(0).value == 1)
   }
 
 }

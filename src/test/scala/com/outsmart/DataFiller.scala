@@ -54,11 +54,12 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
     withOpenClose(writer) {
 
       for(l <- start.getMillis until end.getMillis by 300000) {
-        if (l % (3600000 * 24) == 0)
+        if ((l % 3600000) == 0)
           println("filling for " + new DateTime(l))
 
         for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 30)
-              writer.write(new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value))
+            writer.write(new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value))
+
       }
 
     }

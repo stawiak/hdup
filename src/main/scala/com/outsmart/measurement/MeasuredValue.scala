@@ -3,7 +3,7 @@ package com.outsmart.measurement
 /**
  * @author Vadim Bobrov
 */
-class MeasuredValue(val value : Long, val timestamp : Long) extends Ordered[MeasuredValue] {
+class MeasuredValue(val timestamp : Long, val value : Long) extends Ordered[MeasuredValue] {
   override def toString = "ts: " + timestamp + " value: " + value
   override def compare(that : MeasuredValue) : Int = {
     if(this.timestamp - that.timestamp == 0) 0
@@ -13,7 +13,7 @@ class MeasuredValue(val value : Long, val timestamp : Long) extends Ordered[Meas
 }
 
 object MeasuredValue {
-  implicit def longToMeasuredValue(x: Long) = new MeasuredValue(x, System.currentTimeMillis)
+  implicit def longToMeasuredValue(x: Long) = new MeasuredValue(System.currentTimeMillis, x)
 
 
   /**
@@ -40,7 +40,7 @@ object MeasuredValue {
     val borders = minuteBoundary(arg)
 
     for (ts <- borders._1 to borders._2 by 60000)
-    yield new MeasuredValue(apprx(ts, arg), ts)
+    yield new MeasuredValue(ts, apprx(ts, arg))
   }
 
 

@@ -52,7 +52,7 @@ class ScannerImpl extends Scanner {
     iterator foreach (res => {
       val value = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.QualifierName))
       val row = res.getRow
-      output = new MeasuredValue(Bytes.toLong(value), RowKeyUtils.getTimestamp(row)) :: output
+      output = new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toLong(value)) :: output
     })
 
     results.close()

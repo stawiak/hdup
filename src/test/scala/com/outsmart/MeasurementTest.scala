@@ -11,11 +11,11 @@ class MeasurementTest extends FunSuite {
 
   test("lower minute") {
     assert(minuteBoundary(Array(
-      new MeasuredValue(1, 120325),
-      new MeasuredValue(1, 130325),
-      new MeasuredValue(1, 120326),
-      new MeasuredValue(1, 120325),
-      new MeasuredValue(1, 215159991)
+      new MeasuredValue(120325, 1),
+      new MeasuredValue(130325, 1),
+      new MeasuredValue(120326, 1),
+      new MeasuredValue(120325, 1),
+      new MeasuredValue(215159991, 1)
     )) == (120000, 215160000))
   }
 
