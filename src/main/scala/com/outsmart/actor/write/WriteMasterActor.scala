@@ -33,13 +33,14 @@ class WriteMasterActor(writerCreator : () => Writer) extends Actor {
     case msmt : Measurement => {
 
       counter += 1
+      measurements = msmt :: measurements
 
       if(measurements.length == Settings.BatchSize) {
         workerRouter ! WriteWork(measurements)
         numberOfBatches += 1
         measurements = List[Measurement]()
-      } else
-        measurements = msmt :: measurements
+      }
+
     }
 
     case WorkDone => {

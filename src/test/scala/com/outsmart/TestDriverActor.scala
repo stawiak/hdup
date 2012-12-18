@@ -10,13 +10,10 @@ import measurement.Measurement
 */
 class TestDriverActor extends Actor {
 
-  val master = context.actorOf(Props(new WriteMasterActor(() => new TestWriterImpl())), name = "master")
+  //val master = context.actorOf(Props(new WriteMasterActor(() => new TestWriterImpl())), name = "master")
+  val master = context.actorOf(Props(new WriteMasterActor(Writer.create)), name = "master")
 
   protected def receive: Receive = {
-
-    case msmt : Measurement => {
-      master ! msmt
-    }
 
     case WorkDone => {
       // Stops this actor and all its supervised children
@@ -26,8 +23,8 @@ class TestDriverActor extends Actor {
       context.system.shutdown()
     }
 
-    case Flush =>  {
-      master ! Flush
+    case msg : Any =>  {
+      master ! msg
     }
 
 

@@ -38,6 +38,7 @@ class DataFillerTest extends FunSuite {
     testDriverActor ! Flush
 
     system.awaitTermination()
+
     println("filled in " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis - start) + " min")
   }
 
