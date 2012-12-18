@@ -26,7 +26,7 @@ class DataFillerTest extends FunSuite {
     val start = System.currentTimeMillis
 
     // Create an Akka system
-    val system = ActorSystem("DataFillSystem")
+    val system = ActorSystem("test")
 
     val master = system.actorOf(Props(new MasterActor(10, null)), name = "master")
     val dataFiller = new DataFiller(new DataGenerator, Writer.create())
@@ -43,7 +43,7 @@ class DataFillerTest extends FunSuite {
   test("even fill parallel simple") {
     println("start")
     val dataGen = new DataGenerator
-    val system = ActorSystem("DataFillSystem")
+    val system = ActorSystem("test")
 
     val master = system.actorOf(Props(new MasterActor(10, null)), name = "master")
     for (i <- 0 until 1000)

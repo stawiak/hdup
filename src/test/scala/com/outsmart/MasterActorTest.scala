@@ -15,7 +15,7 @@ class MasterActorTest extends FunSuite {
     val start = System.currentTimeMillis()
 
     // Create an Akka system
-    val system = ActorSystem("DataFillSystem")
+    val system = ActorSystem("test")
     val listener = system.actorOf(Props(new Listener()), name = "listener")
 
     val master = system.actorOf(Props(new MasterActor(10, listener)), name = "master")
