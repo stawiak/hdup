@@ -1,12 +1,13 @@
 package com.outsmart
 
-import actor.write.{Flush, Stop, MasterActor}
+import actor.write.{Flush, Stop, WriteMasterActor}
 import dao.Writer
 import measurement.Measurement
 import org.scalatest.FunSuite
 import org.joda.time.DateTime
 import java.util.concurrent.TimeUnit
 import akka.actor.{Props, ActorSystem}
+import com.typesafe.config.ConfigFactory
 
 /**
  * @author Vadim Bobrov
@@ -26,28 +27,24 @@ class DataFillerTest extends FunSuite {
     val start = System.currentTimeMillis
 
     // Create an Akka system
-    val system = ActorSystem("test")
+    val config = ConfigFactory.load()
+    val system = ActorSystem("test", config.getConfig("test"))
 
-    val testDriverActor = system.actorOf(Props(new TestDriverActor()), name = "testdriver")
+    val testDriverActor = system.actorOf(Props[TestDriverActor], name = "testdriver")
     val dataFiller = new DataFiller(new DataGenerator, Writer.create())
 
     dataFiller.fillEvenParallel(new DateTime("2012-06-01"), new DateTime("2012-06-05"), 66, testDriverActor)
 
-    //master ! Stop
-    //system.shutdown()
     testDriverActor ! Flush
-    println("filled in " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis - start) + " min")
 
     system.awaitTermination()
-
+    println("filled in " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis - start) + " min")
   }
 
   test("even fill parallel simple") {
-    println("start")
-    val dataGen = new DataGenerator
     val system = ActorSystem("test")
 
-    val master = system.actorOf(Props(new MasterActor(10, null)), name = "master")
+    val master = system.actorOf(Props[WriteMasterActor], name = "master")
     for (i <- 0 until 1000)
       master ! new Measurement("b", "c", "d" + i, 2, 2)
 

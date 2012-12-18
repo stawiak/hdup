@@ -2,6 +2,7 @@ package com.outsmart
 
 import actor.write._
 import akka.actor.{Props, Actor}
+import dao.{Writer, TestWriterImpl}
 import measurement.Measurement
 
 /**
@@ -9,7 +10,7 @@ import measurement.Measurement
 */
 class TestDriverActor extends Actor {
 
-  val master = context.actorOf(Props(new MasterActor(10, null)), name = "master")
+  val master = context.actorOf(Props(new WriteMasterActor(() => new TestWriterImpl())), name = "master")
 
   protected def receive: Receive = {
 
@@ -20,6 +21,7 @@ class TestDriverActor extends Actor {
     case WorkDone => {
       // Stops this actor and all its supervised children
       println("received WorkDone from master")
+      println("writer called " + TestWriterImpl.counter + " times")
       context.stop(self)
       context.system.shutdown()
     }
