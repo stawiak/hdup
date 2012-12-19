@@ -48,7 +48,7 @@ class DataFillerTest extends FunSuite {
 
     val master = system.actorOf(Props(new WriteMasterActor(Writer.create)), name = "master")
     for (i <- 0 until 1000)
-      master ! new Measurement("b", "c", "d" + i, 2, 2)
+      master ! new Measurement("b", "c", "d" + i, 2, 2, 2, 2)
 
     println("flushing")
     master ! Flush

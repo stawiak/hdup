@@ -3,8 +3,8 @@ package com.outsmart.measurement
 /**
  * @author Vadim Bobrov
 */
-class MeasuredValue(val timestamp : Long, val value : Long) extends Ordered[MeasuredValue] {
-  override def toString = "ts: " + timestamp + " value: " + value
+class MeasuredValue(val timestamp : Long, val energy : Double, val current: Double, val vampire : Double) extends Ordered[MeasuredValue] {
+  override def toString = "ts: " + timestamp + " energy: " + energy + " current: " + current + " vampire: " + vampire
   override def compare(that : MeasuredValue) : Int = {
     if(this.timestamp - that.timestamp == 0) 0
     else if ((this.timestamp - that.timestamp < 0)) -1
@@ -13,7 +13,7 @@ class MeasuredValue(val timestamp : Long, val value : Long) extends Ordered[Meas
 }
 
 object MeasuredValue {
-  implicit def longToMeasuredValue(x: Long) = new MeasuredValue(System.currentTimeMillis, x)
+  implicit def longToMeasuredValue(x: Double) = new MeasuredValue(System.currentTimeMillis, x, x, x)
 
 
   /**
@@ -39,8 +39,9 @@ object MeasuredValue {
   def minuteApprx(arg: Seq[MeasuredValue]) : Seq[MeasuredValue] = {
     val borders = minuteBoundary(arg)
 
+    //TODO: !!!!!!!!!
     for (ts <- borders._1 to borders._2 by 60000)
-    yield new MeasuredValue(ts, apprx(ts, arg))
+    yield null //new MeasuredValue(ts, apprx(ts, arg))
   }
 
 

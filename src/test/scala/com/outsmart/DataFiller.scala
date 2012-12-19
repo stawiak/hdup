@@ -36,7 +36,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
     withOpenClose(writer) {
 
       for (i <- 0 until records) {
-        writer.write(new Measurement(customer, location, wireid, i.asInstanceOf[Long], 888))
+        writer.write(new Measurement(customer, location, wireid, i.asInstanceOf[Long], 8, 88, 888))
         if (i % 1000 == 0) println(i)
       }
 
@@ -50,7 +50,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
    * @param end end time
    * @param value value to fill
    */
-  def fillEven(start:DateTime, end:DateTime, value:Long) {
+  def fillEven(start:DateTime, end:DateTime, value:Double) {
     withOpenClose(writer) {
 
       var counter = 0
@@ -60,7 +60,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
           println("filling for " + new DateTime(l))
 
         for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
-            writer.write(new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value))
+            writer.write(new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value, value, value))
             counter += 1
         }
 
@@ -78,7 +78,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
    * @param end end time
    * @param value value to fill
    */
-  def fillEvenParallel(start:DateTime, end:DateTime, value:Long, actor: ActorRef) {
+  def fillEvenParallel(start:DateTime, end:DateTime, value:Double, actor: ActorRef) {
     var counter = 0
 
     for(l <- start.getMillis until end.getMillis by 300000) {
@@ -86,7 +86,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
         println("filling for " + new DateTime(l))
 
       for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
-        actor ! new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value)
+        actor ! new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value, value, value)
         counter += 1
       }
     }
@@ -98,9 +98,9 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
    * fill the database with single value
    * @param value value to fill
    */
-  def fillSimple(customer: String, location: String, wireid: String, timestamp: Long, value:Long) {
+  def fillSimple(customer: String, location: String, wireid: String, timestamp: Long, value:Double) {
     withOpenClose(writer) {
-          writer.write(new Measurement(customer, location, wireid, timestamp, value))
+          writer.write(new Measurement(customer, location, wireid, timestamp, value, value, value))
     }
   }
 

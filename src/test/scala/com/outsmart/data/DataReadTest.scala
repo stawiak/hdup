@@ -18,7 +18,7 @@ class DataReadTest extends FunSuite{
 
     println(res.length)
 
-    assert(res(0).value === 22)
+    assert(res(0).energy === 22)
   }
 
 
@@ -38,7 +38,7 @@ class DataReadTest extends FunSuite{
     val scanner = new ScannerServiceImpl().getScanner()
     val res = scanner.scan("customer1", "location1", "wireid1", 1, 1)
     println(res.length)
-    assert(res(0).value === 1)
+    assert(res(0).energy === 1)
   }
 
 }

@@ -24,9 +24,9 @@ class GrabberTest extends FlatSpec with ShouldMatchers {
       ("2012-01-01", "2012-01-05")
     ))
 
-    res(0).value should be (1)
-    res(1).value should be (2)
-    res(2).value should be (3)
+    res(0).energy should be (1)
+    res(1).energy should be (2)
+    res(2).energy should be (3)
   }
 
 

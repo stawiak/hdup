@@ -39,7 +39,9 @@ class ScannerImpl extends Scanner {
 
     val scan = new Scan(startRowKey, endRowKey)
 
-    scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.QualifierName))
+    scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.EnergyQualifierName))
+    scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.CurrentQualifierName))
+    scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName))
 
     val results = table.getScanner(scan)
 
@@ -50,9 +52,12 @@ class ScannerImpl extends Scanner {
     val iterator = Iterator.continually(results.next()) takeWhile (_ != null)
 
     iterator foreach (res => {
-      val value = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.QualifierName))
+      val energy = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.EnergyQualifierName))
+      val current = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.CurrentQualifierName))
+      val vampire = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName))
+
       val row = res.getRow
-      output = new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toLong(value)) :: output
+      output = new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire)) :: output
     })
 
     results.close()

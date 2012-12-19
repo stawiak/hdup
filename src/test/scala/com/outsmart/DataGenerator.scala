@@ -23,7 +23,16 @@ class DataGenerator {
   def getRandomCustomer = CUSTOMERS(random.nextInt(20))
   def getRandomLocation = LOCATIONS(random.nextInt(2))
   def getRandomWireId = WIREIDS(random.nextInt(300))
-  def getRandomMeasurement = new Measurement(getRandomCustomer, getRandomLocation, getRandomWireId, random.nextLong(), random.nextLong())
+
+  def getRandomMeasurement = new Measurement(
+    getRandomCustomer,
+    getRandomLocation,
+    getRandomWireId,
+    random.nextLong(),
+    random.nextDouble(),
+    random.nextDouble(),
+    random.nextDouble()
+  )
 
   def getCustomer(i : Int) = CUSTOMERS(i)
   def getLocation(i : Int) = LOCATIONS(i)
