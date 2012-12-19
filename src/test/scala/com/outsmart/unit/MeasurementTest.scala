@@ -1,8 +1,9 @@
-package com.outsmart
+package com.outsmart.unit
 
-import measurement.MeasuredValue
 import org.scalatest.FunSuite
-import MeasuredValue._
+import com.outsmart.measurement.MeasuredValue._
+import scala.Array
+import com.outsmart.measurement.MeasuredValue
 
 /**
  * @author Vadim Bobrov

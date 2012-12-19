@@ -1,7 +1,8 @@
-package com.outsmart
+package com.outsmart.data
 
-import dao.ScannerServiceImpl
 import org.scalatest.FunSuite
+import com.outsmart.Grabber
+import com.outsmart.dao.ScannerServiceImpl
 
 /**
  * @author Vadim Bobrov

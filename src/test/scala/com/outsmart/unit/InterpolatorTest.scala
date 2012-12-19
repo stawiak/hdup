@@ -1,4 +1,4 @@
-package com.outsmart
+package com.outsmart.unit
 
 import org.scalatest.FunSuite
 import org.apache.commons.math3.analysis.interpolation.{SplineInterpolator, UnivariateInterpolator}

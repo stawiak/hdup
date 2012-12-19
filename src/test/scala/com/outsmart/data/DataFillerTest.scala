@@ -1,13 +1,14 @@
-package com.outsmart
+package com.outsmart.data
 
-import actor.write.{Flush, Stop, WriteMasterActor}
-import dao.Writer
-import measurement.Measurement
 import org.scalatest.FunSuite
 import org.joda.time.DateTime
 import java.util.concurrent.TimeUnit
 import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
+import com.outsmart.{TestDriverActor, DataGenerator, DataFiller}
+import com.outsmart.dao.Writer
+import com.outsmart.actor.write.{Flush, WriteMasterActor}
+import com.outsmart.measurement.Measurement
 
 /**
  * @author Vadim Bobrov

@@ -1,6 +1,7 @@
-package com.outsmart
+package com.outsmart.unit
 
 import org.scalatest.FunSuite
+import com.outsmart.{TestScannerServiceImpl, Grabber}
 
 /**
  * @author Vadim Bobrov

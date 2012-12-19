@@ -1,6 +1,7 @@
-package com.outsmart
+package com.outsmart.unit
 
 import org.scalatest.FunSuite
+import com.outsmart.DataGenerator
 
 /**
  * @author Vadim Bobrov
@@ -42,7 +43,7 @@ class DataGeneratorTest extends FunSuite {
 
   test("random measurement") {
     val dataGen = new DataGenerator
-    assert(dataGen.getRandomMeasurement > 0)
+    dataGen.getRandomMeasurement
   }
 
 }
