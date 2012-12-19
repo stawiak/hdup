@@ -14,6 +14,7 @@ class WriterActor(val writer : Writer) extends Actor {
      case work: WriteWork => {
 
        withOpenClose(writer) {
+         // this can fail anytime and should be retried
          work.measurements foreach writer.write
        }
 

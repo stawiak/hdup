@@ -58,6 +58,7 @@ class WriterImpl extends Writer {
 
   def close()  {
     // in the case of pool closing table is not enough as it doesn't flush commits
+    // this line can generate an exception anytime
     table.flushCommits()
     table.close()
   }

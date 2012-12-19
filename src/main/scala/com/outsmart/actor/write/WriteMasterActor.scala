@@ -13,7 +13,7 @@ import akka.routing.{FromConfig, RoundRobinRouter}
 case object Flush
 case object Stop
 case object WorkDone
-case class WriteWork(val measurements: Seq[Measurement])
+case class WriteWork(measurements: Seq[Measurement])
 
 class WriteMasterActor(writerCreator : () => Writer) extends Actor {
 
@@ -26,7 +26,6 @@ class WriteMasterActor(writerCreator : () => Writer) extends Actor {
   var numberOfDone = 0
   var receivedAll = false
   var counter = 0
-  //val workerRouter = context.actorOf(Props(new WriterActor(Writer.create())))
 
   protected def receive: Receive = {
 
