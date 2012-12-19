@@ -1,49 +1,46 @@
 package com.outsmart.unit
 
-import org.scalatest.FunSuite
+import org.scalatest.{FlatSpec}
 import com.outsmart.DataGenerator
+import org.scalatest.matchers.ShouldMatchers
 
 /**
  * @author Vadim Bobrov
 */
-class DataGeneratorTest extends FunSuite {
+class DataGeneratorTest extends FlatSpec with ShouldMatchers {
 
-  test("random customer") {
-    val dataGen = new DataGenerator
+  val dataGen = new DataGenerator
+
+  "Randon customer name" should "start with customer" in {
     assert(dataGen.getRandomCustomer.startsWith("customer"))
   }
 
-  test("select customer") {
-    val dataGen = new DataGenerator
+  "Select customer name" should "be customer + i" in  {
     for(i <- 0 until 20)
-      assert(dataGen.getCustomer(i) === ("customer" + i))
+      dataGen.getCustomer(i) should be ("customer" + i)
   }
 
-  test("random location") {
-    val dataGen = new DataGenerator
+  "Random location" should "start with location" in  {
     assert(dataGen.getRandomLocation.startsWith("location"))
   }
 
-  test("select location") {
-    val dataGen = new DataGenerator
+  "Select location" should "be location + i" in  {
     for(i <- 0 until 2)
-      assert(dataGen.getLocation(i) === ("location" + i))
+      dataGen.getLocation(i) should be ("location" + i)
   }
 
-  test("random wireid") {
-    val dataGen = new DataGenerator
+  "Random wireid" should "start with wireid" in  {
     assert(dataGen.getRandomWireId.startsWith("wireid"))
   }
 
-  test("select wireid") {
-    val dataGen = new DataGenerator
+  "Select wireid" should "be wireid + i" in  {
     for(i <- 0 until 300)
-      assert(dataGen.getWireId(i) === ("wireid" + i))
+      dataGen.getWireId(i) should be ("wireid" + i)
   }
 
-  test("random measurement") {
-    val dataGen = new DataGenerator
+  "Random measument" should "work" in  {
     dataGen.getRandomMeasurement
   }
+
 
 }

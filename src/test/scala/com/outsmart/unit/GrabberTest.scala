@@ -1,39 +1,43 @@
 package com.outsmart.unit
 
-import org.scalatest.FunSuite
+import org.scalatest.{FlatSpec, FunSuite}
 import com.outsmart.{TestScannerServiceImpl, Grabber}
+import org.scalatest.matchers.ShouldMatchers
 
 /**
  * @author Vadim Bobrov
 */
-class GrabberTest extends FunSuite {
+class GrabberTest extends FlatSpec with ShouldMatchers {
 
+  val grabber : Grabber = new Grabber(new TestScannerServiceImpl())
 
-  test("returns the results of a single scanner") {
-    val grabber : Grabber = new Grabber(new TestScannerServiceImpl())
-
+  "A single scanner" should "return 3 values" in {
     val res = grabber.grab("customer1", "location1", "wireid1", Array[(String, String)](
       ("2012-01-01", "2012-01-05")
     ))
 
-    assert(res.length === 3)
+    res.length should be (3)
+  }
 
-    assert(res(0).value === 1)
-    assert(res(1).value === 2)
-    assert(res(2).value === 3)
+  it should "be 1,2,3" in {
+    val res = grabber.grab("customer1", "location1", "wireid1", Array[(String, String)](
+      ("2012-01-01", "2012-01-05")
+    ))
+
+    res(0).value should be (1)
+    res(1).value should be (2)
+    res(2).value should be (3)
   }
 
 
-  test("returns the results of two scanners") {
-    val grabber : Grabber = new Grabber(new TestScannerServiceImpl())
+  "2 scanners" should "return 6 values" in {
 
     val res = grabber.grab("customer1", "location1", "wireid1", Array[(String, String)](
       ("2012-01-01", "2012-01-05"),
       ("2012-01-01", "2012-01-05")
     ))
 
-    assert(res.length === 6)
-    res foreach println
+    res.length should be (6)
   }
 
 
