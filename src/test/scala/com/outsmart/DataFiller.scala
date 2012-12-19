@@ -59,7 +59,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
         if ((l % 3600000) == 0)
           println("filling for " + new DateTime(l))
 
-        for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 30) {
+        for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
             writer.write(new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value))
             counter += 1
         }
@@ -85,7 +85,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
       if ((l % 3600000) == 0)
         println("filling for " + new DateTime(l))
 
-      for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 30) {
+      for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
         actor ! new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value)
         counter += 1
       }

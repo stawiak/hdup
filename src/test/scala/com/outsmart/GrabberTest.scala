@@ -15,11 +15,11 @@ class GrabberTest extends FunSuite {
       ("2012-01-01", "2012-01-05")
     ))
 
-    assert(res.length == 3)
+    assert(res.length === 3)
 
-    assert(res(0).value == 1)
-    assert(res(1).value == 2)
-    assert(res(2).value == 3)
+    assert(res(0).value === 1)
+    assert(res(1).value === 2)
+    assert(res(2).value === 3)
   }
 
 
@@ -31,7 +31,7 @@ class GrabberTest extends FunSuite {
       ("2012-01-01", "2012-01-05")
     ))
 
-    assert(res.length == 6)
+    assert(res.length === 6)
     res foreach println
   }
 

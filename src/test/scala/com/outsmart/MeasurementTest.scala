@@ -16,7 +16,7 @@ class MeasurementTest extends FunSuite {
       new MeasuredValue(120326, 1),
       new MeasuredValue(120325, 1),
       new MeasuredValue(215159991, 1)
-    )) == (120000, 215160000))
+    )) === (120000, 215160000))
   }
 
 }

@@ -33,7 +33,7 @@ class DataFillerTest extends FunSuite {
     val testDriverActor = system.actorOf(Props[TestDriverActor], name = "testdriver")
     val dataFiller = new DataFiller(new DataGenerator, Writer.create())
 
-    dataFiller.fillEvenParallel(new DateTime("2012-06-01"), new DateTime("2012-06-05"), 66, testDriverActor)
+    dataFiller.fillEvenParallel(new DateTime("2012-03-01"), new DateTime("2012-03-05"), 333, testDriverActor)
 
     testDriverActor ! Flush
 

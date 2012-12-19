@@ -15,7 +15,7 @@ class DataGeneratorTest extends FunSuite {
   test("select customer") {
     val dataGen = new DataGenerator
     for(i <- 0 until 20)
-      assert(dataGen.getCustomer(i).equals("customer" + i))
+      assert(dataGen.getCustomer(i) === ("customer" + i))
   }
 
   test("random location") {
@@ -26,7 +26,7 @@ class DataGeneratorTest extends FunSuite {
   test("select location") {
     val dataGen = new DataGenerator
     for(i <- 0 until 2)
-      assert(dataGen.getLocation(i).equals("location" + i))
+      assert(dataGen.getLocation(i) === ("location" + i))
   }
 
   test("random wireid") {
@@ -37,7 +37,7 @@ class DataGeneratorTest extends FunSuite {
   test("select wireid") {
     val dataGen = new DataGenerator
     for(i <- 0 until 300)
-      assert(dataGen.getWireId(i).equals("wireid" + i))
+      assert(dataGen.getWireId(i) === ("wireid" + i))
   }
 
   test("random measurement") {
