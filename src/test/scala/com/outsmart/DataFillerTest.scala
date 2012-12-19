@@ -59,7 +59,8 @@ class DataFillerTest extends FunSuite {
 
   test("fill simple") {
     val dataFiller = new DataFiller(new DataGenerator, Writer.create())
-    dataFiller.fillEvenSimple("customer1", "location1", "wireid1", 1, 1)
+    for(i <- 1 to 10000)
+      dataFiller.fillSimple("customer1", "location1", "wireid1", i, i)
   }
 
 }

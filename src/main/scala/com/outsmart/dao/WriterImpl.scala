@@ -55,8 +55,8 @@ class WriterImpl extends Writer {
 
 
   def close()  {
-    // this should be called at the end of batch write or
-    // if not called table.flushCommits() should be issued
+    // in the case of pool closing table is not enough as it doesn't flush commits
+    table.flushCommits()
     table.close()
   }
 

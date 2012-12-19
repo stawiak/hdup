@@ -28,7 +28,7 @@ object TableFactory {
 
 
   /** If you were ever required to access the write buffer content, you would find that
-    ArrayList<Put> getWriteBuffer() can be used to get the in- ternal list of buffered
+    ArrayList<Put> getWriteBuffer() can be used to get the internal list of buffered
     Put instances you have added so far calling
     table.put(put).
       I mentioned earlier that it is exactly that list that makes HTable not safe
@@ -57,7 +57,7 @@ class NoFlushInterfaceFactory extends HTableInterfaceFactory {
   def createHTableInterface(config : Configuration, tableName : Array[Byte]) : HTableInterface = {
     try {
       val table = new HTable(config, tableName)
-      //table.setAutoFlush(false)
+      table.setAutoFlush(false)
       table
     } catch {
       case e : IOException => throw new RuntimeException(e)

@@ -98,7 +98,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
    * fill the database with single value
    * @param value value to fill
    */
-  def fillEvenSimple(customer: String, location: String, wireid: String, timestamp: Long, value:Long) {
+  def fillSimple(customer: String, location: String, wireid: String, timestamp: Long, value:Long) {
     withOpenClose(writer) {
           writer.write(new Measurement(customer, location, wireid, timestamp, value))
     }
