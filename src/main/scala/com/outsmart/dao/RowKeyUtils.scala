@@ -33,6 +33,23 @@ object RowKeyUtils {
     rowkey
   }
 
+  /**
+   * create partial rowkey using only part of the entire key
+   * @param customer
+   * @param location
+   * @return
+   */
+  def createRowKeyPrefix(customer : String, location : String) : Array[Byte] = {
+
+    val rowkey = new Array[Byte](SIZEOF_STRING + SIZEOF_STRING)
+
+    Bytes.putBytes(rowkey, 0, getHash(customer), 0, SIZEOF_STRING)
+    Bytes.putBytes(rowkey, SIZEOF_STRING, getHash(location), 0, SIZEOF_STRING)
+
+    rowkey
+  }
+
+
   /*
   * get a unique (almost) hash for a string to use in row key
    */

@@ -26,6 +26,13 @@ class ScannerImpl extends Scanner {
     values. You could use this call to     quickly retrieve all the latest values from
     an entire column family—in other words, all columns contained in the given column
     family—based on a specific sorting pattern
+
+    start and end: you do not need to have an exact match for
+    either of these rows. Instead, the scan will match the first row key that is equal to or
+    larger than the given start row. If no start row was specified, it will start at the beginning
+    of the table.
+    It will also end its work when the current row key is equal to or greater than the optional
+    stop row. If no stop row was specified, the scan will run to the end of the table.
    */
 
   def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[MeasuredValue] = {
@@ -42,6 +49,9 @@ class ScannerImpl extends Scanner {
     scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.EnergyQualifierName))
     scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.CurrentQualifierName))
     scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName))
+
+    // how many rows are retrieved with every RPC call
+    scan.setCaching(Settings.ScanCacheSize)
 
     val results = table.getScanner(scan)
 

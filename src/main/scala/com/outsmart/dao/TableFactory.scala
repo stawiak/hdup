@@ -12,8 +12,7 @@ import java.io.IOException
 */
 object TableFactory {
 
-
-    /** it is recommended that you create HTable instances only once—and one per thread
+  /** it is recommended that you create HTable instances only once—and one per thread
       * and reuse that instance for the rest of the lifetime of your client application.
       * As soon as you need multiple instances of HTable, consider using the HTablePool class
       * which provides you with a convenient way to reuse multiple instances.
@@ -50,11 +49,12 @@ object TableFactory {
       case e: Exception => {println("caught exception " + e); null}
     }
   }
+
 }
 
-class NoFlushInterfaceFactory extends HTableInterfaceFactory {
+class NoFlushInterfaceFactory extends HTableFactory {
 
-  def createHTableInterface(config : Configuration, tableName : Array[Byte]) : HTableInterface = {
+  override def createHTableInterface(config : Configuration, tableName : Array[Byte]) : HTableInterface = {
     try {
       val table = new HTable(config, tableName)
       table.setAutoFlush(false)
@@ -62,10 +62,8 @@ class NoFlushInterfaceFactory extends HTableInterfaceFactory {
     } catch {
       case e : IOException => throw new RuntimeException(e)
     }
-  }
 
-  def releaseHTableInterface(table : HTableInterface) {
-    // Do nothing. Required stub.
+
   }
 
 }
