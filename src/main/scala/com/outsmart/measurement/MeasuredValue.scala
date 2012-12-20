@@ -5,11 +5,8 @@ package com.outsmart.measurement
 */
 class MeasuredValue(val timestamp : Long, val energy : Double, val current: Double, val vampire : Double) extends Ordered[MeasuredValue] {
   override def toString = "ts: " + timestamp + " energy: " + energy + " current: " + current + " vampire: " + vampire
-  override def compare(that : MeasuredValue) : Int = {
-    if(this.timestamp - that.timestamp == 0) 0
-    else if ((this.timestamp - that.timestamp < 0)) -1
-    else 1
-  }
+  override def compare(that : MeasuredValue) : Int = this.timestamp.compareTo(that.timestamp)
+
 }
 
 object MeasuredValue {

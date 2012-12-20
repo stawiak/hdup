@@ -4,6 +4,7 @@ import org.scalatest.{FlatSpec}
 import org.apache.commons.math3.analysis.interpolation.{SplineInterpolator, UnivariateInterpolator}
 import org.scalatest.matchers.ShouldMatchers
 import com.outsmart.measurement.{TimedValue, Interpolator}
+import util.Random
 
 /**
  * @author Vadim Bobrov
@@ -73,6 +74,16 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
     Interpolator.minuteBoundaryBilinear(arr) should have size (1)
     Interpolator.minuteBoundaryBilinear(arr)(0).timestamp should be (120000)
     Interpolator.minuteBoundaryBilinear(arr)(0).value should be (3)
+  }
+
+  "interpolation" should "work with many measurements" in {
+    val random : Random = new Random()
+
+    val arr = new Array[TimedValue](100000)
+    for (i <- 0 until 100000)
+      arr(i) = new TimedValue(random.nextLong(),random.nextDouble())
+
+    println("returned " + Interpolator.minuteBoundaryBilinear(arr).length)
   }
 
 }
