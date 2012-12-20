@@ -112,7 +112,7 @@ object Interpolator {
   }
 
   /**
-   * Linear interpolation at point x on a line with x1y1, x2y2
+   * Linear interpolation (or extrapolation) at point x on a line with x1y1, x2y2
    * @param x interpolation point converted to double for math
    * @return interpolation value
    */
