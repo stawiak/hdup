@@ -24,7 +24,8 @@ object MeasuredValue {
    */
   def minuteBoundary(arg: Seq[MeasuredValue]) : (Long, Long) = {
     // don't need to specify ordering method anymore
-    val sorted = arg sortWith (_.timestamp < _.timestamp)
+    //val sorted = arg sortWith (_.timestamp < _.timestamp)
+    val sorted = arg.sorted
     val first = (sorted head).timestamp
     val last = (sorted last).timestamp
     (first - (first % 60000), last + 60000 - (last % 60000))

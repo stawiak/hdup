@@ -27,7 +27,6 @@ class DataFillerTest extends FunSuite {
   test("even fill parallel") {
     val start = System.currentTimeMillis
 
-    // Create an Akka system
     val config = ConfigFactory.load()
     val system = ActorSystem("test", config.getConfig("test"))
 

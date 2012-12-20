@@ -16,7 +16,7 @@ class GrabberTest extends FlatSpec with ShouldMatchers {
       ("2012-01-01", "2012-01-05")
     ))
 
-    res.length should be (3)
+    res should have length (3)
   }
 
   it should "be 1,2,3" in {
@@ -37,7 +37,7 @@ class GrabberTest extends FlatSpec with ShouldMatchers {
       ("2012-01-01", "2012-01-05")
     ))
 
-    res.length should be (6)
+    res should have length (6)
   }
 
 

@@ -12,7 +12,7 @@ class DataGeneratorTest extends FlatSpec with ShouldMatchers {
   val dataGen = new DataGenerator
 
   "Randon customer name" should "start with customer" in {
-    assert(dataGen.getRandomCustomer.startsWith("customer"))
+    dataGen.getRandomCustomer should startWith ("customer")
   }
 
   "Select customer name" should "be customer + i" in  {
@@ -21,7 +21,7 @@ class DataGeneratorTest extends FlatSpec with ShouldMatchers {
   }
 
   "Random location" should "start with location" in  {
-    assert(dataGen.getRandomLocation.startsWith("location"))
+    dataGen.getRandomLocation should startWith ("location")
   }
 
   "Select location" should "be location + i" in  {
@@ -30,7 +30,7 @@ class DataGeneratorTest extends FlatSpec with ShouldMatchers {
   }
 
   "Random wireid" should "start with wireid" in  {
-    assert(dataGen.getRandomWireId.startsWith("wireid"))
+    dataGen.getRandomWireId should startWith ("wireid")
   }
 
   "Select wireid" should "be wireid + i" in  {
