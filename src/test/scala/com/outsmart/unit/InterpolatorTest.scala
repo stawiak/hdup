@@ -80,6 +80,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
   "interpolation" should "work with many measurements" in {
     val random : Random = new Random()
 
+    //TODO: generate timestamps in one day range only
     val arr = new Array[TimedValue](MeasurementsPerDaySingleWire)
     for (i <- 0 until MeasurementsPerDaySingleWire)
       arr(i) = new TimedValue(random.nextLong(),random.nextDouble())
@@ -95,6 +96,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
     var msmts = List[Array[TimedValue]]()
     val random : Random = new Random()
 
+    //TODO: generate timestamps in one day range only
     for (i <- 0 until 20) {
       val arr = new Array[TimedValue](MeasurementsPerDaySingleWire)
       for (i <- 0 until MeasurementsPerDaySingleWire)
