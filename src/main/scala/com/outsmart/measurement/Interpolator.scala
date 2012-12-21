@@ -9,48 +9,41 @@ object Interpolator {
    * given a number of measurements return interpolated values
    * at minute boundaries using bilinear interpolation
    *
-   * prereq: all timestamps are unique, 4 or more measurements
+   * prereq:  all timestamps are unique,
+   *          4 or more measurements
+   *          sorted by time
    * @param arg actual measurements
    * @return    interpolated values at minute boundaries
    */
-  def minuteBoundaryBilinear(arg: Array[TimedValue]) : Seq[TimedValue] = {
+  def bilinear(arg: Array[TimedValue], boundary: Int = 60000) : Seq[TimedValue] = {
     assert(arg.length >= 4)
 
     var output = List[TimedValue]()
     //TODO; no minute boundaries inside 2 first and 2 last values
     //TODO: do we need sort here or can assume it is sorted
-    val sorted = arg.sorted
 
-    /*
-        val second = sorted(1)
-        val lastButOne = sorted(sorted.length - 2)
-
-        val lowerMinute = second.timestamp + 60000 - (second.timestamp % 60000)
-        val upperMinute = lastButOne.timestamp - (lastButOne.timestamp % 60000)
-    */
-
-    var currentMinBoundary = sorted(1).timestamp + 60000 - (sorted(1).timestamp % 60000)
-    for (i <- 2 until sorted.length - 1) {
+    var currentMinBoundary = arg(1).timestamp + boundary - (arg(1).timestamp % boundary)
+    for (i <- 2 until arg.length - 1) {
 
       // direct hit
-      if (sorted(i).timestamp == currentMinBoundary) {
+      if (arg(i).timestamp == currentMinBoundary) {
         // add to output
-        output = new TimedValue(currentMinBoundary, sorted(i).value) :: output
+        output = new TimedValue(currentMinBoundary, arg(i).value) :: output
 
         // set next minute boundary
-        currentMinBoundary += 60000
+        currentMinBoundary += boundary
       }
 
       // if there is a minute boundary between current and next measurement
       // calculate interpolated value for it and set next minute boundary
-      if (sorted(i).timestamp > currentMinBoundary) {
+      if (arg(i).timestamp > currentMinBoundary) {
 
         // take 4 points and find intersection
         val intersect = findIntersection(
-          sorted(i - 2).timestamp, sorted(i - 2).value,
-          sorted(i - 1).timestamp, sorted(i - 1).value,
-          sorted(i).timestamp, sorted(i).value,
-          sorted(i + 1).timestamp, sorted(i + 1).value
+          arg(i - 2).timestamp, arg(i - 2).value,
+          arg(i - 1).timestamp, arg(i - 1).value,
+          arg(i).timestamp, arg(i).value,
+          arg(i + 1).timestamp, arg(i + 1).value
         )
 
         var computedValue: Double = 0
@@ -62,21 +55,21 @@ object Interpolator {
           if (intersect._1 == currentMinBoundary)
             computedValue = intersect._2
           else if (intersect._1 < currentMinBoundary)
-            computedValue = linearInterpolate(currentMinBoundary, intersect._1, intersect._2, sorted(i).timestamp, sorted(i).value)
+            computedValue = linearInterpolate(currentMinBoundary, intersect._1, intersect._2, arg(i).timestamp, arg(i).value)
           else
-            computedValue = linearInterpolate(currentMinBoundary, sorted(i - 1).timestamp, sorted(i - 1).value, intersect._1, intersect._2)
+            computedValue = linearInterpolate(currentMinBoundary, arg(i - 1).timestamp, arg(i - 1).value, intersect._1, intersect._2)
 
         } else {
           // no intersection - either parallel or outside period
           //use linear interpolation between two measurements
-          computedValue = linearInterpolate(currentMinBoundary, sorted(i - 1).timestamp, sorted(i - 1).value, sorted(i).timestamp, sorted(i).value)
+          computedValue = linearInterpolate(currentMinBoundary, arg(i - 1).timestamp, arg(i - 1).value, arg(i).timestamp, arg(i).value)
         }
 
         // add to output
         output = new TimedValue(currentMinBoundary, computedValue) :: output
 
         // set next minute boundary
-        currentMinBoundary += 60000
+        currentMinBoundary += boundary
       }
 
     }
