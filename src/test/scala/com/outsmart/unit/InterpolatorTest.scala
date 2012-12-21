@@ -80,14 +80,14 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
   "interpolation" should "work with many measurements" in {
     val random : Random = new Random()
 
-    val arr = new Array[TimedValue](400 * MeasurementsPerDaySingleWire)
-    for (i <- 0 until 400 * MeasurementsPerDaySingleWire)
+    val arr = new Array[TimedValue](MeasurementsPerDaySingleWire)
+    for (i <- 0 until MeasurementsPerDaySingleWire)
       arr(i) = new TimedValue(random.nextLong(),random.nextDouble())
 
     val sorted = arr.sorted
 
     val start = System.currentTimeMillis
-    println("returned " + bilinear(sorted, 300000).length)
+    println("returned " + bilinear(sorted).length)
     println("done in " + (System.currentTimeMillis - start))
   }
 
