@@ -24,6 +24,7 @@ object Interpolator {
 
     var currentMinBoundary = arg(1).timestamp + boundary - (arg(1).timestamp % boundary)
 
+    //TODO: use sliding window
     for (i <- 2 until arg.length - 1) {
         // direct hit
         if (arg(i).timestamp == currentMinBoundary) {
