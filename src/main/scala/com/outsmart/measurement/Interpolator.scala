@@ -42,9 +42,11 @@ object Interpolator {
         // calculate interpolated value for it and set next minute boundary
         if (arg(i).timestamp > currentMinBoundary) {
 
+          val upper = arg(i).timestamp - (arg(i).timestamp % boundary)
+
           // for every minute boundary crossed
-          Iterator.continually(currentMinBoundary).takeWhile(_ <= arg(i).timestamp) foreach { crossedBoundary =>
-          // take 4 points and find intersection
+          for (crossedBoundary <- currentMinBoundary to upper by boundary) {
+            // take 4 points and find intersection
             val intersect = findIntersection(
               arg(i - 2).timestamp, arg(i - 2).value,
               arg(i - 1).timestamp, arg(i - 1).value,
@@ -73,11 +75,9 @@ object Interpolator {
 
             // add to output
             output = new TimedValue(crossedBoundary, computedValue) :: output
-
-            // set next minute boundary
-            currentMinBoundary += boundary
           }
 
+          currentMinBoundary = upper
         }
     }
 

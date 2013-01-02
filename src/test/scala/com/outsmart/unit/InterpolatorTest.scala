@@ -77,6 +77,18 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
     bilinear(arr)(0).value should be (4)
   }
 
+  "interpolation" should "be correct with 2 or more minute boundaries between measurements" in {
+    val arr = Array(new TimedValue(119995,5), new TimedValue(119997,3), new TimedValue(180001,60005), new TimedValue(180002,60006))
+
+    bilinear(arr) should have size (2)
+
+    bilinear(arr)(1).timestamp should be (120000)
+    bilinear(arr)(1).value should be (4)
+
+    bilinear(arr)(0).timestamp should be (180000)
+    bilinear(arr)(0).value should be (60004)
+  }
+
   "interpolation" should "work with many measurements" in {
     val random : Random = new Random()
 
