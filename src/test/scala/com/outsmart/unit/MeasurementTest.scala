@@ -3,7 +3,7 @@ package com.outsmart.unit
 import org.scalatest.{FlatSpec}
 import com.outsmart.measurement.MeasuredValue._
 import scala.Array
-import com.outsmart.measurement.MeasuredValue
+import com.outsmart.measurement.{TimedValue, MeasuredValue}
 import org.scalatest.matchers.ShouldMatchers
 
 /**
@@ -21,4 +21,9 @@ class MeasurementTest extends FlatSpec with ShouldMatchers {
     )) should be (120000, 215160000)
   }
 
+  "Different timed values" should "be equal if timestamp is same" in {
+	  val a = new TimedValue(111, 111)
+	  val b = new TimedValue(111, 222)
+	  a should be (b)
+  }
 }
