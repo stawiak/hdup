@@ -11,7 +11,7 @@ import measurement.Measurement
 class TestDriverActor extends Actor {
 
   //val master = context.actorOf(Props(new WriteMasterActor(() => new TestWriterImpl())), name = "master")
-  val master = context.actorOf(Props(new WriteMasterActor(Writer.create)), name = "master")
+  val master = context.actorOf(Props(new WriteMasterActor()), name = "master")
 
   protected def receive: Receive = {
 

@@ -16,30 +16,29 @@ case object StopWriter
 case object WorkDone
 case class WriteWork(measurements: Seq[Measurement])
 
-class WriteMasterActor(writerCreator : () => Writer) extends Actor {
+class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Writer.create())).withRouter(FromConfig())) extends Actor {
 
 	import context._
 	// Since a restart does not clear out the mailbox, it often is best to terminate the children upon failure and re-create them explicitly from the supervisor
 
 	var measurements = List[Measurement]()
-	val workerRouter = actorOf(Props(new WriterActor(writerCreator())).withRouter(FromConfig()), name = "workerRouter")
+	val workerRouter = actorOf(workerRouterProps, name = "workerRouter")
 	var numberOfBatches = 0
 	var numberOfDone = 0
 	var receivedAll = false
 	var counter = 0
 
+
 	override val supervisorStrategy =
-		OneForOneStrategy(maxNrOfRetries = 3) {
-			//case _: NullPointerException      	⇒ Resume
-			case _: Exception     				⇒ Restart
-			case _: IllegalArgumentException 	⇒ Stop
+		OneForOneStrategy(maxNrOfRetries = 33) {
+			case _: Exception     				⇒ Escalate
 			case _: Throwable                	⇒ Escalate
 		}
+
 
 	protected def receive: Receive = {
 
 		case msmt : Measurement => {
-
 			counter += 1
 			measurements = msmt :: measurements
 
@@ -70,6 +69,7 @@ class WriteMasterActor(writerCreator : () => Writer) extends Actor {
 
 		case StopWriter => {
 			println("received stop")
+			sender ! StopWriter
 			// Stops this actor and all its supervised children
 			stop(self)
 		}

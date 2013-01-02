@@ -9,8 +9,9 @@ import com.typesafe.config.ConfigFactory
 import akka.actor.{Props, ActorSystem}
 import com.outsmart.{DataGenerator, DataFiller, TestDriverActor}
 import org.joda.time.DateTime
-import com.outsmart.actor.write.{WriteMasterActor, Flush}
+import com.outsmart.actor.write.{WriterActor, WriteMasterActor, Flush}
 import com.outsmart.measurement.Measurement
+import akka.routing.FromConfig
 
 /**
  * @author Vadim Bobrov
@@ -25,7 +26,14 @@ class WriterActorTest extends FunSuite with MockFactoryBase with ProxyMockFactor
     val config = ConfigFactory.load()
     val system = ActorSystem("test", config.getConfig("test"))
 
-    val writeMaster = system.actorOf(Props(new WriteMasterActor(() => mockWriter)), name = "master")
+/*
+	val slaveProps = Props(
+		new WriterActor(
+			() => mockWriter
+		).withRouter(FromConfig())
+	)
+*/
+    val writeMaster = system.actorOf(Props(new WriteMasterActor()), name = "master")
     writeMaster ! dataGen.getRandomMeasurement
 
     mockWriter expects 'write withArgs (*) anyNumberOfTimes

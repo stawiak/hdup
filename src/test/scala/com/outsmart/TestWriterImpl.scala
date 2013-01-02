@@ -1,9 +1,6 @@
 package com.outsmart
 
 import dao.Writer
-import org.apache.hadoop.hbase.client.{HTableInterface, Put}
-import org.apache.hadoop.hbase.util.Bytes
-import com.outsmart.Settings
 import com.outsmart.measurement.Measurement
 
 /**
