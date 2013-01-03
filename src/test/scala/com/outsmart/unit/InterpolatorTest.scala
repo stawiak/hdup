@@ -48,11 +48,11 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 	}
 
 	"interpolation" should "fail when fewer than 4 measurements sent" in {
-		val arr = Array(new TimedValue(1,1), new TimedValue(1,1), new TimedValue(1,1))
+		val arr = Stream(new TimedValue(1,1), new TimedValue(1,1), new TimedValue(1,1))
 
 		evaluating(
 			bilinear(arr)
-		) should produce [AssertionError]
+		) should produce [Exception]
 	}
 
 	"interpolation" should "be correct at intersection with 4 measurements" in {

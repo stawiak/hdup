@@ -2,6 +2,7 @@ package com.outsmart.measurement
 
 import collection.immutable.SortedSet
 
+
 /**
  * @author Vadim Bobrov
  */
@@ -18,16 +19,19 @@ object Interpolator {
 	 * @param boundary  time boundary, one minute by default
 	 * @return    		interpolated values at minute boundaries
 	 */
-	def bilinear(arg: Array[TimedValue], boundary: Int = 60000) : Seq[TimedValue] = {
-		assert(arg.length >= 4)
+	def bilinear(arg: Iterable[TimedValue], boundary: Int = 60000) : Seq[TimedValue] = {
 
 		// need set because interpolatePoint returns inclusive upper boundary
 		var output = SortedSet[TimedValue]()
 
 		//TODO: use divide and conquer
 		//TODO: think about using streams instead
-		arg.sliding(4).foreach { case Array(x1, x2, x3, x4) =>
-			{ output ++= interpolatePoint(x1, x2, x3, x4, boundary).toList }
+		arg.sliding(4).foreach {_.toList match {
+			case (x1::x2::x3::x4::Nil) =>
+				output ++= interpolatePoint(x1, x2, x3, x4, boundary).toList
+			case _ =>
+				throw new Exception("not enough elements to interpolate")
+			}
 		}
 
 		output.toSeq
