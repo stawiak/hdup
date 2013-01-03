@@ -58,53 +58,59 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 	"interpolation" should "be correct at intersection with 4 measurements" in {
 		val arr = Array(new TimedValue(119996,1), new TimedValue(119998,2), new TimedValue(120001,5), new TimedValue(120002,7))
 
-		bilinear(arr) should have size (1)
-		bilinear(arr)(0).timestamp should be (120000)
-		bilinear(arr)(0).value should be (3)
+		val res = bilinear(arr)
+		res should have size (1)
+		res(0).timestamp should be (120000)
+		res(0).value should be (3)
 	}
 
 	"interpolation" should "be correct left of intersection with 4 measurements" in {
 		val arr = Array(new TimedValue(119997,1), new TimedValue(119999,2), new TimedValue(120002,5), new TimedValue(120003,7))
 
-		bilinear(arr) should have size (1)
-		bilinear(arr)(0).timestamp should be (120000)
-		bilinear(arr)(0).value should be (2.5)
+		val res = bilinear(arr)
+		res should have size (1)
+		res(0).timestamp should be (120000)
+		res(0).value should be (2.5)
 	}
 
 	"interpolation" should "be correct right of intersection with 4 measurements" in {
 		val arr = Array(new TimedValue(119995,5), new TimedValue(119997,3), new TimedValue(120001,5), new TimedValue(120002,6))
 
-		bilinear(arr) should have size (1)
-		bilinear(arr)(0).timestamp should be (120000)
-		bilinear(arr)(0).value should be (4)
+		val res = bilinear(arr)
+		res should have size (1)
+		res(0).timestamp should be (120000)
+		res(0).value should be (4)
 	}
 
 	"interpolation" should "be correct when intersection is on a lower measurement with 4 measurements" in {
 		val arr = Array(new TimedValue(119997,1), new TimedValue(119999,2), new TimedValue(120001,6), new TimedValue(120002,8))
 
-		bilinear(arr) should have size (1)
-		bilinear(arr)(0).timestamp should be (120000)
-		bilinear(arr)(0).value should be (4)
+		val res = bilinear(arr)
+		res should have size (1)
+		res(0).timestamp should be (120000)
+		res(0).value should be (4)
 	}
 
 	"interpolation" should "be correct when intersection is on a upper measurement with 4 measurements" in {
 		val arr = Array(new TimedValue(119996,1), new TimedValue(119998,2), new TimedValue(120002,4), new TimedValue(120003,6))
 
-		bilinear(arr) should have size (1)
-		bilinear(arr)(0).timestamp should be (120000)
-		bilinear(arr)(0).value should be (3)
+		val res = bilinear(arr)
+		res should have size (1)
+		res(0).timestamp should be (120000)
+		res(0).value should be (3)
 	}
 
 	"interpolation" should "be correct with 2 or more minute boundaries between measurements" in {
 		val arr = Array(new TimedValue(119995,5), new TimedValue(119997,3), new TimedValue(180001,60005), new TimedValue(180002,60006))
 
-		bilinear(arr) should have size (2)
+		val res = bilinear(arr)
+		res should have size (2)
 
-		bilinear(arr)(1).timestamp should be (120000)
-		bilinear(arr)(1).value should be (4)
+		res(0).timestamp should be (120000)
+		res(0).value should be (4)
 
-		bilinear(arr)(0).timestamp should be (180000)
-		bilinear(arr)(0).value should be (60004)
+		res(1).timestamp should be (180000)
+		res(1).value should be (60004)
 	}
 
 	"interpolation" should "work with one device measurements within one day" in {

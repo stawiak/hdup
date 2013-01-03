@@ -1,5 +1,7 @@
 package com.outsmart.measurement
 
+import collection.immutable.SortedSet
+
 /**
  * @author Vadim Bobrov
  */
@@ -14,72 +16,75 @@ object Interpolator {
 	 *          sorted by time
 	 * @param arg       actual measurements
 	 * @param boundary  time boundary, one minute by default
-	 * @return    interpolated values at minute boundaries
+	 * @return    		interpolated values at minute boundaries
 	 */
 	def bilinear(arg: Array[TimedValue], boundary: Int = 60000) : Seq[TimedValue] = {
 		assert(arg.length >= 4)
 
-		var output = List[TimedValue]()
-		//TODO; no minute boundaries inside 2 first and 2 last values
+		// need set because interpolatePoint returns inclusive upper boundary
+		var output = SortedSet[TimedValue]()
 
-		var currentMinBoundary = arg(1).timestamp + boundary - (arg(1).timestamp % boundary)
-
-		//TODO: use sliding window
-		for (i <- 2 until arg.length - 1) {
-			// direct hit
-			if (arg(i).timestamp == currentMinBoundary) {
-				// add to output
-				output = new TimedValue(currentMinBoundary, arg(i).value) :: output
-
-				// set next minute boundary
-				currentMinBoundary += boundary
-			}
-
-			// we crossed current and possibly more minute boundaries
-			// we could also land on one of the minute boundaries
-
-			// if there is a minute boundary between current and next measurement
-			// calculate interpolated value for it and set next minute boundary
-			if (arg(i).timestamp > currentMinBoundary) {
-
-				val upper = arg(i).timestamp - (arg(i).timestamp % boundary)
-
-				// for every minute boundary crossed
-				for (crossedBoundary <- currentMinBoundary to upper by boundary) {
-					// take 4 points and find intersection
-					val (x, y) = findIntersection(
-						arg(i - 2).timestamp, arg(i - 2).value,
-						arg(i - 1).timestamp, arg(i - 1).value,
-						arg(i).timestamp, arg(i).value,
-						arg(i + 1).timestamp, arg(i + 1).value
-					)
-
-					var computedValue: Double = 0
-
-					if (x > 0) {
-						// intersection found
-						// compare current minute boundary with intersection
-						// compute interpolation using ether lower or upper 2 points
-						if (x == crossedBoundary)
-							computedValue = y
-						else if (x < crossedBoundary)
-							computedValue = linearInterpolate(crossedBoundary, x, y, arg(i).timestamp, arg(i).value)
-						else
-							computedValue = linearInterpolate(crossedBoundary, arg(i - 1).timestamp, arg(i - 1).value, x, y)
-
-					} else {
-						// no intersection - either parallel or outside period
-						//use linear interpolation between two measurements
-						computedValue = linearInterpolate(crossedBoundary, arg(i - 1).timestamp, arg(i - 1).value, arg(i).timestamp, arg(i).value)
-					}
-
-					// add to output
-					output = new TimedValue(crossedBoundary, computedValue) :: output
-				}
-
-				currentMinBoundary = upper + boundary
-			}
+		//TODO: use divide and conquer
+		//TODO: think about using streams instead
+		arg.sliding(4).foreach { case Array(x1, x2, x3, x4) =>
+			{ output ++= interpolatePoint(x1, x2, x3, x4, boundary).toList }
 		}
+
+		output.toSeq
+	}
+
+	/**
+	 * Calculates interpolation given four consecutive points
+	 * including second and third point if fall on the boundary
+	 *
+	 * @param tv1 tv2 tv3 tv4	four consecutive points (must be in ascending order)
+	 * @param boundary			step between points to interpolate at, minute by default
+	 * @return					sequence of interpolations
+	 */
+	def interpolatePoint(tv1 : TimedValue, tv2 : TimedValue, tv3 : TimedValue, tv4 : TimedValue, boundary: Int = 60000) : Seq[TimedValue] = {
+		// ensure strictly ascending
+		assert(tv1 < tv2 && tv2 < tv3 && tv3 < tv4)
+
+		var output = List[TimedValue]()
+
+		if (tv2.timestamp % boundary == 0)
+			output = tv2 :: output
+
+
+		for (innerBoundary <- tv2.timestamp - (tv2.timestamp % boundary) + boundary until tv3.timestamp by boundary) {
+			// take 4 points and find intersection
+			val (x, y) = findIntersection(
+				tv1.timestamp, tv1.value,
+				tv2.timestamp, tv2.value,
+				tv3.timestamp, tv3.value,
+				tv4.timestamp, tv4.value
+			)
+
+			var computedValue: Double = 0
+
+			if (x > 0) {
+				// intersection found
+				// compare current minute boundary with intersection
+				// compute interpolation using ether lower or upper 2 points
+				if (x == innerBoundary)
+					computedValue = y
+				else if (x < innerBoundary)
+					computedValue = linearInterpolate(innerBoundary, x, y, tv3.timestamp, tv3.value)
+				else
+					computedValue = linearInterpolate(innerBoundary, tv2.timestamp, tv2.value, x, y)
+
+			} else {
+				// no intersection - either parallel or outside period
+				//use linear interpolation between two measurements
+				computedValue = linearInterpolate(innerBoundary, tv2.timestamp, tv2.value, tv3.timestamp, tv3.value)
+			}
+
+			// add to output
+			output = new TimedValue(innerBoundary, computedValue) :: output
+		}
+
+		if (tv3.timestamp % boundary == 0)
+			output = tv3 :: output
 
 		output
 	}
