@@ -1,51 +1,69 @@
 package com.outsmart.measurement
 
-import collection.immutable.SortedSet
+import scala.collection.immutable.{::}
+import scala._
 
 
 /**
+ * given a number of measurements return interpolated values
+ * at minute boundaries using bilinear interpolation
+ *
+ * prereq:  all timestamps are unique,
+ *          4 or more measurements
+ *          sorted by time
+ *
  * @author Vadim Bobrov
  */
-object Interpolator {
+class Interpolator(val src : Iterator[TimedValue], val boundary: Int = 60000) extends Iterable[TimedValue] {
 
-	/**
-	 * given a number of measurements return interpolated values
-	 * at minute boundaries using bilinear interpolation
-	 *
-	 * prereq:  all timestamps are unique,
-	 *          4 or more measurements
-	 *          sorted by time
-	 * @param arg       actual measurements
-	 * @param boundary  time boundary, one minute by default
-	 * @return    		interpolated values at minute boundaries
-	 */
-	def bilinear(arg: Iterable[TimedValue], boundary: Int = 60000) : Seq[TimedValue] = {
+	import Interpolator._
 
-		// need set because interpolatePoint returns inclusive upper boundary
-		var output = SortedSet[TimedValue]()
+	class InterpolatedIterator(val source : Iterator[TimedValue]) extends Iterator[TimedValue] {
 
-		//TODO: use divide and conquer
-		//TODO: think about using streams instead
-		arg.sliding(4).foreach {_.toList match {
-			case (x1::x2::x3::x4::Nil) =>
-				output ++= interpolatePoint(x1, x2, x3, x4, boundary).toList
-			case _ =>
-				throw new Exception("not enough elements to interpolate")
+		var tv1, tv2, tv3, tv4 : Option[TimedValue] = None
+		var cur : Iterator[TimedValue] = Iterator.empty
+
+		def hasNext: Boolean = {
+			// we still have some values from previous 4 points or
+			if (cur.hasNext)
+				true
+			else {
+				// we need to move to next 4 measurements and try generating interpolations
+				while(source.hasNext) {
+					tv1 = tv2; tv2 = tv3; tv3 = tv4; tv4 = Option(source.next())
+
+					// all 4 points filled?
+					if (tv1 != None && tv2 != None && tv3 != None && tv4 != None) {
+						cur = bilinear(tv1.get, tv2.get, tv3.get, tv4.get, boundary).iterator
+						if (cur.hasNext)
+							return true
+					}
+				}
+
+				// no interpolations found and source exhausted
+				false
 			}
+
 		}
 
-		output.toSeq
+		def next(): TimedValue = cur.next()
+
 	}
 
+	def iterator: Iterator[TimedValue] = new InterpolatedIterator(src)
+
+
+}
+
+object Interpolator {
 	/**
 	 * Calculates interpolation given four consecutive points
 	 * including second and third point if fall on the boundary
 	 *
 	 * @param tv1 tv2 tv3 tv4	four consecutive points (must be in ascending order)
-	 * @param boundary			step between points to interpolate at, minute by default
 	 * @return					sequence of interpolations
 	 */
-	def interpolatePoint(tv1 : TimedValue, tv2 : TimedValue, tv3 : TimedValue, tv4 : TimedValue, boundary: Int = 60000) : Seq[TimedValue] = {
+	def bilinear(tv1 : TimedValue, tv2 : TimedValue, tv3 : TimedValue, tv4 : TimedValue, boundary: Int = 60000) : Seq[TimedValue] = {
 		// ensure strictly ascending
 		assert(tv1 < tv2 && tv2 < tv3 && tv3 < tv4)
 
@@ -129,4 +147,5 @@ object Interpolator {
 		assert(x1 != x2)
 		(x - x1) * (y2 - y1)/(x2 - x1) + y1
 	}
+
 }

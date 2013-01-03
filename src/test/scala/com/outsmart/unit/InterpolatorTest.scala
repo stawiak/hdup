@@ -47,27 +47,33 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 		) should produce [AssertionError]
 	}
 
-	"interpolation" should "fail when fewer than 4 measurements sent" in {
-		val arr = Stream(new TimedValue(1,1), new TimedValue(1,1), new TimedValue(1,1))
+	"interpolation" should "not return interpolations when fewer than 4 measurements sent" in {
+		val arr = Array(new TimedValue(1,1), new TimedValue(1,1), new TimedValue(1,1))
 
-		evaluating(
-			bilinear(arr)
-		) should produce [Exception]
+		val ii = new Interpolator(arr.iterator).iterator
+
+		ii.hasNext should be (false)
 	}
+
 
 	"interpolation" should "be correct at intersection with 4 measurements" in {
 		val arr = Array(new TimedValue(119996,1), new TimedValue(119998,2), new TimedValue(120001,5), new TimedValue(120002,7))
 
-		val res = bilinear(arr)
-		res should have size (1)
-		res(0).timestamp should be (120000)
-		res(0).value should be (3)
+		val ii = new Interpolator(arr.iterator).iterator
+
+		ii.hasNext should be (true)
+		val res = ii.next()
+
+		//res should have size (1)
+		res.timestamp should be (120000)
+		res.value should be (3)
+		ii.hasNext should be (false)
 	}
 
 	"interpolation" should "be correct left of intersection with 4 measurements" in {
 		val arr = Array(new TimedValue(119997,1), new TimedValue(119999,2), new TimedValue(120002,5), new TimedValue(120003,7))
 
-		val res = bilinear(arr)
+		val res = new Interpolator(arr.iterator).iterator.toArray
 		res should have size (1)
 		res(0).timestamp should be (120000)
 		res(0).value should be (2.5)
@@ -76,7 +82,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 	"interpolation" should "be correct right of intersection with 4 measurements" in {
 		val arr = Array(new TimedValue(119995,5), new TimedValue(119997,3), new TimedValue(120001,5), new TimedValue(120002,6))
 
-		val res = bilinear(arr)
+		val res = new Interpolator(arr.iterator).iterator.toArray
 		res should have size (1)
 		res(0).timestamp should be (120000)
 		res(0).value should be (4)
@@ -85,7 +91,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 	"interpolation" should "be correct when intersection is on a lower measurement with 4 measurements" in {
 		val arr = Array(new TimedValue(119997,1), new TimedValue(119999,2), new TimedValue(120001,6), new TimedValue(120002,8))
 
-		val res = bilinear(arr)
+		val res = new Interpolator(arr.iterator).iterator.toArray
 		res should have size (1)
 		res(0).timestamp should be (120000)
 		res(0).value should be (4)
@@ -94,7 +100,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 	"interpolation" should "be correct when intersection is on a upper measurement with 4 measurements" in {
 		val arr = Array(new TimedValue(119996,1), new TimedValue(119998,2), new TimedValue(120002,4), new TimedValue(120003,6))
 
-		val res = bilinear(arr)
+		val res = new Interpolator(arr.iterator).iterator.toArray
 		res should have size (1)
 		res(0).timestamp should be (120000)
 		res(0).value should be (3)
@@ -103,14 +109,14 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 	"interpolation" should "be correct with 2 or more minute boundaries between measurements" in {
 		val arr = Array(new TimedValue(119995,5), new TimedValue(119997,3), new TimedValue(180001,60005), new TimedValue(180002,60006))
 
-		val res = bilinear(arr)
+		val res = new Interpolator(arr.iterator).iterator.toArray
 		res should have size (2)
 
-		res(0).timestamp should be (120000)
-		res(0).value should be (4)
+		res(1).timestamp should be (120000)
+		res(1).value should be (4)
 
-		res(1).timestamp should be (180000)
-		res(1).value should be (60004)
+		res(0).timestamp should be (180000)
+		res(0).value should be (60004)
 	}
 
 	"interpolation" should "work with one device measurements within one day" in {
@@ -127,7 +133,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 		println("length after " + sorted.length)
 
 		val start = System.currentTimeMillis
-		println("returned " + bilinear(sorted).length)
+		println("returned " + new Interpolator(sorted.iterator).iterator.toArray.length)
 		println("done in " + (System.currentTimeMillis - start))
 	}
 
@@ -144,7 +150,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 			val sorted = uniqueValues.toArray
 
 			val start = System.currentTimeMillis
-			bilinear(sorted)
+			new Interpolator(sorted.iterator).iterator.toArray.length
 			totalTime += (System.currentTimeMillis - start)
 		}
 
@@ -166,10 +172,12 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 
 		val start = System.currentTimeMillis
 
-		msmts map ( c => future { bilinear(c) }) map (_()) reduce (_ zip _ map (a => a._1 + a._2))
+
+		msmts map ( c => future { new Interpolator(c.iterator).iterator.toArray }) map (_()) reduce (_ zip _ map (a => a._1 + a._2))
 
 		println("done in " + (System.currentTimeMillis - start))
 	}
+
 
 
 }
