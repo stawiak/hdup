@@ -22,4 +22,13 @@ class WriterActor(val writer : Writer) extends Actor with ActorLogging{
 		}
 	}
 
+	override def preRestart(reason: Throwable, message: Option[Any]) {
+		// retry - forward is necessary to retain the master as sender
+		// http://letitcrash.com/post/23532935686/watch-the-routees
+		log.info("retrying instance hashcode # {}", this.hashCode())
+		message foreach {self forward _ }
+		log.info("restarting WorkerActor instance hashcode # {}", this.hashCode())
+	}
+
+
  }
