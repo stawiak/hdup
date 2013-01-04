@@ -26,7 +26,7 @@ object Settings {
   val CurrentQualifierName = "c"  // stands for current
   val VampireQualifierName = "v"  // stands for volt-amp-reactive
 
-  val BatchSize = 1000            // writer batch size - can be lost
+  val BatchSize = 100             // writer batch size - can be lost
   val TablePoolSize = 100
 
   val Host = "192.168.152.128"
