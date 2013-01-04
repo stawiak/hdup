@@ -58,6 +58,11 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 
 			try {
 				Await.ready(feedback, timeout.duration)
+				numberOfDone += 1
+				log.debug("number of done " + numberOfDone + " out of " + numberOfBatches)
+
+				if (receivedAll && numberOfDone == numberOfBatches)
+					parent ! WorkDone
 			}
 			catch {
 				case _: Exception  => {
@@ -83,13 +88,6 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 			if(measurements.length == batchSize)
 				submitJob
 
-		}
-
-		case WorkDone => {
-			numberOfDone += 1
-			log.debug("number of done " + numberOfDone + " out of " + numberOfBatches)
-			if (receivedAll && numberOfDone == numberOfBatches)
-				parent ! WorkDone
 		}
 
 		case Flush =>  {
