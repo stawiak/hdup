@@ -29,7 +29,7 @@ object FaultHandlingDocSpec{
 			// retry - forward is necessary to retain the master as sender
 			// http://letitcrash.com/post/23532935686/watch-the-routees
 			//log.info("retrying " + message.get.asInstanceOf[WriteWork].measurements.mkString)
-			message foreach {self forward _ }
+			//message foreach {self forward _ }
 			log.info("restarting WorkerActor instance hashcode # {}", this.hashCode())
 		}
 
@@ -61,7 +61,7 @@ class FaultHandlingDocSpec(_system: ActorSystem) extends TestKit(_system) with W
 	val dataGen = new DataGenerator
 
 	override def afterAll() {
-		//system.awaitTermination()
+		system.awaitTermination()
 	}
 
 	"A supervisor" must {
@@ -76,7 +76,7 @@ class FaultHandlingDocSpec(_system: ActorSystem) extends TestKit(_system) with W
 
 
 			implicit val timeout = Timeout(20 seconds)
-			Await.ready(masterWriter ? StopWriter, timeout.duration)
+			//Await.ready(masterWriter ? StopWriter, timeout.duration)
 			//expectMsg(StopWriter)
 
 		}

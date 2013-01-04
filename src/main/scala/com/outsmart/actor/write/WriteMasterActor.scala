@@ -10,7 +10,6 @@ import akka.util.duration._
 import akka.util.{Timeout, Duration}
 import akka.dispatch.{Future, Await}
 import akka.pattern.ask
-import java.util.concurrent.TimeoutException
 
 
 /**
@@ -34,7 +33,7 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 	var receivedAll = false
 	var counter = 0
 
-	implicit val timeout = Timeout(1 minutes)
+	implicit val timeout = Timeout(20 seconds)
 
 
 
@@ -61,13 +60,16 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 				Await.ready(feedback, timeout.duration)
 			}
 			catch {
-				case _: Exception  => self ! work
+				case _: Exception  => {
+					log.info("resubmitting job to self")
+					self ! work
+				}
 			}
 		}
 
 	}
 
-	def submitJob = submitJob(WriteWork(measurements))
+	def submitJob() { submitJob(WriteWork(measurements)) }
 
 
 	protected def receive: Receive = {
