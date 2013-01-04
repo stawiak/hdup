@@ -5,12 +5,12 @@ import com.outsmart.measurement.Measurement
 import com.outsmart.Settings
 import com.outsmart.dao.Writer
 import akka.routing.{FromConfig}
-import akka.actor.SupervisorStrategy.{Stop, Resume, Restart, Escalate}
+import akka.actor.SupervisorStrategy.{ Resume, Restart, Escalate}
 import akka.util.duration._
 import akka.util.{Timeout, Duration}
-import akka.dispatch.Await.Awaitable
 import akka.dispatch.{Future, Await}
 import akka.pattern.ask
+import java.util.concurrent.TimeoutException
 
 
 /**
@@ -34,9 +34,7 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 	var receivedAll = false
 	var counter = 0
 
-	//TODO: list needs to be cleaned as jobs are done
-	var results = List[Future[Any]]()
-	implicit val timeout = Timeout(20 seconds)
+	implicit val timeout = Timeout(1 minutes)
 
 
 
@@ -47,24 +45,45 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 		}
 
 
+	/**
+	 * submit measurements to writers and watch for results
+	 */
+	def submitJob(work : WriteWork) {
+		numberOfBatches += 1
+
+		val feedback = router ? work
+		measurements = List[Measurement]()
+
+		// wait for job processing to complete or resubmit the job to itself
+		Future {
+
+			try {
+				Await.ready(feedback, timeout.duration)
+			}
+			catch {
+				case _: Exception  => self ! work
+			}
+		}
+
+	}
+
+	def submitJob = submitJob(WriteWork(measurements))
+
 
 	protected def receive: Receive = {
+
+		case work : WriteWork => submitJob(work)
 
 		case msmt : Measurement => {
 			counter += 1
 			measurements = msmt :: measurements
 
-			if(measurements.length == batchSize) {
-				results = (router ? WriteWork(measurements)) :: results
-				numberOfBatches += 1
-				measurements = List[Measurement]()
-			}
+			if(measurements.length == batchSize)
+				submitJob
 
 		}
 
 		case WorkDone => {
-			results = results filterNot (_.isCompleted)
-
 			numberOfDone += 1
 			log.debug("number of done " + numberOfDone + " out of " + numberOfBatches)
 			if (receivedAll && numberOfDone == numberOfBatches)
@@ -74,9 +93,7 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 		case Flush =>  {
 			log.debug("flush received at " + counter)
 			log.debug("remaining msmts " + measurements.length)
-			results = (router ? WriteWork(measurements)) :: results
-			numberOfBatches += 1
-			measurements = List[Measurement]()
+			submitJob
 			receivedAll = true
 		}
 
@@ -85,7 +102,7 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 			log.debug("write master received stop")
 
 			// allow all children to finish processing
-			results foreach { Await.ready(_, timeout.duration) }
+
 			sender ! StopWriter
 
 			// stops this actor and all its supervised children
