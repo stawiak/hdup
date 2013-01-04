@@ -25,12 +25,12 @@ object FaultHandlingDocSpec{
 
 		var counter : Int = 0
 
-		override def preStart() {
-			log.debug("Starting WorkerActor instance hashcode # {}", this.hashCode())
-		}
-
-		override def postStop() {
-			log.debug("Stopping WorkerActor instance hashcode # {}",	this.hashCode())
+		override def preRestart(reason: Throwable, message: Option[Any]) {
+			// retry - forward is necessary to retain the master as sender
+			// http://letitcrash.com/post/23532935686/watch-the-routees
+			//log.info("retrying " + message.get.asInstanceOf[WriteWork].measurements.mkString)
+			message foreach {self forward _ }
+			log.info("restarting WorkerActor instance hashcode # {}", this.hashCode())
 		}
 
 		protected def receive: Receive = {
@@ -42,9 +42,11 @@ object FaultHandlingDocSpec{
 					log.info("throwing exception instance hashcode # {}",	this.hashCode())
 					throw new TestException
 				} else {
-					log.info("writing to database " + counter)
-					Thread.sleep(5000)
+					//Thread.sleep(1000)
+					log.info("written to database " + work.measurements.mkString)
+					sender ! WorkDone
 				}
+
 			}
 		}
 
@@ -55,7 +57,7 @@ object FaultHandlingDocSpec{
 
 class FaultHandlingDocSpec(_system: ActorSystem) extends TestKit(_system) with WordSpec with MustMatchers with ImplicitSender with BeforeAndAfterAll {
 
-	def this() = this(ActorSystem("prod", ConfigFactory.load().getConfig("prod")))
+	def this() = this(ActorSystem("test", ConfigFactory.load().getConfig("test")))
 	val dataGen = new DataGenerator
 
 	override def afterAll() {
@@ -68,14 +70,15 @@ class FaultHandlingDocSpec(_system: ActorSystem) extends TestKit(_system) with W
 			val masterWriter = system.actorOf(Props(new WriteMasterActor(Props(new TestWriterActor()), 3)), name = "master")
 
 			for (i <- 1 to 32)
-				masterWriter ! dataGen.getRandomMeasurement
+				masterWriter ! new Measurement("" + i, "" + i, "" + i, i, i, i, i)
 
 			masterWriter ! Flush
 
 
-			implicit val timeout = Timeout(60 seconds)
+			implicit val timeout = Timeout(20 seconds)
 			Await.ready(masterWriter ? StopWriter, timeout.duration)
 			//expectMsg(StopWriter)
+
 		}
 	}
 }

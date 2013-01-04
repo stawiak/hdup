@@ -7,7 +7,10 @@ import com.outsmart.dao.Writer
 import akka.routing.{FromConfig}
 import akka.actor.SupervisorStrategy.{Stop, Resume, Restart, Escalate}
 import akka.util.duration._
-import akka.util.Duration
+import akka.util.{Timeout, Duration}
+import akka.dispatch.Await.Awaitable
+import akka.dispatch.{Future, Await}
+import akka.pattern.ask
 
 
 /**
@@ -25,11 +28,15 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 	// the children upon failure and re-create them explicitly from the supervisor
 
 	var measurements = List[Measurement]()
-	val workerRouter = actorOf(workerRouterProps, name = "workerRouter")
+	val router = actorOf(workerRouterProps, name = "workerRouter")
 	var numberOfBatches = 0
 	var numberOfDone = 0
 	var receivedAll = false
 	var counter = 0
+
+	//TODO: list needs to be cleaned as jobs are done
+	var results = List[Future[Any]]()
+	implicit val timeout = Timeout(20 seconds)
 
 
 
@@ -48,7 +55,7 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 			measurements = msmt :: measurements
 
 			if(measurements.length == batchSize) {
-				workerRouter ! WriteWork(measurements)
+				results = (router ? WriteWork(measurements)) :: results
 				numberOfBatches += 1
 				measurements = List[Measurement]()
 			}
@@ -56,6 +63,8 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 		}
 
 		case WorkDone => {
+			results = results filterNot (_.isCompleted)
+
 			numberOfDone += 1
 			log.debug("number of done " + numberOfDone + " out of " + numberOfBatches)
 			if (receivedAll && numberOfDone == numberOfBatches)
@@ -65,7 +74,7 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 		case Flush =>  {
 			log.debug("flush received at " + counter)
 			log.debug("remaining msmts " + measurements.length)
-			workerRouter ! WriteWork(measurements)
+			results = (router ? WriteWork(measurements)) :: results
 			numberOfBatches += 1
 			measurements = List[Measurement]()
 			receivedAll = true
@@ -76,10 +85,9 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 			log.debug("write master received stop")
 
 			// allow all children to finish processing
-			while(numberOfDone != numberOfBatches)
-				Thread.sleep(1000)
-
+			results foreach { Await.ready(_, timeout.duration) }
 			sender ! StopWriter
+
 			// stops this actor and all its supervised children
 			stop(self)
 		}
