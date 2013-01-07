@@ -17,84 +17,52 @@ import akka.pattern.ask
  */
 case object Flush
 case object StopWriter
-case object WorkDone
-case class WriteWork(measurements: Seq[Measurement])
 
-class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Writer.create())).withRouter(FromConfig()), val batchSize: Int = Settings.BatchSize) extends Actor with ActorLogging {
+class WriteMasterActor(val writerActorFactory : (String, Int) => Props = new DefaultWriterActorFactory, val batchSize: Int = Settings.BatchSize) extends Actor with ActorLogging {
 
 	import context._
 	// Since a restart does not clear out the mailbox, it often is best to terminate
 	// the children upon failure and re-create them explicitly from the supervisor
 
-	var measurements = List[Measurement]()
-	val router = actorOf(workerRouterProps, name = "workerRouter")
-	var numberOfBatches = 0
-	var numberOfDone = 0
-	var receivedAll = false
+	var routers = Map[String, ActorRef]()
 	var counter = 0
 
-	implicit val timeout = Timeout(20 seconds)
+	//implicit val timeout = Timeout(20 seconds)
 
 
 
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 3, withinTimeRange = Duration.Inf) {
-			case _: Exception     				⇒ Restart
+			case _: Exception     				⇒ Resume
 			case _: Throwable                	⇒ Escalate
 		}
 
 
-	/**
-	 * submit measurements to writers and watch for results
-	 */
-	def submitJob(work : WriteWork) {
-		numberOfBatches += 1
-
-		val feedback = router ? work
-		measurements = List[Measurement]()
-
-		// wait for job processing to complete or resubmit the job to itself
-		Future {
-
-			try {
-				Await.ready(feedback, timeout.duration)
-				numberOfDone += 1
-				log.debug("number of done " + numberOfDone + " out of " + numberOfBatches)
-
-				if (receivedAll && numberOfDone == numberOfBatches)
-					parent ! WorkDone
-			}
-			catch {
-				case _: Exception  => {
-					log.info("resubmitting job to self")
-					self ! work
-				}
-			}
-		}
-
+	private def getMsmtType(msmt : Measurement) : String = {
+		if (msmt.tags == None)
+			"msmt"
+		else
+			// so far only first tag is used
+			msmt.tags.get.args(0)
 	}
 
-	def submitJob() { submitJob(WriteWork(measurements)) }
+	private def getRouter(msmtType : String) : ActorRef = {
+		if (!routers.contains(msmtType))
+			routers += (msmtType -> actorOf(writerActorFactory(msmtType, batchSize), name = "workerRouter"))
 
+		routers(msmtType)
+	}
 
 	protected def receive: Receive = {
 
-		case work : WriteWork => submitJob(work)
-
 		case msmt : Measurement => {
 			counter += 1
-			measurements = msmt :: measurements
-
-			if(measurements.length == batchSize)
-				submitJob
-
+			getRouter(getMsmtType(msmt)) ! msmt
 		}
 
 		case Flush =>  {
 			log.debug("flush received at " + counter)
-			log.debug("remaining msmts " + measurements.length)
-			submitJob
-			receivedAll = true
+			routers.values foreach (_ ! Flush)
 		}
 
 
@@ -109,6 +77,14 @@ class WriteMasterActor(val workerRouterProps : Props = Props(new WriterActor(Wri
 			stop(self)
 		}
 
+	}
+
+}
+
+class DefaultWriterActorFactory() {
+
+	def apply(msmtType : String, batchSize: Int = Settings.BatchSize) : Props = {
+		Props(new WriterActor(msmtType, batchSize)).withRouter(FromConfig())
 	}
 
 }

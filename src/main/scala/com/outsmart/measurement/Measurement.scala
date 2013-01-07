@@ -11,7 +11,7 @@ class Measurement(
 					 override val energy: Double,
 					 override val current: Double,
 					 override val vampire: Double,
-					 override val interpolated : Boolean = false
+					 override val tags : Option[Tag] = None
 					 )
 
 	extends MeasuredValue(timestamp, energy, current, vampire){

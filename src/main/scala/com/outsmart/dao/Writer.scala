@@ -2,6 +2,7 @@ package com.outsmart.dao
 
 import com.outsmart.util.OpenClosable
 import com.outsmart.measurement.Measurement
+import com.outsmart.Settings
 
 /**
  * @author Vadim Bobrov
@@ -12,5 +13,5 @@ trait Writer extends OpenClosable {
 }
 
 object Writer {
-  def create() : Writer = new WriterImpl()
+  def create(tableName : String = Settings.TableName) : Writer = new WriterImpl(tableName)
 }

@@ -8,13 +8,13 @@ import com.outsmart.measurement.Measurement
 /**
  * @author Vadim Bobrov
 */
-class WriterImpl extends Writer {
+class WriterImpl(val tableName : String = Settings.TableName) extends Writer {
 
   private var table: HTableInterface = null
 
 
   def open() {
-    table = TableFactory.getTable
+    table = TableFactory.getTable(tableName)
   }
 
   /**

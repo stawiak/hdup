@@ -42,9 +42,9 @@ object TableFactory {
     and therefore there will be no copy of it that can be used to recover from
     this situation.
   */
-  def getTable : HTableInterface = {
+  def getTable(tableName : String = Settings.TableName) : HTableInterface = {
     try {
-      pool.getTable(Bytes.toBytes(Settings.TableName))
+      pool.getTable(Bytes.toBytes(tableName))
     } catch {
       case e: Exception => {println("caught exception " + e); null}
     }

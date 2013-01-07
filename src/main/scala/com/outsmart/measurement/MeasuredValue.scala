@@ -3,7 +3,7 @@ package com.outsmart.measurement
 /**
  * @author Vadim Bobrov
 */
-class MeasuredValue(val timestamp : Long, val energy : Double, val current: Double, val vampire : Double, val interpolated : Boolean = false) extends Ordered[MeasuredValue] {
+class MeasuredValue(val timestamp : Long, val energy : Double, val current: Double, val vampire : Double, val tags : Option[Tag] = None) extends Ordered[MeasuredValue] {
   	override def toString = "ts: " + timestamp + " energy: " + energy + " current: " + current + " vampire: " + vampire
   	override def compare(that : MeasuredValue) : Int = this.timestamp.compareTo(that.timestamp)
 
