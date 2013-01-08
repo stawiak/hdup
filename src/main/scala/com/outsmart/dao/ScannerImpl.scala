@@ -37,7 +37,7 @@ class ScannerImpl extends Scanner {
 
   def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[MeasuredValue] = {
 
-    val table = TableFactory.getTable
+    val table = TableFactory.getTable()
 
     var output = List[MeasuredValue]()
 
@@ -55,7 +55,7 @@ class ScannerImpl extends Scanner {
 
     val results = table.getScanner(scan)
 
-    var res : Result = null
+    var res : Result = _
 
     println("init scanner")
 

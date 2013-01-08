@@ -10,7 +10,7 @@ import com.outsmart.measurement.Measurement
 */
 class WriterImpl(val tableName : String = Settings.TableName) extends Writer {
 
-  private var table: HTableInterface = null
+  private var table: HTableInterface = _
 
 
   def open() {

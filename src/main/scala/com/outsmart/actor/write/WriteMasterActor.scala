@@ -3,13 +3,9 @@ package com.outsmart.actor.write
 import akka.actor._
 import com.outsmart.measurement.Measurement
 import com.outsmart.Settings
-import com.outsmart.dao.Writer
 import akka.routing.{FromConfig}
-import akka.actor.SupervisorStrategy.{ Resume, Restart, Escalate}
-import akka.util.duration._
-import akka.util.{Timeout, Duration}
-import akka.dispatch.{Future, Await}
-import akka.pattern.ask
+import akka.actor.SupervisorStrategy.{ Resume, Escalate}
+import akka.util.{Duration}
 
 
 /**
