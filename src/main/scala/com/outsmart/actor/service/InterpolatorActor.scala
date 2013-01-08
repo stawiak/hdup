@@ -1,9 +1,7 @@
 package com.outsmart.actor.service
 
-import akka.actor.{Props, ActorLogging, Actor}
+import akka.actor.{ActorLogging, Actor}
 import com.outsmart.measurement._
-import com.outsmart.actor.write.WriteMasterActor
-import com.outsmart.Settings
 import scala.Some
 
 /**

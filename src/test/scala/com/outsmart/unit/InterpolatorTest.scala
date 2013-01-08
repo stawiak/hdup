@@ -1,6 +1,6 @@
 package com.outsmart.unit
 
-import org.scalatest.{FlatSpec}
+import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import com.outsmart.measurement.{TimedValue, Interpolator}
 import util.Random

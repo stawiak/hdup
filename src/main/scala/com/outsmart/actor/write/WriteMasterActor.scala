@@ -3,9 +3,9 @@ package com.outsmart.actor.write
 import akka.actor._
 import com.outsmart.measurement.{InterpolatedMeasurement, Measurement}
 import com.outsmart.Settings
-import akka.routing.{FromConfig}
+import akka.routing.FromConfig
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
-import akka.util.{Duration}
+import akka.util.Duration
 
 
 /**
@@ -14,7 +14,7 @@ import akka.util.{Duration}
 case object Flush
 case object StopWriter
 
-class WriteMasterActor(val writerActorFactory : (String, Int) => Props = new DefaultWriterActorFactory, val batchSize: Int = Settings.BatchSize) extends Actor with ActorLogging {
+class WriteMasterActor(val writerActorFactory : String => Props = DefaultWriterActorFactory.create) extends Actor with ActorLogging {
 
 	import context._
 	// Since a restart does not clear out the mailbox, it often is best to terminate
@@ -42,7 +42,7 @@ class WriteMasterActor(val writerActorFactory : (String, Int) => Props = new Def
 		}
 
 		if (!routers.contains(tableName))
-			routers += (tableName -> actorOf(writerActorFactory(tableName, batchSize), name = "workerRouter"))
+			routers += (tableName -> actorOf(writerActorFactory(tableName), name = "workerRouter"))
 
 		routers(tableName)
 	}
@@ -75,10 +75,10 @@ class WriteMasterActor(val writerActorFactory : (String, Int) => Props = new Def
 
 }
 
-class DefaultWriterActorFactory() {
+object DefaultWriterActorFactory {
 
-	def apply(msmtType : String, batchSize: Int = Settings.BatchSize) : Props = {
-		Props(new WriterActor(msmtType, batchSize)).withRouter(FromConfig())
+	def create(tableName : String) : Props = {
+		Props(new WriterActor(tableName, Settings.BatchSize)).withRouter(FromConfig())
 	}
 
 }

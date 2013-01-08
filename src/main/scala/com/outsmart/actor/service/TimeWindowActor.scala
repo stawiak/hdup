@@ -2,7 +2,7 @@ package com.outsmart.actor.service
 
 import akka.actor.{ActorRef, Props, ActorLogging, Actor}
 import akka.util.duration._
-import com.outsmart.measurement.{InterpolatedMeasurement, TimedValue, Interpolator, Measurement}
+import com.outsmart.measurement.{InterpolatedMeasurement, Measurement}
 import com.outsmart.actor.write.WriteMasterActor
 import com.outsmart.Settings
 
@@ -54,7 +54,9 @@ class TimeWindowActor extends Actor with ActorLogging{
 		val current = System.currentTimeMillis()
 		// if any of the existing measurements are more than 9.5 minutes old
 		// sort by time, interpolate, save to storage and discard
-		for (tv <- (measurements filter (current - _.timestamp > Settings.ExpiredTimeWindow) sorted)) {
+		val oldmsmt = (measurements filter (current - _.timestamp > Settings.ExpiredTimeWindow)).sortWith(_ < _)
+
+		for (tv <- oldmsmt) {
 
 			if (!interpolators.contains(tv.customer, tv.location, tv.wireid))
 				interpolators += ((tv.customer, tv.location, tv.wireid) -> actorOf(Props(new InterpolatorActor()), name = "interpolator"))

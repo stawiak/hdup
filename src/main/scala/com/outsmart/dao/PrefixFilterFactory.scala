@@ -1,7 +1,6 @@
 package com.outsmart.dao
 
 import org.apache.hadoop.hbase.filter.{PrefixFilter, Filter}
-import org.apache.hadoop.hbase.util.Bytes
 
 /**
  * @author Vadim Bobrov

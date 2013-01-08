@@ -6,7 +6,6 @@ import com.outsmart.util.Util
 import Util.withOpenClose
 import com.outsmart.Settings
 import com.outsmart.measurement.Measurement
-import akka.dispatch.{Await, Future}
 
 /**
   * @author Vadim Bobrov

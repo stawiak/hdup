@@ -1,6 +1,6 @@
 package com.outsmart.unit
 
-import org.scalatest.{FlatSpec}
+import org.scalatest.FlatSpec
 import com.outsmart.measurement.MeasuredValue._
 import scala.Array
 import com.outsmart.measurement.{TimedValue, MeasuredValue}

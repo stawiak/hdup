@@ -1,6 +1,5 @@
 package com.outsmart.measurement
 
-import scala.collection.immutable.{::}
 import scala._
 
 

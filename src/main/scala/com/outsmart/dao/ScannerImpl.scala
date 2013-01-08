@@ -1,8 +1,8 @@
 package com.outsmart.dao
 
-import org.apache.hadoop.hbase.client.{Result, Scan, HTable}
+import org.apache.hadoop.hbase.client.{Result, Scan}
 import org.apache.hadoop.hbase.util.Bytes
-import com.outsmart.{Settings}
+import com.outsmart.Settings
 import com.outsmart.measurement.MeasuredValue
 
 
@@ -55,7 +55,7 @@ class ScannerImpl extends Scanner {
 
     val results = table.getScanner(scan)
 
-    var res : Result = _
+    var res : Result = null
 
     println("init scanner")
 

@@ -6,16 +6,14 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
 import com.outsmart.actor.write._
 import com.typesafe.config.ConfigFactory
-import akka.routing.FromConfig
 import com.outsmart.unit.FaultHandlingDocSpec.TestWriterActor
 import com.outsmart.measurement.Measurement
 import scala._
-import com.outsmart.actor.write.WriteWork
-import akka.dispatch.Await
-import akka.util.{Timeout, Duration}
+import akka.util.Timeout
 import akka.util.duration._
-import akka.pattern.ask
 import com.outsmart.DataGenerator
+import akka.routing.FromConfig
+import scala.Predef._
 
 /**
  * @author Vadim Bobrov
@@ -34,20 +32,22 @@ object FaultHandlingDocSpec{
 		}
 
 		protected def receive: Receive = {
-			case work: WriteWork => {
+
+			case msmt: Measurement => {
 				counter += 1
 
-				// fail every fifth write job
+				// fail every fifth measurement
 				if (counter % 5 == 0) {
 					log.info("throwing exception instance hashcode # {}",	this.hashCode())
 					throw new TestException
 				} else {
 					//Thread.sleep(1000)
-					log.info("written to database " + work.measurements.mkString)
-					sender ! WorkDone
+					log.info("processed " + msmt)
 				}
 
 			}
+
+			case Flush => {}
 		}
 
 	}
@@ -67,7 +67,7 @@ class FaultHandlingDocSpec(_system: ActorSystem) extends TestKit(_system) with W
 	"A supervisor" must {
 
 		"apply the chosen strategy for its child" in {
-			val masterWriter = system.actorOf(Props(new WriteMasterActor(Props(new TestWriterActor()), 3)), name = "master")
+			val masterWriter = system.actorOf(Props(new WriteMasterActor(String => Props[TestWriterActor])), name = "master")
 
 			for (i <- 1 to 32)
 				masterWriter ! new Measurement("" + i, "" + i, "" + i, i, i, i, i)

@@ -5,17 +5,17 @@ import com.outsmart.measurement.Measurement
 
 /**
  * @author Vadim Bobrov
-*/
+ */
 class TestWriterImpl extends Writer {
 
-  def open() {}
+	def open() {}
 
-  def write(msmt: Measurement) { TestWriterImpl.counter += 1 }
+	def write(msmt: Measurement) { TestWriterImpl.counter += 1 }
 
-  def close()  {}
+	def close()  {}
 
 }
 
 object TestWriterImpl {
-  @volatile var counter = 0
+	@volatile var counter = 0
 }

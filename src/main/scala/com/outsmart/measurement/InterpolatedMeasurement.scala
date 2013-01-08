@@ -15,5 +15,5 @@ class InterpolatedMeasurement(
 					 override val tags : Option[Tag] = None
 					 )
 
-	extends Measurement(customer, location, wireid, timestamp, energy, current, vampire)
+	extends Measurement(customer, location, wireid, timestamp, energy, current, vampire)  {}
 

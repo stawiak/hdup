@@ -15,7 +15,7 @@ class TimedValue(val timestamp : Long, val value : Double) extends Ordered[Timed
   	def +(that: TimedValue): TimedValue = new TimedValue(timestamp, value + that.value)
 
 	// by default use energy as value
-	implicit def measuredValueToTimedValue(x: MeasuredValue) = new TimedValue(x.timestamp, x.energy)
+	//implicit def measuredValueToTimedValue(x: MeasuredValue) = new TimedValue(x.timestamp, x.energy)
 }
 
 
