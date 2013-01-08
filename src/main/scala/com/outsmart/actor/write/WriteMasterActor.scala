@@ -1,7 +1,7 @@
 package com.outsmart.actor.write
 
 import akka.actor._
-import com.outsmart.measurement.Measurement
+import com.outsmart.measurement.{InterpolatedMeasurement, Measurement}
 import com.outsmart.Settings
 import akka.routing.{FromConfig}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
@@ -34,26 +34,24 @@ class WriteMasterActor(val writerActorFactory : (String, Int) => Props = new Def
 		}
 
 
-	private def getMsmtType(msmt : Measurement) : String = {
-		if (msmt.tags == None)
-			"msmt"
-		else
-			// so far only first tag is used
-			msmt.tags.get.args(0)
-	}
+	private def getRouter(msmt : Measurement) : ActorRef = {
 
-	private def getRouter(msmtType : String) : ActorRef = {
-		if (!routers.contains(msmtType))
-			routers += (msmtType -> actorOf(writerActorFactory(msmtType, batchSize), name = "workerRouter"))
+		val tableName = msmt match  {
+			case imsmt : InterpolatedMeasurement => Settings.MinuteInterpolaedTableName
+			case _ => Settings.TableName
+		}
 
-		routers(msmtType)
+		if (!routers.contains(tableName))
+			routers += (tableName -> actorOf(writerActorFactory(tableName, batchSize), name = "workerRouter"))
+
+		routers(tableName)
 	}
 
 	protected def receive: Receive = {
 
 		case msmt : Measurement => {
 			counter += 1
-			getRouter(getMsmtType(msmt)) ! msmt
+			getRouter(msmt) ! msmt
 		}
 
 		case Flush =>  {

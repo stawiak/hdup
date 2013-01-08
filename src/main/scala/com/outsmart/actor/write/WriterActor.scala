@@ -11,15 +11,9 @@ import akka.dispatch.{Await, Future}
 /**
   * @author Vadim Bobrov
   */
-class WriterActor(val msmtType : String, val batchSize: Int = Settings.BatchSize) extends Actor with ActorLogging{
+class WriterActor(val tableName : String, val batchSize: Int = Settings.BatchSize) extends Actor with ActorLogging{
 
-	val writer = Writer.create(
-		if(msmtType == "msmt")
-			Settings.TableName
-		else
-			Settings.MinuteInterpolaedTableName
-	)
-
+	val writer = Writer.create(tableName)
 	var measurements = List[Measurement]() //new Array[Measurement](batchSize)
 
 
