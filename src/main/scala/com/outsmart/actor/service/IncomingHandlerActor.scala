@@ -1,19 +1,27 @@
 package com.outsmart.actor.service
 
-import akka.actor.{Props, ActorLogging, Actor}
+import akka.actor.{ActorRef, Props, ActorLogging, Actor}
 import com.outsmart.measurement.Measurement
 import com.outsmart.actor.write.WriteMasterActor
 import com.outsmart.Settings
 
+
 /**
   * @author Vadim Bobrov
   */
-class IncomingHandlerActor extends Actor with ActorLogging{
+class IncomingHandlerActor(var writeMaster : ActorRef, var timeWindowManager : ActorRef) extends Actor with ActorLogging{
 
 	import context._
 
-	val writeMaster = actorOf(Props(new WriteMasterActor()), name = "writeMaster")
-	val timeWindowManager = actorOf(Props(new TimeWindowActor()), name = "timeWindow")
+	override def preStart() {
+		// initialize slaves to defaults
+		if (writeMaster == null)
+			writeMaster = actorOf(Props[WriteMasterActor], name = "writeMaster")
+		if (timeWindowManager == null)
+			timeWindowManager = actorOf(Props[TimeWindowActor], name = "timeWindow")
+
+		super.preStart()
+	}
 
 	protected def receive: Receive = {
 

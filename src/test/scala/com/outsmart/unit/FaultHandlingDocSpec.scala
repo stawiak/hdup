@@ -12,7 +12,6 @@ import scala._
 import akka.util.Timeout
 import akka.util.duration._
 import com.outsmart.DataGenerator
-import akka.routing.FromConfig
 import scala.Predef._
 
 /**
