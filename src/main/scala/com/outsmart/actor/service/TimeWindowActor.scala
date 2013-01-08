@@ -10,18 +10,21 @@ import com.outsmart.Settings
   * @author Vadim Bobrov
   */
 case object Tick
-class TimeWindowActor extends Actor with ActorLogging{
+class TimeWindowActor(var writeMaster : ActorRef, var interpolatorFactory : (String, String, String) => ActorRef, var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends Actor with ActorLogging{
 
 	import context._
 
 	var measurements = List[Measurement]()
-	val writeMaster = actorOf(Props(new WriteMasterActor()), name = "master")
-
-	var interpolators = Map[(String, String, String), ActorRef]()
-
 
 	override def preStart() {
 		super.preStart()
+
+		// initialize slaves to defaults
+		if (writeMaster == null)
+			writeMaster = actorOf(Props(new WriteMasterActor()), name = "master")
+		if (interpolatorFactory == null)
+			interpolatorFactory = DefaultInterpolatorFactory.get
+
 		system.scheduler.schedule(0 milliseconds, 1000 milliseconds, self, Tick)
 	}
 
@@ -54,19 +57,24 @@ class TimeWindowActor extends Actor with ActorLogging{
 		val current = System.currentTimeMillis()
 		// if any of the existing measurements are more than 9.5 minutes old
 		// sort by time, interpolate, save to storage and discard
-		val oldmsmt = (measurements filter (current - _.timestamp > Settings.ExpiredTimeWindow)).sortWith(_ < _)
+		val oldmsmt = (measurements filter (current - _.timestamp > expiredTimeWindow)).sortWith(_ < _)
 
-		for (tv <- oldmsmt) {
-
-			if (!interpolators.contains(tv.customer, tv.location, tv.wireid))
-				interpolators += ((tv.customer, tv.location, tv.wireid) -> actorOf(Props(new InterpolatorActor()), name = "interpolator"))
-
-			interpolators(tv.customer, tv.location, tv.wireid) ! tv
-		}
+		for (tv <- oldmsmt)
+			interpolatorFactory(tv.customer, tv.location, tv.wireid) ! tv
 
 		// discard old values
-		measurements = measurements filter (current - _.timestamp <= Settings.ExpiredTimeWindow)
+		measurements = measurements filter (current - _.timestamp <= expiredTimeWindow)
 
 	}
 
+	object DefaultInterpolatorFactory {
+		var interpolators = Map[(String, String, String), ActorRef]()
+
+		def get(customer : String, location : String, wireid : String) : ActorRef = {
+			if (!interpolators.contains(customer, location, wireid))
+				interpolators += ((customer, location, wireid) -> actorOf(Props(new InterpolatorActor()), name = "interpolator"))
+
+			interpolators(customer, location, wireid)
+		}
+	}
  }

@@ -14,13 +14,13 @@ class IncomingHandlerActor(var writeMaster : ActorRef, var timeWindowManager : A
 	import context._
 
 	override def preStart() {
+		super.preStart()
+
 		// initialize slaves to defaults
 		if (writeMaster == null)
 			writeMaster = actorOf(Props[WriteMasterActor], name = "writeMaster")
 		if (timeWindowManager == null)
 			timeWindowManager = actorOf(Props[TimeWindowActor], name = "timeWindow")
-
-		super.preStart()
 	}
 
 	protected def receive: Receive = {
