@@ -11,7 +11,6 @@ import scala.Some
  */
 class InterpolatorActor(val boundary: Int = 60000) extends Actor with ActorLogging{
 
-	val tag = Some(new Tag("interpolated"))
 	var tv1, tv2, tv3, tv4 : Option[TimedValue] = None
 
 	protected def receive: Receive = {
@@ -23,7 +22,7 @@ class InterpolatorActor(val boundary: Int = 60000) extends Actor with ActorLoggi
 			// all 4 points filled? send back interpolated values
 			if (tv1 != None && tv2 != None && tv3 != None && tv4 != None)
 				for (tv <- Interpolator.bilinear(tv1.get, tv2.get, tv3.get, tv4.get, boundary)) {
-					val interpolated = new InterpolatedMeasurement(msmt.customer, msmt.location, msmt.wireid, tv.timestamp, tv.value, msmt.current, msmt.vampire, tag)
+					val interpolated = new Measurement(msmt.customer, msmt.location, msmt.wireid, tv.timestamp, tv.value, msmt.current, msmt.vampire) with Interpolated
 					sender ! interpolated
 				}
 

@@ -2,7 +2,7 @@ package com.outsmart.actor.service
 
 import akka.actor.{ActorRef, Props, ActorLogging, Actor}
 import akka.util.duration._
-import com.outsmart.measurement.{InterpolatedMeasurement, Measurement}
+import com.outsmart.measurement.{Interpolated, Measurement}
 import com.outsmart.actor.write.WriteMasterActor
 import com.outsmart.Settings
 
@@ -31,7 +31,7 @@ class TimeWindowActor(var writeMaster : ActorRef, var interpolatorFactory : (Str
 	protected def receive: Receive = {
 
 		// save interpolated value
-		case imsmt : InterpolatedMeasurement => writeMaster ! imsmt
+		case imsmt : Interpolated => writeMaster ! imsmt
 
 		case msmt : Measurement => {
 

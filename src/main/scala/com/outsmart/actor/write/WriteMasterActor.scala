@@ -1,7 +1,7 @@
 package com.outsmart.actor.write
 
 import akka.actor._
-import com.outsmart.measurement.{InterpolatedMeasurement, Measurement}
+import com.outsmart.measurement.{Interpolated, Measurement}
 import com.outsmart.Settings
 import akka.routing.FromConfig
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
@@ -37,7 +37,7 @@ class WriteMasterActor(val writerActorFactory : String => Props = DefaultWriterA
 	private def getRouter(msmt : Measurement) : ActorRef = {
 
 		val tableName = msmt match  {
-			case imsmt : InterpolatedMeasurement => Settings.MinuteInterpolaedTableName
+			case imsmt : Interpolated => Settings.MinuteInterpolaedTableName
 			case _ => Settings.TableName
 		}
 
