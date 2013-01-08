@@ -26,7 +26,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 	"linear interpolation" should "fail when not a function" in {
 		evaluating(
 			linearInterpolate(0.5, 1, 0, 1, 1)
-		) should produce [AssertionError]
+		) should produce [IllegalArgumentException]
 	}
 
 	"intersection" should "return correct value" in {
@@ -44,7 +44,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 	"intersection" should "fail when arguments not ordered" in {
 		evaluating(
 			findIntersection(3, 1, 2, 2, 5, 5, 6, 7)
-		) should produce [AssertionError]
+		) should produce [IllegalArgumentException]
 	}
 
 	"interpolation" should "not return interpolations when fewer than 4 measurements sent" in {
