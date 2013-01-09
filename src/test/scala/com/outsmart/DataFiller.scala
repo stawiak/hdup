@@ -11,7 +11,7 @@ import akka.actor.ActorRef
  * @author Vadim Bobrov
  */
 class DataFiller(dataGen : DataGenerator, writer : Writer) {
-
+	//TODO consider apply
 	/**
 	 * fills the database with random crap
 	 * @param records number of records

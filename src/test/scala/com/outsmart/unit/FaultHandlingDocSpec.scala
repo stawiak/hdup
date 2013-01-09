@@ -1,6 +1,6 @@
 package com.outsmart.unit
 
-import akka.testkit.{TestKit, ImplicitSender}
+import akka.testkit.{TestProbe, TestActorRef, TestKit, ImplicitSender}
 import akka.actor._
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
@@ -9,10 +9,14 @@ import com.typesafe.config.ConfigFactory
 import com.outsmart.unit.FaultHandlingDocSpec.TestWriterActor
 import com.outsmart.measurement.Measurement
 import scala._
-import akka.util.Timeout
+import akka.util.{Duration, Timeout}
 import akka.util.duration._
-import com.outsmart.DataGenerator
+import com.outsmart.{Settings, DataGenerator}
 import scala.Predef._
+import akka.routing.FromConfig
+import com.outsmart.actor.LoggingActor
+import akka.event.LoggingReceive
+import com.outsmart.actor.service.TimeWindowActor
 
 /**
  * @author Vadim Bobrov
@@ -21,32 +25,30 @@ object FaultHandlingDocSpec{
 	class TestWriterActor extends Actor with ActorLogging {
 
 		var counter : Int = 0
-
-		override def preRestart(reason: Throwable, message: Option[Any]) {
-			// retry - forward is necessary to retain the master as sender
-			// http://letitcrash.com/post/23532935686/watch-the-routees
-			//log.info("retrying " + message.get.asInstanceOf[WriteWork].measurements.mkString)
-			//message foreach {self forward _ }
-			log.info("restarting WorkerActor instance hashcode # {}", this.hashCode())
-		}
+		var received = List[Measurement]()
 
 		protected def receive: Receive = {
 
 			case msmt: Measurement => {
 				counter += 1
 
-				// fail every fifth measurement
-				if (counter % 5 == 0) {
-					log.info("throwing exception instance hashcode # {}",	this.hashCode())
+				// fail every other measurement
+				if (counter % 2 == 0) {
+					//log.info("throwing exception instance hashcode # {}",	this.hashCode())
 					throw new TestException
 				} else {
-					//Thread.sleep(1000)
-					log.info("processed " + msmt)
+					log.info("receiving " + msmt)
+					received = msmt :: received
 				}
+
+
 
 			}
 
-			case Flush => {}
+			case Flush => {
+				//log.info("flush received")
+				sender ! received
+			}
 		}
 
 	}
@@ -60,24 +62,25 @@ class FaultHandlingDocSpec(_system: ActorSystem) extends TestKit(_system) with W
 	val dataGen = new DataGenerator
 
 	override def afterAll() {
-		system.awaitTermination()
+		system.shutdown()
 	}
 
-	"A supervisor" must {
+	var masterWriter = TestActorRef(new WriteMasterActor(), name = "writeMaster")
+	masterWriter.underlyingActor.routerFactory = {(actorContext : ActorContext, tableName : String) =>
+		actorContext.actorOf(Props(new LoggingActor(new TestWriterActor())), name = "workerRouter")
+	}
 
-		"apply the chosen strategy for its child" in {
-			val masterWriter = system.actorOf(Props(new WriteMasterActor(String => Props[TestWriterActor])), name = "master")
+	"A write master" must {
 
-			for (i <- 1 to 32)
-				masterWriter ! new Measurement("" + i, "" + i, "" + i, i, i, i, i)
+		"apply the chosen strategy for its child writers in case of intermittent failure" in {
+
+			for (i <- 1 to 3)
+				masterWriter ! new Measurement("", "", "", i, i, i, i)
 
 			masterWriter ! Flush
-
-
-			implicit val timeout = Timeout(20 seconds)
-			//Await.ready(masterWriter ? StopWriter, timeout.duration)
-			//expectMsg(StopWriter)
-
+			// it is not testKit it is masterWriter that receives this message
+			//expectMsg(5 seconds, List(new Measurement("", "", "", 1, 1, 1, 1), new Measurement("", "", "", 2, 2, 2, 2), new Measurement("", "", "", 3, 3, 3, 3)))
 		}
 	}
+
 }

@@ -9,19 +9,11 @@ import com.outsmart.Settings
 /**
   * @author Vadim Bobrov
   */
-class IncomingHandlerActor(var writeMaster : ActorRef, var timeWindowManager : ActorRef) extends Actor with ActorLogging{
+class IncomingHandlerActor extends Actor with ActorLogging {
 
 	import context._
-
-	override def preStart() {
-		super.preStart()
-
-		// initialize slaves to defaults
-		if (writeMaster == null)
-			writeMaster = actorOf(Props[WriteMasterActor], name = "writeMaster")
-		if (timeWindowManager == null)
-			timeWindowManager = actorOf(Props[TimeWindowActor], name = "timeWindow")
-	}
+	var writeMaster = actorOf(Props[WriteMasterActor], name = "writeMaster")
+	var timeWindowManager = actorOf(Props[TimeWindowActor], name = "timeWindow")
 
 	protected def receive: Receive = {
 

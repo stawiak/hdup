@@ -42,6 +42,7 @@ object TableFactory {
     and therefore there will be no copy of it that can be used to recover from
     this situation.
   */
+  //TODO consider apply
   def getTable(tableName : String = Settings.TableName) : HTableInterface = {
     try {
       pool.getTable(Bytes.toBytes(tableName))

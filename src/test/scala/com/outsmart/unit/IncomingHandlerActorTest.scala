@@ -17,7 +17,11 @@ class IncomingHandlerActorTest(_system: ActorSystem) extends TestKit(_system) wi
 
 	val writeProbe  = TestProbe()
 	val timeWindowProbe = TestProbe()
-	val testIncomingHandler = TestActorRef(new IncomingHandlerActor(writeProbe.ref, timeWindowProbe.ref))
+
+	val testIncomingHandler = TestActorRef(new IncomingHandlerActor())
+	testIncomingHandler.underlyingActor.writeMaster = writeProbe.ref
+	testIncomingHandler.underlyingActor.timeWindowManager = timeWindowProbe.ref
+
 
 	"incoming handler" must {
 		"send all measurements to write master" in {

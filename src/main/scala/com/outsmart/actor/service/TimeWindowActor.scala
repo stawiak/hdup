@@ -10,20 +10,17 @@ import com.outsmart.Settings
   * @author Vadim Bobrov
   */
 case object Tick
-class TimeWindowActor(var writeMaster : ActorRef, var interpolatorFactory : (String, String, String) => ActorRef, var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends Actor with ActorLogging{
+class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends Actor with ActorLogging{
 
 	import context._
 
 	var measurements = List[Measurement]()
 
+	var writeMaster = actorOf(Props(new WriteMasterActor()), name = "master")
+	var interpolatorFactory  : (String, String, String) => ActorRef = DefaultInterpolatorFactory.get
+
 	override def preStart() {
 		super.preStart()
-
-		// initialize slaves to defaults
-		if (writeMaster == null)
-			writeMaster = actorOf(Props(new WriteMasterActor()), name = "master")
-		if (interpolatorFactory == null)
-			interpolatorFactory = DefaultInterpolatorFactory.get
 
 		system.scheduler.schedule(0 milliseconds, 1000 milliseconds, self, Tick)
 	}

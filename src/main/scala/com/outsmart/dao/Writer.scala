@@ -13,5 +13,6 @@ trait Writer extends OpenClosable {
 }
 
 object Writer {
+	//TODO consider apply
   def create(tableName : String = Settings.TableName) : Writer = new WriterImpl(tableName)
 }

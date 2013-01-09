@@ -20,7 +20,8 @@ class TimeWindowInterpolatorActorTest(_system: ActorSystem) extends TestKit(_sys
 	}
 
 	val writeProbe  = TestProbe()
-	val testTimeWindow = TestActorRef(new TimeWindowActor(writeProbe.ref, null, expiredTimeWindow = 10000))
+	val testTimeWindow = TestActorRef(new TimeWindowActor(expiredTimeWindow = 10000))
+	testTimeWindow.underlyingActor.writeMaster = writeProbe.ref
 
 	"time window" must {
 		"send 4 expired messages to interpolator and get one value back" in {

@@ -21,7 +21,9 @@ class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with Fl
 	}
 
 	val writeProbe  = TestProbe()
-	val testTimeWindow = TestActorRef(new TimeWindowActor(writeProbe.ref, TestInterpolatorFactory.get, 10000))
+	val testTimeWindow = TestActorRef(new TimeWindowActor(10000))
+	testTimeWindow.underlyingActor.writeMaster = writeProbe.ref
+	testTimeWindow.underlyingActor.interpolatorFactory =  TestInterpolatorFactory.get
 
 	"time window" should "send nothing before expiration window expire" in {
 		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)

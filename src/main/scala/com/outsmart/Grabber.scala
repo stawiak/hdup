@@ -10,6 +10,7 @@ import org.joda.time.DateTime
 */
 class Grabber(scannerService : ScannerService) {
 
+	//TODO consider apply
   /**
    * Given the set of start and end periods retrieve the data
    * for a customer, location and wireid

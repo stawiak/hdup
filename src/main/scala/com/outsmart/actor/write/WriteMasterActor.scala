@@ -6,6 +6,7 @@ import com.outsmart.Settings
 import akka.routing.FromConfig
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import akka.util.Duration
+import com.outsmart.actor.service.TimeWindowActor
 
 
 /**
@@ -14,7 +15,7 @@ import akka.util.Duration
 case object Flush
 case object StopWriter
 
-class WriteMasterActor(val writerActorFactory : String => Props = DefaultWriterActorFactory.create) extends Actor with ActorLogging {
+class WriteMasterActor extends Actor with ActorLogging {
 
 	import context._
 	// Since a restart does not clear out the mailbox, it often is best to terminate
@@ -23,12 +24,12 @@ class WriteMasterActor(val writerActorFactory : String => Props = DefaultWriterA
 	var routers = Map[String, ActorRef]()
 	var counter = 0
 
-	//implicit val timeout = Timeout(20 seconds)
-
-
+	var routerFactory : (ActorContext, String) => ActorRef = {(actorContext : ActorContext, tableName : String) =>
+		actorOf(Props(new WriterActor(tableName, Settings.BatchSize)).withRouter(FromConfig()), name = "workerRouter")
+	}
 
 	override val supervisorStrategy =
-		OneForOneStrategy(maxNrOfRetries = 3, withinTimeRange = Duration.Inf) {
+		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
 			case _: Exception     				⇒ Resume
 			case _: Throwable                	⇒ Escalate
 		}
@@ -42,7 +43,7 @@ class WriteMasterActor(val writerActorFactory : String => Props = DefaultWriterA
 		}
 
 		if (!routers.contains(tableName))
-			routers += (tableName -> actorOf(writerActorFactory(tableName), name = "workerRouter"))
+			routers += (tableName -> routerFactory(context, tableName))
 
 		routers(tableName)
 	}
@@ -55,13 +56,13 @@ class WriteMasterActor(val writerActorFactory : String => Props = DefaultWriterA
 		}
 
 		case Flush =>  {
-			log.debug("flush received at " + counter)
+			//log.debug("flush received at " + counter)
 			routers.values foreach (_ ! Flush)
 		}
 
 
 		case StopWriter => {
-			log.debug("write master received stop")
+			//log.debug("write master received stop")
 
 			// allow all children to finish processing
 
@@ -73,12 +74,12 @@ class WriteMasterActor(val writerActorFactory : String => Props = DefaultWriterA
 
 	}
 
-}
+	object DefaultWriterFactory {
 
-object DefaultWriterActorFactory {
+		def get(context : ActorContext, tableName : String) : ActorRef = {
+			context.actorOf(Props(new WriterActor(tableName, Settings.BatchSize)).withRouter(FromConfig()), name = "workerRouter")
+		}
 
-	def create(tableName : String) : Props = {
-		Props(new WriterActor(tableName, Settings.BatchSize)).withRouter(FromConfig())
 	}
-
 }
+

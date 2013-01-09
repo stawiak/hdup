@@ -7,7 +7,7 @@ import scala.util.Random
  * @author Vadim Bobrov
 */
 class DataGenerator {
-
+	//TODO consider apply or change to object
   private val CUSTOMERS =  new Array[String](20)
   private val LOCATIONS =  Array[String]("location0", "location1")
   private val WIREIDS =  new Array[String](300)
