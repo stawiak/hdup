@@ -1,7 +1,7 @@
 package com.outsmart.unit
 
 import org.scalatest.FlatSpec
-import com.outsmart.{TestScannerServiceImpl, Grabber}
+import com.outsmart.{TestScannerImpl, Grabber}
 import org.scalatest.matchers.ShouldMatchers
 
 /**
@@ -9,7 +9,7 @@ import org.scalatest.matchers.ShouldMatchers
  */
 class GrabberTest extends FlatSpec with ShouldMatchers {
 
-	val grabber : Grabber = new Grabber(new TestScannerServiceImpl())
+	val grabber : Grabber = new Grabber(new TestScannerImpl())
 
 	"A single scanner" should "return 3 values" in {
 		val res = grabber.grab("customer1", "location1", "wireid1", Array[(String, String)](

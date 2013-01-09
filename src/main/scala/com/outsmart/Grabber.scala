@@ -1,14 +1,14 @@
 package com.outsmart
 
 import actors.Futures._
-import dao.ScannerService
+import dao.{Scanner, ScannerService}
 import measurement.MeasuredValue
 import org.joda.time.DateTime
 
 /**
  * @author Vadim Bobrov
 */
-class Grabber(scannerService : ScannerService) {
+class Grabber(scanner : Scanner) {
 
 	//TODO consider apply
   /**
@@ -23,6 +23,6 @@ class Grabber(scannerService : ScannerService) {
 
   private def runScan(customer : String, location : String, wireid : String, arg : (String, String)) : Array[MeasuredValue] = {
     println("starting scanner in thread " + Thread.currentThread().getId + " for " + customer + ", " + location + ", " + wireid + " from " + arg._1 + " to " + arg._2)
-    scannerService.getScanner().scan(customer, location, wireid, new DateTime(arg._1), new DateTime(arg._2))
+    scanner.scan(customer, location, wireid, new DateTime(arg._1), new DateTime(arg._2))
   }
 }
