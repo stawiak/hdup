@@ -72,14 +72,15 @@ object Interpolator {
 			output = tv2 :: output
 
 
+		// take 4 points and find intersection
+		val (x, y) = findIntersection(
+			tv1.timestamp, tv1.value,
+			tv2.timestamp, tv2.value,
+			tv3.timestamp, tv3.value,
+			tv4.timestamp, tv4.value
+		)
+
 		for (innerBoundary <- tv2.timestamp - (tv2.timestamp % boundary) + boundary until tv3.timestamp by boundary) {
-			// take 4 points and find intersection
-			val (x, y) = findIntersection(
-				tv1.timestamp, tv1.value,
-				tv2.timestamp, tv2.value,
-				tv3.timestamp, tv3.value,
-				tv4.timestamp, tv4.value
-			)
 
 			var computedValue: Double = 0
 
