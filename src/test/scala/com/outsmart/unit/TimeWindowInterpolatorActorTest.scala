@@ -1,6 +1,6 @@
 package com.outsmart.unit
 
-import org.scalatest.{BeforeAndAfterAll, WordSpec}
+import org.scalatest.{OneInstancePerTest, BeforeAndAfterAll, WordSpec}
 import org.scalatest.matchers.MustMatchers
 import akka.actor._
 import com.outsmart.measurement.Measurement
@@ -11,7 +11,7 @@ import com.typesafe.config.ConfigFactory
 /**
  * @author Vadim Bobrov
  */
-class TimeWindowInterpolatorActorTest(_system: ActorSystem) extends TestKit(_system) with WordSpec with MustMatchers with ImplicitSender with BeforeAndAfterAll {
+class TimeWindowInterpolatorActorTest(_system: ActorSystem) extends TestKit(_system) with WordSpec with MustMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest{
 
 	def this() = this(ActorSystem("test", ConfigFactory.load().getConfig("test")))
 
