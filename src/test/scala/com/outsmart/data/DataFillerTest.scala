@@ -18,8 +18,7 @@ class DataFillerTest extends FunSuite {
 
 	test("even fill") {
 		val start = System.currentTimeMillis
-		val dataFiller = new DataFiller(new DataGenerator, Writer.create())
-		dataFiller.fillEven(new DateTime("2012-06-01"), new DateTime("2012-06-05"), 66)
+		DataFiller.fillEven(new DateTime("2012-06-01"), new DateTime("2012-06-05"), 66)
 		println("filled in " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis - start) + " min")
 	}
 
@@ -31,10 +30,9 @@ class DataFillerTest extends FunSuite {
 		val system = ActorSystem("test", config.getConfig("test"))
 		val masterWriter = system.actorOf(Props[WriteMasterActor], name = "master")
 
-		val dataFiller = new DataFiller(new DataGenerator, Writer.create())
 
 
-		dataFiller.fillEvenParallel(new DateTime("2012-01-01"), new DateTime("2012-01-05"), 111, masterWriter)
+		DataFiller.fillEvenParallel(new DateTime("2012-01-01"), new DateTime("2012-01-05"), 111, masterWriter)
 
 		masterWriter ! Flush
 
@@ -59,9 +57,8 @@ class DataFillerTest extends FunSuite {
 
 
 	test("fill simple") {
-		val dataFiller = new DataFiller(new DataGenerator, Writer.create())
 		for(i <- 1 to 10000)
-			dataFiller.fillSimple("customer1", "location1", "wireid1", i, i)
+			DataFiller.fillSimple("customer1", "location1", "wireid1", i, i)
 	}
 
 }

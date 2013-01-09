@@ -37,7 +37,7 @@ class ScannerImpl extends Scanner {
 
   def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[MeasuredValue] = {
 
-    val table = TableFactory.getTable()
+    val table = TableFactory()
 
     var output = List[MeasuredValue]()
 

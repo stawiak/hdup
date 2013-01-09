@@ -10,8 +10,9 @@ import akka.actor.ActorRef
 /**
  * @author Vadim Bobrov
  */
-class DataFiller(dataGen : DataGenerator, writer : Writer) {
-	//TODO consider apply
+object DataFiller {
+
+	var writer = Writer()
 	/**
 	 * fills the database with random crap
 	 * @param records number of records
@@ -20,7 +21,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
 		withOpenClose(writer) {
 
 			for (i <- 0 until records) {
-				writer.write(dataGen.getRandomMeasurement)
+				writer.write(DataGenerator.getRandomMeasurement)
 				if (i % 1000 == 0) println(i)
 			}
 
@@ -60,7 +61,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
 					println("filling for " + new DateTime(l))
 
 				for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
-					writer.write(new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value, value, value))
+					writer.write(new Measurement(DataGenerator.getCustomer(i), DataGenerator.getLocation(j), DataGenerator.getWireId(k), l, value, value, value))
 					counter += 1
 				}
 
@@ -86,7 +87,7 @@ class DataFiller(dataGen : DataGenerator, writer : Writer) {
 				println("filling for " + new DateTime(l))
 
 			for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
-				actor ! new Measurement(dataGen.getCustomer(i), dataGen.getLocation(j), dataGen.getWireId(k), l, value, value, value)
+				actor ! new Measurement(DataGenerator.getCustomer(i), DataGenerator.getLocation(j), DataGenerator.getWireId(k), l, value, value, value)
 				counter += 1
 			}
 		}

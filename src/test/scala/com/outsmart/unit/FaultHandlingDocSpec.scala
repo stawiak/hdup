@@ -1,6 +1,6 @@
 package com.outsmart.unit
 
-import akka.testkit.{TestProbe, TestActorRef, TestKit, ImplicitSender}
+import akka.testkit.{TestActorRef, TestKit, ImplicitSender}
 import akka.actor._
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.{BeforeAndAfterAll, WordSpec}
@@ -9,14 +9,8 @@ import com.typesafe.config.ConfigFactory
 import com.outsmart.unit.FaultHandlingDocSpec.TestWriterActor
 import com.outsmart.measurement.Measurement
 import scala._
-import akka.util.{Duration, Timeout}
-import akka.util.duration._
-import com.outsmart.{Settings, DataGenerator}
 import scala.Predef._
-import akka.routing.FromConfig
 import com.outsmart.actor.LoggingActor
-import akka.event.LoggingReceive
-import com.outsmart.actor.service.TimeWindowActor
 
 /**
  * @author Vadim Bobrov
@@ -59,7 +53,6 @@ object FaultHandlingDocSpec{
 class FaultHandlingDocSpec(_system: ActorSystem) extends TestKit(_system) with WordSpec with MustMatchers with ImplicitSender with BeforeAndAfterAll {
 
 	def this() = this(ActorSystem("test", ConfigFactory.load().getConfig("test")))
-	val dataGen = new DataGenerator
 
 	override def afterAll() {
 		system.shutdown()

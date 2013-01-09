@@ -15,7 +15,6 @@ class WriterActorTest extends FunSuite with MockFactoryBase with ProxyMockFactor
 	//TODO: why just ProxyMockFactory doesn't work
 
 	val mockWriter = mock[Writer]
-	val dataGen = new DataGenerator
 
 	test("") {
 		val config = ConfigFactory.load()
@@ -29,7 +28,7 @@ class WriterActorTest extends FunSuite with MockFactoryBase with ProxyMockFactor
 			)
 		*/
 		val writeMaster = system.actorOf(Props(new WriteMasterActor()), name = "master")
-		writeMaster ! dataGen.getRandomMeasurement
+		writeMaster ! DataGenerator.getRandomMeasurement
 
 		mockWriter expects 'write withArgs (*) anyNumberOfTimes
 	}

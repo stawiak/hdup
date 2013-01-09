@@ -12,7 +12,7 @@ import com.outsmart.measurement.Measurement
   */
 class WriterActor(val tableName : String, val batchSize: Int = Settings.BatchSize) extends Actor with ActorLogging{
 
-	val writer = Writer.create(tableName)
+	val writer = Writer(tableName)
 	var measurements = List[Measurement]() //new Array[Measurement](batchSize)
 
 

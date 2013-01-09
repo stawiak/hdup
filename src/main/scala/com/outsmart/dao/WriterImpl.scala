@@ -14,7 +14,7 @@ class WriterImpl(val tableName : String = Settings.TableName) extends Writer {
 
 
   def open() {
-    table = TableFactory.getTable(tableName)
+    table = TableFactory(tableName)
   }
 
   /**
