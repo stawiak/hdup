@@ -14,6 +14,7 @@ import akka.routing.Broadcast
  */
 trait LastMohican
 
+
 /**
  * This trait adds functionality to wait for the children actors to finish their
  * work and then stop itself or the system
@@ -23,9 +24,6 @@ trait FinalCountDown extends Actor with ActorLogging {
 
 	def onBlackSpot() {
 		children foreach watch
-		// send everyone a poison pill and wait for them to die, then kick the bucket
-		children foreach (_ ! Broadcast(PoisonPill))
-		children foreach (_ ! PoisonPill)
 		// from now on receive only bad news
 		become(lastMoments)
 	}

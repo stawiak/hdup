@@ -3,10 +3,10 @@ package com.outsmart.actor.write
 import akka.actor._
 import com.outsmart.measurement.{Interpolated, Measurement}
 import com.outsmart.Settings
-import akka.routing.{Broadcast, FromConfig}
+import akka.routing.{DefaultResizer, SmallestMailboxRouter, Broadcast, FromConfig}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import akka.util.Duration
-import com.outsmart.actor.FinalCountDown
+import com.outsmart.actor.{DoctorGoebbels, FinalCountDown}
 
 
 /**
@@ -15,7 +15,7 @@ import com.outsmart.actor.FinalCountDown
 case object Flush
 case object GracefulStop
 
-class WriteMasterActor extends FinalCountDown {
+class WriteMasterActor extends DoctorGoebbels {
 
 	import context._
 	// Since a restart does not clear out the mailbox, it often is best to terminate
@@ -24,8 +24,9 @@ class WriteMasterActor extends FinalCountDown {
 	var routers = Map[String, ActorRef]()
 	var counter = 0
 
+	val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 	var routerFactory : (ActorContext, String, Int) => ActorRef = {(actorContext : ActorContext, tableName : String, batchSize : Int) =>
-		actorOf(Props(new WriterActor(tableName, batchSize)).withRouter(FromConfig()), name = "workerRouter")
+		actorOf(Props(new WriterActor(tableName, batchSize)).withRouter(SmallestMailboxRouter(resizer = Some(resizer))))
 	}
 
 	override val supervisorStrategy =

@@ -1,54 +1,63 @@
 package com.outsmart.actor.service
 
-import akka.actor.{ActorRef, Props, ActorLogging, Actor}
+import akka.actor.{ActorRef, Props}
 import akka.util.duration._
 import com.outsmart.measurement.{Interpolated, Measurement}
-import com.outsmart.actor.write.{GracefulStop, WriteMasterActor}
+import com.outsmart.actor.write.GracefulStop
 import com.outsmart.Settings
-import com.outsmart.actor.FinalCountDown
+import com.outsmart.actor.DoctorGoebbels
 import annotation.tailrec
+import akka.util.Duration
 
 /**
   * @author Vadim Bobrov
   */
 case object Tick
-class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends FinalCountDown {
+class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends DoctorGoebbels {
 
 	import context._
 
 	var measurements = List[Measurement]()
+	var isStopped = false
 
-	var writeMaster = actorOf(Props(new WriteMasterActor()), name = "writeMaster")
+	var writeMaster = actorFor("../writeMaster")
 	var interpolatorFactory  : (String, String, String) => ActorRef = DefaultInterpolatorFactory.get
 
 	override def preStart() {
 		super.preStart()
 
-		system.scheduler.schedule(0 milliseconds, 1000 milliseconds, self, Tick)
+		system.scheduler.schedule(Duration.Zero, 1000 milliseconds, self, Tick)
 	}
+
+
 
 	protected def receive: Receive = {
 
 		// save interpolated value
 		case imsmt : Interpolated => writeMaster ! imsmt
 
-		case msmt : Measurement => {
+		case msmt : Measurement =>
 
 			//TODO instead of tagging measurement one can also use pattern matching on sender
 			//TODO aggregation should be done by .... what???
 			measurements ::= msmt
 
 			processWindow
-		}
 
 		// clean window
-		case Tick => processWindow
+		case Tick =>
+			log.debug("tick received " + measurements.length + " left")
+
+			processWindow
+			if (isStopped && measurements.isEmpty) {
+				writeMaster ! GracefulStop
+				onBlackSpot()
+			}
+
 
 		case GracefulStop =>
 			log.debug("time window received graceful stop")
-			cleanWindow()
-			writeMaster ! GracefulStop
-			onBlackSpot()
+			isStopped = true
 
 	}
 
@@ -58,7 +67,6 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 	 * and remove them from window
 	 */
 	private def processWindow() {
-
 		val current = System.currentTimeMillis()
 		// if any of the existing measurements are more than 9.5 minutes old
 		// sort by time, interpolate, save to storage and discard
@@ -71,18 +79,6 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 		// discard old values
 		measurements = measurements filter (current - _.timestamp <= expiredTimeWindow)
 
-	}
-
-	/**
-	 * Allow all measurements in time window to age
-	 * and be processed
-	 */
-	@tailrec
-	private def cleanWindow() {
-		if (!measurements.isEmpty) {
-			Thread.sleep(5000)
-			cleanWindow()
-		}
 	}
 
 	object DefaultInterpolatorFactory {
