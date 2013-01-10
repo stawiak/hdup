@@ -15,7 +15,7 @@ import com.outsmart.actor.DoctorGoebbels
 case object Flush
 case object GracefulStop
 
-class WriteMasterActor extends Actor with DoctorGoebbels with ActorLogging {
+class WriteMasterActor extends DoctorGoebbels {
 
 	import context._
 	// Since a restart does not clear out the mailbox, it often is best to terminate
@@ -44,7 +44,6 @@ class WriteMasterActor extends Actor with DoctorGoebbels with ActorLogging {
 
 		if (!routers.contains(tableName)) {
 			val newRouter = routerFactory(context, tableName, batchSize)
-			addRouter(newRouter)
 			routers += (tableName -> newRouter)
 		}
 

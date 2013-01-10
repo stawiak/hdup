@@ -8,13 +8,14 @@ import akka.testkit.{TestProbe, ImplicitSender, TestKit, TestActorRef}
 import com.outsmart.actor.service.TimeWindowActor
 import com.typesafe.config.ConfigFactory
 import akka.util.duration._
-import com.outsmart.actor.DoctorGoebbels
+import com.outsmart.actor.{LastMohican, DoctorGoebbels}
 import akka.actor.OneForOneStrategy
 import com.outsmart.actor.write.{GracefulStop, WriterActor}
-import akka.routing.{Broadcast, FromConfig}
+import akka.routing.{RoundRobinRouter, Broadcast, FromConfig}
 import akka.util.Duration
 import akka.actor.SupervisorStrategy.{Escalate, Resume}
 import com.outsmart.Settings
+import annotation.tailrec
 
 /**
  * @author Vadim Bobrov
@@ -23,41 +24,55 @@ class DoctorGoebbelsTest(_system: ActorSystem) extends TestKit(_system) with Fla
 
 	def this() = this(ActorSystem("test", ConfigFactory.load().getConfig("test")))
 
-	override def afterAll() {
+	val actorUnderTest = TestActorRef(new TestDoctorGoebbelsActor())
+
+
+	"Doctor Goebbels actor" should "wait for the children to shutdown before shutting down" in {
+		actorUnderTest !  Props(new TestChildActor()).withRouter(new RoundRobinRouter(3))
+		actorUnderTest !  Props(new TestChildActor())
+
+		actorUnderTest !  GracefulStop
+	}
+
+	override protected def afterAll() {
 		system.awaitTermination()
 	}
 
-	val testTimeWindow = TestActorRef(new TestDoctorGoebbelsActor())
-
-	"Doctor Goebbels actor" should "wait for the children to shutdown before shutting down" in {
-		val testRouter1 = TestProbe()
-		val testRouter2 = TestProbe()
-		val testRouter3 = TestProbe()
-
-		testTimeWindow !  testRouter1.ref
-		testTimeWindow !  testRouter2.ref
-		testTimeWindow !  testRouter3.ref
-
-		testTimeWindow !  GracefulStop
-
-		testRouter1.expectMsg(Broadcast(PoisonPill))
-		testRouter2.expectMsg(Broadcast(PoisonPill))
-		testRouter3.expectMsg(Broadcast(PoisonPill))
-		//TestInterpolatorFactory.interpolator.expectNoMsg
-	}
-
-
-	class TestDoctorGoebbelsActor extends Actor with DoctorGoebbels with ActorLogging {
+	case object WaitMessage
+	class TestDoctorGoebbelsActor extends DoctorGoebbels with LastMohican {
 
 		protected def receive: Receive = {
 
-			//case NewRouter => addRouter(context.actorOf(Props(new TestProbe()).withRouter(FromConfig()), name = "workerRouter"))
-			case newRouter : ActorRef => addRouter(newRouter)
+			case newChild : Props =>
+				val newOne = context.actorOf(newChild)
+				newOne ! WaitMessage
+				newOne ! WaitMessage
 
-			case GracefulStop => onBlackMark()
-
+			case GracefulStop =>
+				onBlackMark()
 		}
 
+	}
+
+	class TestChildActor extends Actor with ActorLogging {
+
+		protected def receive: Receive = {
+			case WaitMessage =>
+				log.info("received wait message")
+				waitMillis(2000)
+				log.info("processed wait message")
+
+			case x => log.info("received " + x)
+		}
+
+	}
+
+	@tailrec
+	final def waitMillis(millis : Int, start : Long = 0) {
+		val begin = if (start == 0) System.currentTimeMillis() else start
+
+		if (System.currentTimeMillis() - begin < millis)
+			waitMillis(millis, begin)
 	}
 
 }
