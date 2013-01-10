@@ -2,14 +2,15 @@ package com.outsmart.actor.service
 
 import akka.actor.{ActorRef, Props, ActorLogging, Actor}
 import com.outsmart.measurement.Measurement
-import com.outsmart.actor.write.WriteMasterActor
+import com.outsmart.actor.write.{GracefulStop, WriteMasterActor}
 import com.outsmart.Settings
+import com.outsmart.actor.{LastMohican, FinalCountDown}
 
 
 /**
   * @author Vadim Bobrov
   */
-class IncomingHandlerActor extends Actor with ActorLogging {
+class IncomingHandlerActor extends FinalCountDown with LastMohican {
 
 	import context._
 	var writeMaster = actorOf(Props[WriteMasterActor], name = "writeMaster")
@@ -23,8 +24,15 @@ class IncomingHandlerActor extends Actor with ActorLogging {
 			// if less than 9.5 minutes old - send to time window manager
 			if (System.currentTimeMillis() - msmt.timestamp < Settings.ExpiredTimeWindow)
 				timeWindowManager ! msmt
+
 		}
 
+		case GracefulStop =>
+			log.debug("incoming handler received graceful stop")
+			// allow time window to stop write master when it's done
+			//writeMaster ! GracefulStop
+			timeWindowManager ! GracefulStop
+		    onBlackSpot()
 	}
 
  }

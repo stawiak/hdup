@@ -3,14 +3,16 @@ package com.outsmart.actor.service
 import akka.actor.{ActorRef, Props, ActorLogging, Actor}
 import akka.util.duration._
 import com.outsmart.measurement.{Interpolated, Measurement}
-import com.outsmart.actor.write.WriteMasterActor
+import com.outsmart.actor.write.{GracefulStop, WriteMasterActor}
 import com.outsmart.Settings
+import com.outsmart.actor.FinalCountDown
+import annotation.tailrec
 
 /**
   * @author Vadim Bobrov
   */
 case object Tick
-class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends Actor with ActorLogging{
+class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends FinalCountDown {
 
 	import context._
 
@@ -42,6 +44,12 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 		// clean window
 		case Tick => processWindow
 
+		case GracefulStop =>
+			log.debug("time window received graceful stop")
+			cleanWindow()
+			writeMaster ! GracefulStop
+			onBlackSpot()
+
 	}
 
 
@@ -63,6 +71,18 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 		// discard old values
 		measurements = measurements filter (current - _.timestamp <= expiredTimeWindow)
 
+	}
+
+	/**
+	 * Allow all measurements in time window to age
+	 * and be processed
+	 */
+	@tailrec
+	private def cleanWindow() {
+		if (!measurements.isEmpty) {
+			Thread.sleep(5000)
+			cleanWindow()
+		}
 	}
 
 	object DefaultInterpolatorFactory {

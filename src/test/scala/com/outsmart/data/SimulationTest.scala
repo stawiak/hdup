@@ -7,6 +7,8 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.outsmart.actor.service.IncomingHandlerActor
 import com.typesafe.config.ConfigFactory
 import com.outsmart.DataGenerator
+import com.outsmart.actor.{LastMohican, FinalCountDown}
+import com.outsmart.actor.write.GracefulStop
 
 /**
  * @author Vadim Bobrov
@@ -14,7 +16,7 @@ import com.outsmart.DataGenerator
 class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest{
 
 	def this() = this(ActorSystem("prod", ConfigFactory.load().getConfig("prod")))
-	val incomingHandler = system.actorOf(Props[IncomingHandlerActor], name = "incomingHandler")
+	val incomingHandler = system.actorOf(Props[IncomingHandlerActor with FinalCountDown with LastMohican], name = "incomingHandler")
 
 	override def afterAll() {
 		system.awaitTermination()
@@ -28,6 +30,7 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 		}
 
 		println("sent in " + (System.currentTimeMillis - start))
+		incomingHandler ! GracefulStop
 	}
 
 

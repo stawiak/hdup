@@ -7,11 +7,21 @@ import akka.routing.Broadcast
 /**
  * @author Vadim Bobrov
 */
+
+/**
+ * A marker trait to indicate that this is the last actor and
+ * the entire actor system needs to be shut down when done
+ */
 trait LastMohican
-trait DoctorGoebbels extends Actor with ActorLogging {
+
+/**
+ * This trait adds functionality to wait for the children actors to finish their
+ * work and then stop itself or the system
+ */
+trait FinalCountDown extends Actor with ActorLogging {
 	import context._
 
-	def onBlackMark() {
+	def onBlackSpot() {
 		children foreach watch
 		// send everyone a poison pill and wait for them to die, then kick the bucket
 		children foreach (_ ! Broadcast(PoisonPill))
@@ -23,7 +33,7 @@ trait DoctorGoebbels extends Actor with ActorLogging {
 	final def lastMoments : Receive = {
 
 		case Terminated(ref) =>
-			log.debug("another one bites the dust {}" + ref.hashCode())
+			log.debug("another one bites the dust {}" + ref.path)
 
 			if (children.isEmpty)
 				// all children done - safe to commit suicide

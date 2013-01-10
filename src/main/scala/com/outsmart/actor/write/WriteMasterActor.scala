@@ -6,7 +6,7 @@ import com.outsmart.Settings
 import akka.routing.{Broadcast, FromConfig}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import akka.util.Duration
-import com.outsmart.actor.DoctorGoebbels
+import com.outsmart.actor.FinalCountDown
 
 
 /**
@@ -15,7 +15,7 @@ import com.outsmart.actor.DoctorGoebbels
 case object Flush
 case object GracefulStop
 
-class WriteMasterActor extends DoctorGoebbels {
+class WriteMasterActor extends FinalCountDown {
 
 	import context._
 	// Since a restart does not clear out the mailbox, it often is best to terminate
@@ -59,7 +59,9 @@ class WriteMasterActor extends DoctorGoebbels {
 
 		case Flush => routers.values foreach (_ ! Flush)
 
-		case GracefulStop => onBlackMark()
+		case GracefulStop =>
+			log.debug("write master received graceful stop")
+			onBlackSpot()
 
 	}
 

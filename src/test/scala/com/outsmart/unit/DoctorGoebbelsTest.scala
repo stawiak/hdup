@@ -8,7 +8,7 @@ import akka.testkit.{TestProbe, ImplicitSender, TestKit, TestActorRef}
 import com.outsmart.actor.service.TimeWindowActor
 import com.typesafe.config.ConfigFactory
 import akka.util.duration._
-import com.outsmart.actor.{LastMohican, DoctorGoebbels}
+import com.outsmart.actor.{LastMohican, FinalCountDown}
 import akka.actor.OneForOneStrategy
 import com.outsmart.actor.write.{GracefulStop, WriterActor}
 import akka.routing.{RoundRobinRouter, Broadcast, FromConfig}
@@ -39,7 +39,7 @@ class DoctorGoebbelsTest(_system: ActorSystem) extends TestKit(_system) with Fla
 	}
 
 	case object WaitMessage
-	class TestDoctorGoebbelsActor extends DoctorGoebbels with LastMohican {
+	class TestDoctorGoebbelsActor extends FinalCountDown with LastMohican {
 
 		protected def receive: Receive = {
 
@@ -49,7 +49,7 @@ class DoctorGoebbelsTest(_system: ActorSystem) extends TestKit(_system) with Fla
 				newOne ! WaitMessage
 
 			case GracefulStop =>
-				onBlackMark()
+				onBlackSpot()
 		}
 
 	}
