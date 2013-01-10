@@ -27,7 +27,7 @@ class WriterActorTest extends FunSuite with MockFactoryBase with ProxyMockFactor
 				).withRouter(FromConfig())
 			)
 		*/
-		val writeMaster = system.actorOf(Props(new WriteMasterActor()), name = "master")
+		val writeMaster = system.actorOf(Props(new WriteMasterActor()), name = "writeMaster")
 		writeMaster ! DataGenerator.getRandomMeasurement
 
 		mockWriter expects 'write withArgs (*) anyNumberOfTimes

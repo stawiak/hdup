@@ -16,7 +16,7 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 
 	var measurements = List[Measurement]()
 
-	var writeMaster = actorOf(Props(new WriteMasterActor()), name = "master")
+	var writeMaster = actorOf(Props(new WriteMasterActor()), name = "writeMaster")
 	var interpolatorFactory  : (String, String, String) => ActorRef = DefaultInterpolatorFactory.get
 
 	override def preStart() {
@@ -56,9 +56,10 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 		// sort by time, interpolate, save to storage and discard
 		val oldmsmt = (measurements filter (current - _.timestamp > expiredTimeWindow)).sortWith(_ < _)
 
-		for (tv <- oldmsmt)
+		for (tv <- oldmsmt) {
+			//log.info("sending to interpolation")
 			interpolatorFactory(tv.customer, tv.location, tv.wireid) ! tv
-
+		}
 		// discard old values
 		measurements = measurements filter (current - _.timestamp <= expiredTimeWindow)
 
@@ -68,8 +69,10 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 		var interpolators = Map[(String, String, String), ActorRef]()
 
 		def get(customer : String, location : String, wireid : String) : ActorRef = {
-			if (!interpolators.contains(customer, location, wireid))
-				interpolators += ((customer, location, wireid) -> actorOf(Props(new InterpolatorActor()), name = "interpolator"))
+			if (!interpolators.contains(customer, location, wireid)) {
+				log.info("creating new interpolator for " + customer + " " + location + " " + wireid)
+				interpolators += ((customer, location, wireid) -> actorOf(Props(new InterpolatorActor(100))))
+			}
 
 			interpolators(customer, location, wireid)
 		}

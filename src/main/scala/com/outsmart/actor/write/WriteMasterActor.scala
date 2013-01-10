@@ -6,7 +6,6 @@ import com.outsmart.Settings
 import akka.routing.FromConfig
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import akka.util.Duration
-import com.outsmart.actor.service.TimeWindowActor
 
 
 /**
@@ -24,8 +23,8 @@ class WriteMasterActor extends Actor with ActorLogging {
 	var routers = Map[String, ActorRef]()
 	var counter = 0
 
-	var routerFactory : (ActorContext, String) => ActorRef = {(actorContext : ActorContext, tableName : String) =>
-		actorOf(Props(new WriterActor(tableName, Settings.BatchSize)).withRouter(FromConfig()), name = "workerRouter")
+	var routerFactory : (ActorContext, String, Int) => ActorRef = {(actorContext : ActorContext, tableName : String, batchSize : Int) =>
+		actorOf(Props(new WriterActor(tableName, batchSize)).withRouter(FromConfig()), name = "workerRouter")
 	}
 
 	override val supervisorStrategy =
@@ -37,13 +36,13 @@ class WriteMasterActor extends Actor with ActorLogging {
 
 	private def getRouter(msmt : Measurement) : ActorRef = {
 
-		val tableName = msmt match  {
-			case imsmt : Interpolated => Settings.MinuteInterpolaedTableName
-			case _ => Settings.TableName
+		val (tableName, batchSize) = msmt match  {
+			case imsmt : Interpolated => (Settings.MinuteInterpolaedTableName, Settings.MinuteInterpolatedBatchSize)
+			case _ => (Settings.TableName, Settings.BatchSize)
 		}
 
 		if (!routers.contains(tableName))
-			routers += (tableName -> routerFactory(context, tableName))
+			routers += (tableName -> routerFactory(context, tableName, batchSize))
 
 		routers(tableName)
 	}
@@ -74,12 +73,5 @@ class WriteMasterActor extends Actor with ActorLogging {
 
 	}
 
-	object DefaultWriterFactory {
-
-		def get(context : ActorContext, tableName : String) : ActorRef = {
-			context.actorOf(Props(new WriterActor(tableName, Settings.BatchSize)).withRouter(FromConfig()), name = "workerRouter")
-		}
-
-	}
 }
 

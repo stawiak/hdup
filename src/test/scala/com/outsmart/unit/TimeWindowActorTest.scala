@@ -1,11 +1,11 @@
 package com.outsmart.unit
 
-import org.scalatest.{OneInstancePerTest, FlatSpec, BeforeAndAfterAll, WordSpec}
-import org.scalatest.matchers.{ShouldMatchers, MustMatchers}
+import org.scalatest.{OneInstancePerTest, FlatSpec, BeforeAndAfterAll}
+import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
-import com.outsmart.measurement.{TimedValue, Measurement}
+import com.outsmart.measurement.Measurement
 import akka.testkit.{TestProbe, ImplicitSender, TestKit, TestActorRef}
-import com.outsmart.actor.service.{InterpolatorActor, TimeWindowActor, IncomingHandlerActor}
+import com.outsmart.actor.service.TimeWindowActor
 import com.typesafe.config.ConfigFactory
 import akka.util.duration._
 

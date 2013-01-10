@@ -59,7 +59,7 @@ class FaultHandlingDocSpec(_system: ActorSystem) extends TestKit(_system) with W
 	}
 
 	var masterWriter = TestActorRef(new WriteMasterActor(), name = "writeMaster")
-	masterWriter.underlyingActor.routerFactory = {(actorContext : ActorContext, tableName : String) =>
+	masterWriter.underlyingActor.routerFactory = {(actorContext : ActorContext, tableName : String, batchSize : Int) =>
 		actorContext.actorOf(Props(new LoggingActor(new TestWriterActor())), name = "workerRouter")
 	}
 

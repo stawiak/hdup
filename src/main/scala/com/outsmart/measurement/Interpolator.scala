@@ -64,9 +64,13 @@ object Interpolator {
 	 */
 	def bilinear(tv1 : TimedValue, tv2 : TimedValue, tv3 : TimedValue, tv4 : TimedValue, boundary: Int = 60000) : Seq[TimedValue] = {
 		// ensure strictly ascending
-		require(tv1 < tv2 && tv2 < tv3 && tv3 < tv4, "bilinear arguments out of order " + tv1.timestamp + " " + tv3.timestamp + " " + tv3.timestamp + " " + tv4.timestamp)
+		//require(tv1 < tv2 && tv2 < tv3 && tv3 < tv4, "bilinear arguments out of order " + tv1.timestamp + " " + tv3.timestamp + " " + tv3.timestamp + " " + tv4.timestamp)
 
 		var output = List[TimedValue]()
+		if(!(tv1 < tv2 && tv2 < tv3 && tv3 < tv4)) {
+			println("skipping duplicate")
+			return output
+		}
 
 		if (tv2.timestamp % boundary == 0)
 			output = tv2 :: output

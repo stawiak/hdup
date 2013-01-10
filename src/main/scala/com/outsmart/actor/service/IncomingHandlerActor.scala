@@ -13,7 +13,7 @@ class IncomingHandlerActor extends Actor with ActorLogging {
 
 	import context._
 	var writeMaster = actorOf(Props[WriteMasterActor], name = "writeMaster")
-	var timeWindowManager = actorOf(Props[TimeWindowActor], name = "timeWindow")
+	var timeWindowManager = actorOf(Props(new TimeWindowActor()), name = "timeWindow")
 
 	protected def receive: Receive = {
 

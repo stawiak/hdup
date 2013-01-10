@@ -34,6 +34,7 @@ class WriterActor(val tableName : String, val batchSize: Int = Settings.BatchSiz
 
 
 	def submitJob() {
+		log.info("sumbitting write job to " + tableName)
 		withOpenClose(writer) {
 			// this can fail anytime and should be retried
 			measurements foreach writer.write

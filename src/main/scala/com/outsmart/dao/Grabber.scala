@@ -1,9 +1,8 @@
-package com.outsmart
+package com.outsmart.dao
 
 import actors.Futures._
-import dao.{Scanner, ScannerService}
-import measurement.MeasuredValue
 import org.joda.time.DateTime
+import com.outsmart.measurement.MeasuredValue
 
 /**
  * @author Vadim Bobrov
