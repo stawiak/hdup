@@ -3,18 +3,19 @@ package com.outsmart.actor.write
 import akka.actor._
 import com.outsmart.measurement.{Interpolated, Measurement}
 import com.outsmart.Settings
-import akka.routing.FromConfig
+import akka.routing.{Broadcast, FromConfig}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import akka.util.Duration
+import com.outsmart.actor.DoctorGoebbels
 
 
 /**
  * @author Vadim Bobrov
  */
 case object Flush
-case object StopWriter
+case object GracefulStop
 
-class WriteMasterActor extends Actor with ActorLogging {
+class WriteMasterActor extends Actor with DoctorGoebbels with ActorLogging {
 
 	import context._
 	// Since a restart does not clear out the mailbox, it often is best to terminate
@@ -41,8 +42,11 @@ class WriteMasterActor extends Actor with ActorLogging {
 			case _ => (Settings.TableName, Settings.BatchSize)
 		}
 
-		if (!routers.contains(tableName))
-			routers += (tableName -> routerFactory(context, tableName, batchSize))
+		if (!routers.contains(tableName)) {
+			val newRouter = routerFactory(context, tableName, batchSize)
+			addRouter(newRouter)
+			routers += (tableName -> newRouter)
+		}
 
 		routers(tableName)
 	}
@@ -54,22 +58,9 @@ class WriteMasterActor extends Actor with ActorLogging {
 			getRouter(msmt) ! msmt
 		}
 
-		case Flush =>  {
-			//log.debug("flush received at " + counter)
-			routers.values foreach (_ ! Flush)
-		}
+		case Flush => routers.values foreach (_ ! Flush)
 
-
-		case StopWriter => {
-			//log.debug("write master received stop")
-
-			// allow all children to finish processing
-
-			sender ! StopWriter
-
-			// stops this actor and all its supervised children
-			stop(self)
-		}
+		case GracefulStop => onBlackMark()
 
 	}
 

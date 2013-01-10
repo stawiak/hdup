@@ -71,7 +71,7 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 		def get(customer : String, location : String, wireid : String) : ActorRef = {
 			if (!interpolators.contains(customer, location, wireid)) {
 				log.info("creating new interpolator for " + customer + " " + location + " " + wireid)
-				interpolators += ((customer, location, wireid) -> actorOf(Props(new InterpolatorActor(100))))
+				interpolators += ((customer, location, wireid) -> actorOf(Props(new InterpolatorActor())))
 			}
 
 			interpolators(customer, location, wireid)

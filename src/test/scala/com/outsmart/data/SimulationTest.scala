@@ -17,14 +17,18 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 	val incomingHandler = system.actorOf(Props[IncomingHandlerActor], name = "incomingHandler")
 
 	override def afterAll() {
-		system.shutdown()
+		system.awaitTermination()
 	}
 
 	"incoming handler" should "be able to handle continuous message flow" in {
+		val start = System.currentTimeMillis
 		for (i <- 1 to 10000) {
 			incomingHandler ! DataGenerator.getRandomMeasurementSingleId
-			Thread.sleep(10)
+			//Thread.sleep(10)
 		}
+
+		println("sent in " + (System.currentTimeMillis - start))
 	}
+
 
 }
