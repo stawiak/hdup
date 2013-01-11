@@ -2,7 +2,6 @@ package com.outsmart.actor
 
 import akka.actor._
 import akka.actor.Terminated
-import akka.routing.Broadcast
 
 /**
  * @author Vadim Bobrov

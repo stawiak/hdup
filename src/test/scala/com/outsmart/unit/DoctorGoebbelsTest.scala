@@ -3,18 +3,11 @@ package com.outsmart.unit
 import org.scalatest.{OneInstancePerTest, FlatSpec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
-import com.outsmart.measurement.{Interpolated, Measurement}
-import akka.testkit.{TestProbe, ImplicitSender, TestKit, TestActorRef}
-import com.outsmart.actor.service.TimeWindowActor
+import akka.testkit.{ImplicitSender, TestKit, TestActorRef}
 import com.typesafe.config.ConfigFactory
-import akka.util.duration._
 import com.outsmart.actor.{LastMohican, FinalCountDown}
-import akka.actor.OneForOneStrategy
-import com.outsmart.actor.write.{GracefulStop, WriterActor}
-import akka.routing.{RoundRobinRouter, Broadcast, FromConfig}
-import akka.util.Duration
-import akka.actor.SupervisorStrategy.{Escalate, Resume}
-import com.outsmart.Settings
+import com.outsmart.actor.write.GracefulStop
+import akka.routing.RoundRobinRouter
 import annotation.tailrec
 
 /**

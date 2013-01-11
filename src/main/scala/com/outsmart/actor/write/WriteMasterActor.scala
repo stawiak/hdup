@@ -3,10 +3,10 @@ package com.outsmart.actor.write
 import akka.actor._
 import com.outsmart.measurement.{Interpolated, Measurement}
 import com.outsmart.Settings
-import akka.routing.{DefaultResizer, SmallestMailboxRouter, Broadcast, FromConfig}
+import akka.routing.{DefaultResizer, SmallestMailboxRouter}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import akka.util.Duration
-import com.outsmart.actor.{DoctorGoebbels, FinalCountDown}
+import com.outsmart.actor.DoctorGoebbels
 
 
 /**
@@ -26,7 +26,7 @@ class WriteMasterActor extends DoctorGoebbels {
 
 	val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 	var routerFactory : (ActorContext, String, Int) => ActorRef = {(actorContext : ActorContext, tableName : String, batchSize : Int) =>
-		actorOf(Props(new WriterActor(tableName, batchSize)).withRouter(SmallestMailboxRouter(resizer = Some(resizer))))
+		actorOf(Props(new WriteWorkerActor(tableName, batchSize)).withRouter(SmallestMailboxRouter(resizer = Some(resizer))))
 	}
 
 	override val supervisorStrategy =

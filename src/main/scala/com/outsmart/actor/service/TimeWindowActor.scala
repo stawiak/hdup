@@ -2,26 +2,24 @@ package com.outsmart.actor.service
 
 import akka.actor.{ActorRef, Props}
 import akka.util.duration._
-import com.outsmart.measurement.{Interpolated, Measurement}
-import com.outsmart.actor.write.GracefulStop
+import com.outsmart.measurement.Measurement
+import com.outsmart.actor.write.{WriterMasterAwareActor, GracefulStop}
 import com.outsmart.Settings
 import com.outsmart.actor.DoctorGoebbels
-import annotation.tailrec
 import akka.util.Duration
 
 /**
   * @author Vadim Bobrov
   */
 case object Tick
-class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends DoctorGoebbels {
+class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends WriterMasterAwareActor with DoctorGoebbels {
 
 	import context._
 
 	var measurements = List[Measurement]()
 	var isStopped = false
 
-	var writeMaster = actorFor("../writeMaster")
-	var interpolatorFactory  : (String, String, String) => ActorRef = DefaultInterpolatorFactory.get
+	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
 
 	override def preStart() {
 		super.preStart()
@@ -32,9 +30,6 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 
 
 	protected def receive: Receive = {
-
-		// save interpolated value
-		case imsmt : Interpolated => writeMaster ! imsmt
 
 		case msmt : Measurement =>
 
@@ -63,7 +58,7 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 
 
 	/**
-	 * send events older than a time window for interpolation
+	 * send events older than a time window for aggregation and interpolation
 	 * and remove them from window
 	 */
 	private def processWindow() {
@@ -74,23 +69,23 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 
 		for (tv <- oldmsmt) {
 			//log.info("sending to interpolation")
-			interpolatorFactory(tv.customer, tv.location, tv.wireid) ! tv
+			aggregatorFactory(tv.customer, tv.location) ! tv
 		}
 		// discard old values
 		measurements = measurements filter (current - _.timestamp <= expiredTimeWindow)
 
 	}
 
-	object DefaultInterpolatorFactory {
-		var interpolators = Map[(String, String, String), ActorRef]()
+	object DefaultAggregatorFactory {
+		var aggregators = Map[(String, String), ActorRef]()
 
-		def get(customer : String, location : String, wireid : String) : ActorRef = {
-			if (!interpolators.contains(customer, location, wireid)) {
-				log.info("creating new interpolator for " + customer + " " + location + " " + wireid)
-				interpolators += ((customer, location, wireid) -> actorOf(Props(new InterpolatorActor())))
+		def get(customer : String, location : String) : ActorRef = {
+			if (!aggregators.contains(customer, location)) {
+				log.info("creating new aggregator for " + customer + " " + location)
+				aggregators += ((customer, location) -> actorOf(Props(new AggregatorActor())))
 			}
 
-			interpolators(customer, location, wireid)
+			aggregators(customer, location)
 		}
 	}
  }

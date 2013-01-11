@@ -1,7 +1,7 @@
 package com.outsmart.unit
 
 import org.scalatest.FlatSpec
-import com.outsmart.{TestScannerImpl}
+import com.outsmart.TestScannerImpl
 import org.scalatest.matchers.ShouldMatchers
 import com.outsmart.dao.Grabber
 

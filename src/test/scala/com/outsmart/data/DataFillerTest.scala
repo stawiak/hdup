@@ -5,8 +5,7 @@ import org.joda.time.DateTime
 import java.util.concurrent.TimeUnit
 import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
-import com.outsmart.{DataGenerator, DataFiller}
-import com.outsmart.dao.Writer
+import com.outsmart.DataFiller
 import com.outsmart.actor.write.{Flush, WriteMasterActor}
 import com.outsmart.measurement.Measurement
 

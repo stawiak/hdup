@@ -1,8 +1,8 @@
 package com.outsmart.actor.service
 
-import akka.actor.{ActorRef, Props, ActorLogging, Actor}
+import akka.actor.Props
 import com.outsmart.measurement.Measurement
-import com.outsmart.actor.write.{GracefulStop, WriteMasterActor}
+import com.outsmart.actor.write.{WriterMasterAwareActor, GracefulStop}
 import com.outsmart.Settings
 import com.outsmart.actor.{LastMohican, FinalCountDown}
 
@@ -10,10 +10,9 @@ import com.outsmart.actor.{LastMohican, FinalCountDown}
 /**
   * @author Vadim Bobrov
   */
-class IncomingHandlerActor extends FinalCountDown with LastMohican {
+class IncomingHandlerActor extends WriterMasterAwareActor with FinalCountDown with LastMohican {
 
 	import context._
-	var writeMaster = actorOf(Props[WriteMasterActor], name = "writeMaster")
 	var timeWindowManager = actorOf(Props(new TimeWindowActor()), name = "timeWindow")
 
 	protected def receive: Receive = {

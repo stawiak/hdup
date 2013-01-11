@@ -22,7 +22,7 @@ class WriterActorTest extends FunSuite with MockFactoryBase with ProxyMockFactor
 
 		/*
 			val slaveProps = Props(
-				new WriterActor(
+				new WriteWorkerActor(
 					() => mockWriter
 				).withRouter(FromConfig())
 			)
