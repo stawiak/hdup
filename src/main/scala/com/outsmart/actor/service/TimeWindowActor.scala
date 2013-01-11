@@ -5,29 +5,19 @@ import akka.util.duration._
 import com.outsmart.measurement.Measurement
 import com.outsmart.actor.write.{WriterMasterAwareActor, GracefulStop}
 import com.outsmart.Settings
-import com.outsmart.actor.DoctorGoebbels
+import com.outsmart.actor.{FinalCountDown, Tick, TimedActor, DoctorGoebbels}
 import akka.util.Duration
 
 /**
   * @author Vadim Bobrov
   */
-case object Tick
-class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends WriterMasterAwareActor with DoctorGoebbels {
+class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends FinalCountDown with TimedActor {
 
 	import context._
 
 	var measurements = List[Measurement]()
-	var isStopped = false
 
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
-
-	override def preStart() {
-		super.preStart()
-
-		system.scheduler.schedule(Duration.Zero, 1000 milliseconds, self, Tick)
-	}
-
-
 
 	protected def receive: Receive = {
 
@@ -39,20 +29,17 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 
 			processWindow
 
-		// clean window
-		case Tick =>
-			log.debug("tick received " + measurements.length + " left")
-
-			processWindow
-			if (isStopped && measurements.isEmpty) {
-				writeMaster ! GracefulStop
-				onBlackSpot()
-			}
-
+		// send old measurements for aggregation and interpolation
+		case Tick => processWindow
 
 		case GracefulStop =>
 			log.debug("time window received graceful stop")
-			isStopped = true
+			// send out remaining measurements
+			for (tv <- measurements)
+				aggregatorFactory(tv.customer, tv.location) ! tv
+
+			children foreach ( _ ! GracefulStop)
+			onBlackSpot()
 
 	}
 
@@ -81,8 +68,8 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 
 		def get(customer : String, location : String) : ActorRef = {
 			if (!aggregators.contains(customer, location)) {
-				log.info("creating new aggregator for " + customer + " " + location)
-				aggregators += ((customer, location) -> actorOf(Props(new AggregatorActor())))
+				log.debug("creating new aggregator for " + customer + " " + location)
+				aggregators += ((customer, location) -> actorOf(Props(new AggregatorActor(customer, location, timeWindow = expiredTimeWindow))))
 			}
 
 			aggregators(customer, location)

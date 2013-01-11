@@ -3,13 +3,14 @@ package com.outsmart.actor.service
 import com.outsmart.measurement._
 import scala.Some
 import com.outsmart.actor.write.WriterMasterAwareActor
+import akka.actor.Actor
 
 /**
  * Actor interface to interpolation. Given a measurement send back interpolated values
  *
  * @author Vadim Bobrov
  */
-class InterpolatorActor(val boundary: Int = 60000) extends WriterMasterAwareActor {
+class InterpolatorActor(val boundary: Int = 60000) extends Actor {
 
 	var tv1, tv2, tv3, tv4 : Option[TimedValue] = None
 
@@ -23,7 +24,7 @@ class InterpolatorActor(val boundary: Int = 60000) extends WriterMasterAwareActo
 			if (tv1 != None && tv2 != None && tv3 != None && tv4 != None)
 				for (tv <- Interpolator.bilinear(tv1.get, tv2.get, tv3.get, tv4.get, boundary)) {
 					val interpolated = new Measurement(msmt.customer, msmt.location, msmt.wireid, tv.timestamp, tv.value, msmt.current, msmt.vampire) with Interpolated
-					writeMaster ! interpolated
+					sender ! interpolated
 				}
 
 		}

@@ -2,23 +2,61 @@ package com.outsmart.actor.service
 
 import akka.actor.{Props, ActorRef}
 import com.outsmart.measurement._
-import com.outsmart.actor.write.WriterMasterAwareActor
+import com.outsmart.actor.write.{GracefulStop, WriterMasterAwareActor}
+import com.outsmart.actor.{DoctorGoebbels, FinalCountDown, Tick, TimedActor}
+import com.outsmart.Settings
 
 /**
  * Rollup by customer and location
  *
  * @author Vadim Bobrov
  */
-class AggregatorActor(val boundary: Int = 60000) extends WriterMasterAwareActor {
+class AggregatorActor(val customer: String, val location: String, var timeWindow : Int = Settings.ExpiredTimeWindow) extends DoctorGoebbels with WriterMasterAwareActor with TimedActor {
 
 	import context._
 	var interpolatorFactory  : String => ActorRef = DefaultInterpolatorFactory.get
+	var rollups = Map[Long, Double]()
+
+
+	override val lastWill: () => Unit = () => {
+		// save remaining rollups
+		for( tv <- rollups)
+			writeMaster !  new Measurement(customer, location, "", tv._1, tv._2, 0, 0) with Rollup
+	}
 
 	protected def receive: Receive = {
 
+		// received back from interpolator - add to rollups and save to storage
+		case ismt : Interpolated =>
+			val m = ismt.asInstanceOf[Measurement]
+			if (!rollups.contains(m.timestamp))
+				rollups += (m.timestamp -> m.energy)
+			else
+				rollups += (m.timestamp -> (m.energy + rollups(m.timestamp)))
+
+			writeMaster ! ismt
+
+		// send for interpolation
 		case msmt : Measurement => interpolatorFactory(msmt.wireid) ! msmt
 
+		// flush old rollups
+		case Tick => processRollups()
 
+		case GracefulStop => onBlackSpot()
+	}
+
+	private def processRollups() {
+		val current = System.currentTimeMillis()
+		// if any of the rollups are more than 9.5 minutes old
+		// save to storage and discard
+		val oldmsmt = rollups filter (current - _._1 > timeWindow)
+
+
+		for( tv <- oldmsmt)
+			writeMaster !  new Measurement(customer, location, "", tv._1, tv._2, 0, 0) with Rollup
+
+		// discard old values
+		rollups = rollups filter (current - _._1 <= timeWindow)
 	}
 
 	object DefaultInterpolatorFactory {
@@ -26,7 +64,7 @@ class AggregatorActor(val boundary: Int = 60000) extends WriterMasterAwareActor 
 
 		def get(wireid : String) : ActorRef = {
 			if (!interpolators.contains(wireid)) {
-				log.info("creating new interpolator for " + wireid)
+				log.debug("creating new interpolator for " + wireid)
 				interpolators += (wireid -> actorOf(Props(new InterpolatorActor())))
 			}
 
