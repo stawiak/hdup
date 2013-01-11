@@ -21,14 +21,17 @@ object Settings {
 
 
 	val TableName = "msmt"              		// table for actual measurements
-	val MinuteInterpolaedTableName = "mimt"    	// table for minute interpolation
+	val MinuteInterpolaedTableName = "ismt"    	// table for minute interpolation
+	val RollupTableName = "rsmt"    			// table for minute rollup by location
+
+
 	val ColumnFamilyName = "d"      			// stands for data
 	val EnergyQualifierName = "e"   			// stands for energy
 	val CurrentQualifierName = "c"  			// stands for current
 	val VampireQualifierName = "v"  			// stands for volt-amp-reactive
 
 	val BatchSize = 1000             			// default writer batch size - can be lost
-	val MinuteInterpolatedBatchSize = 10		// writer batch size for minute interpolations- can be lost
+	val DerivedDataBatchSize = 10		// writer batch size for minute interpolations- can be lost
 
 	val TablePoolSize = 100
 

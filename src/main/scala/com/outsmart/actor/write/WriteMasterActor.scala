@@ -1,7 +1,7 @@
 package com.outsmart.actor.write
 
 import akka.actor._
-import com.outsmart.measurement.{Interpolated, Measurement}
+import com.outsmart.measurement.{Rollup, Interpolated, Measurement}
 import com.outsmart.Settings
 import akka.routing.{DefaultResizer, SmallestMailboxRouter}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
@@ -39,7 +39,8 @@ class WriteMasterActor extends DoctorGoebbels {
 	private def getRouter(msmt : Measurement) : ActorRef = {
 
 		val (tableName, batchSize) = msmt match  {
-			case imsmt : Interpolated => (Settings.MinuteInterpolaedTableName, Settings.MinuteInterpolatedBatchSize)
+			case imsmt : Interpolated => (Settings.MinuteInterpolaedTableName, Settings.DerivedDataBatchSize)
+			case rmsmt : Rollup => (Settings.RollupTableName, Settings.DerivedDataBatchSize)
 			case _ => (Settings.TableName, Settings.BatchSize)
 		}
 
