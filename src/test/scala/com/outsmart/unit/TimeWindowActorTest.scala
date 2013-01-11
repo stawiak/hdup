@@ -20,16 +20,13 @@ class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with Fl
 		system.shutdown()
 	}
 
-	val writeProbe  = TestProbe()
 	val testTimeWindow = TestActorRef(new TimeWindowActor(10000))
-	testTimeWindow.underlyingActor.writeMaster = writeProbe.ref
 	testTimeWindow.underlyingActor.aggregatorFactory =  TestAggregationFactory.get
 
 	"time window" should "send nothing before expiration window expire" in {
 		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
 		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
 
-		writeProbe.expectNoMsg
 		TestAggregationFactory.aggregator.expectNoMsg
 	}
 
@@ -37,10 +34,8 @@ class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with Fl
 	it should "send old to interpolator after expiration window expire" in {
 		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
 		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		writeProbe.expectNoMsg(1 seconds)
 		TestAggregationFactory.aggregator.expectNoMsg(1 seconds)
 		Thread.sleep(11000)
-		writeProbe.expectNoMsg
 		TestAggregationFactory.aggregator.receiveN(2)
 	}
 
@@ -48,12 +43,10 @@ class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with Fl
 		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
 		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
 		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		writeProbe.expectNoMsg(1 seconds)
 		TestAggregationFactory.aggregator.expectNoMsg(10 milliseconds)
 		Thread.sleep(11000)
 		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
 		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		writeProbe.expectNoMsg
 		TestAggregationFactory.aggregator.receiveN(3)
 	}
 
@@ -63,7 +56,6 @@ class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with Fl
 		testTimeWindow !  new Measurement("", "", "", 120001,5, 0, 0)
 		testTimeWindow !  new Measurement("", "", "", 120002,6, 0, 0)
 
-		writeProbe.expectNoMsg
 		TestAggregationFactory.aggregator.receiveN(4)
 	}
 
