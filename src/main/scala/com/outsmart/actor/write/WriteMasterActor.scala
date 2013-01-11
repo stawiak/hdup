@@ -6,15 +6,13 @@ import com.outsmart.Settings
 import akka.routing.{DefaultResizer, SmallestMailboxRouter}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import akka.util.Duration
-import com.outsmart.actor.DoctorGoebbels
+import com.outsmart.actor.{GracefulStop, DoctorGoebbels}
 
 
 /**
  * @author Vadim Bobrov
  */
 case object Flush
-case object GracefulStop
-
 class WriteMasterActor extends DoctorGoebbels {
 
 	import context._
@@ -61,11 +59,12 @@ class WriteMasterActor extends DoctorGoebbels {
 
 		case Flush => routers.values foreach (_ ! Flush)
 
+
 		case GracefulStop =>
 			log.debug("write master received graceful stop")
 			onBlackSpot()
 
-	}
 
+	}
 }
 

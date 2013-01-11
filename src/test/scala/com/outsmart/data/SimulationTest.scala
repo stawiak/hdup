@@ -7,8 +7,7 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.outsmart.actor.service.IncomingHandlerActor
 import com.typesafe.config.ConfigFactory
 import com.outsmart.DataGenerator
-import com.outsmart.actor.{LastMohican, FinalCountDown}
-import com.outsmart.actor.write.GracefulStop
+import com.outsmart.actor.{GracefulStop, LastMohican, FinalCountDown}
 
 /**
  * @author Vadim Bobrov

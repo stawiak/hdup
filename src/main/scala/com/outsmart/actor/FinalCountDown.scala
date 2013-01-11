@@ -2,12 +2,12 @@ package com.outsmart.actor
 
 import akka.actor._
 import akka.actor.Terminated
-import write.GracefulStop
 
 /**
  * @author Vadim Bobrov
 */
 
+case object GracefulStop
 /**
  * A marker trait to indicate that this is the last actor and
  * the entire actor system needs to be shut down when done
@@ -24,19 +24,27 @@ trait FinalCountDown extends Actor with ActorLogging {
 
 	val lastWill : () => Unit = () => {}
 
+	/**
+	 * kill a child actor and do andThen when it's dead
+	 */
 	def killChild(child : ActorRef, andThen : () => Unit) {
 		watch(child)
 		become(waitForDeath(child, andThen))
+		log.debug("sending graceful stop to " + child.path)
 		child ! GracefulStop
 
 		def waitForDeath(toWait : ActorRef, andThen : () => Unit) : Receive = {
 			case Terminated(ref) =>
+				log.debug("death of " + ref.path + " while waiting for "  + toWait.path)
 				if (ref == toWait)
 					andThen()
 		}
 	}
 
 
+	/**
+	 * execute this function to start shutdown procedure
+	 */
 	def onBlackSpot() {
 		children foreach watch
 		// from now on receive only bad news

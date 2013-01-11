@@ -9,6 +9,6 @@ import akka.actor.{ActorLogging, Actor}
 trait WriterMasterAwareActor extends Actor with ActorLogging {
 
 	// made settable for testability
-	var writeMaster = context.actorFor("/user/writeMaster")
+	var writeMaster = context.system.actorFor("/user/writeMaster")
 
 }

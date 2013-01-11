@@ -2,8 +2,8 @@ package com.outsmart.actor.service
 
 import akka.actor.{Props, ActorRef}
 import com.outsmart.measurement._
-import com.outsmart.actor.write.{GracefulStop, WriterMasterAwareActor}
-import com.outsmart.actor.{DoctorGoebbels, FinalCountDown, Tick, TimedActor}
+import com.outsmart.actor.write.WriterMasterAwareActor
+import com.outsmart.actor._
 import com.outsmart.Settings
 
 /**
@@ -42,7 +42,9 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 		// flush old rollups
 		case Tick => processRollups()
 
-		case GracefulStop => onBlackSpot()
+		case GracefulStop =>
+			log.debug("aggregator received graceful stop")
+			onBlackSpot()
 	}
 
 	private def processRollups() {

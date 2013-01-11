@@ -1,12 +1,9 @@
 package com.outsmart.actor.service
 
 import akka.actor.{ActorRef, Props}
-import akka.util.duration._
 import com.outsmart.measurement.Measurement
-import com.outsmart.actor.write.{WriterMasterAwareActor, GracefulStop}
 import com.outsmart.Settings
-import com.outsmart.actor.{FinalCountDown, Tick, TimedActor, DoctorGoebbels}
-import akka.util.Duration
+import com.outsmart.actor._
 
 /**
   * @author Vadim Bobrov

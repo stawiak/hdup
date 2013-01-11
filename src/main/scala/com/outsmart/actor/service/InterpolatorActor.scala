@@ -2,7 +2,6 @@ package com.outsmart.actor.service
 
 import com.outsmart.measurement._
 import scala.Some
-import com.outsmart.actor.write.WriterMasterAwareActor
 import akka.actor.Actor
 
 /**

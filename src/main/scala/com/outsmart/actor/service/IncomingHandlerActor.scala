@@ -1,26 +1,27 @@
 package com.outsmart.actor.service
 
-import akka.actor.{Terminated, ActorRef, Props}
+import akka.actor.{ActorRef, Props}
 import com.outsmart.measurement.Measurement
-import com.outsmart.actor.write.{WriteMasterActor, WriterMasterAwareActor, GracefulStop}
+import com.outsmart.actor.write.{WriteMasterActor, WriterMasterAwareActor}
 import com.outsmart.Settings
-import com.outsmart.actor.{LastMohican, FinalCountDown}
+import com.outsmart.actor.{GracefulStop, FinalCountDown}
 
 
 /**
   * @author Vadim Bobrov
   */
-class IncomingHandlerActor extends WriterMasterAwareActor with FinalCountDown {
+class IncomingHandlerActor extends FinalCountDown {
 
 	import context._
 	var timeWindowManager = actorOf(Props(new TimeWindowActor()), name = "timeWindow")
-
+	// cannot be taken from trait as it won't be created yet
+	var writeMaster: ActorRef = _
 
 	override def preStart() {
 		super.preStart()
 
 		// start write master as top level actor
-		context.system.actorOf(Props[WriteMasterActor])
+		writeMaster = context.system.actorOf(Props[WriteMasterActor], name = "writeMaster")
 	}
 
 	protected def receive: Receive = {
@@ -36,8 +37,7 @@ class IncomingHandlerActor extends WriterMasterAwareActor with FinalCountDown {
 
 		case GracefulStop =>
 			log.debug("incoming handler received graceful stop")
-			killChild(timeWindowManager, () => {writeMaster ! GracefulStop} )
-			system.shutdown()
+			killChild(timeWindowManager, () => killChild(writeMaster, () => {log.debug("proceeding with graceful shutdown"); system.shutdown()}) )
 	}
 
 
