@@ -27,17 +27,16 @@ trait FinalCountDown extends Actor with ActorLogging {
 	/**
 	 * kill a child actor and do andThen when it's dead
 	 */
-	def killChild(child : ActorRef, andThen : () => Unit) {
+	def killChild(child : ActorRef, andThenDo : () => Unit) {
 		watch(child)
-		become(waitForDeath(child, andThen))
+		become(waitForDeath(child, andThenDo))
 		log.debug("sending graceful stop to " + child.path)
 		child ! GracefulStop
 
-		def waitForDeath(toWait : ActorRef, andThen : () => Unit) : Receive = {
+		def waitForDeath(toWait : ActorRef, andThenDo : () => Unit) : Receive = {
 			case Terminated(ref) =>
 				log.debug("death of " + ref.path + " while waiting for "  + toWait.path)
-				if (ref == toWait)
-					andThen()
+				andThenDo()
 		}
 	}
 
@@ -54,7 +53,7 @@ trait FinalCountDown extends Actor with ActorLogging {
 	final def lastMoments : Receive = {
 
 		case Terminated(ref) =>
-			log.debug("another one bites the dust {}" + ref.path)
+			log.debug("another one bites the dust {}", ref.path)
 
 			if (children.isEmpty) {
 				// all children done - safe to commit suicide
