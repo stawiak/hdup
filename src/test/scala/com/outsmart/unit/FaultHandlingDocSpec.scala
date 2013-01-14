@@ -10,7 +10,7 @@ import com.outsmart.unit.FaultHandlingDocSpec.TestWriterActor
 import com.outsmart.measurement.Measurement
 import scala._
 import scala.Predef._
-import com.outsmart.actor.LoggingActor
+import com.outsmart.actor.{GracefulStop, LoggingActor}
 
 /**
  * @author Vadim Bobrov
@@ -39,7 +39,7 @@ object FaultHandlingDocSpec{
 
 			}
 
-			case Flush => {
+			case GracefulStop => {
 				//log.info("flush received")
 				sender ! received
 			}
@@ -70,7 +70,7 @@ class FaultHandlingDocSpec(_system: ActorSystem) extends TestKit(_system) with W
 			for (i <- 1 to 3)
 				masterWriter ! new Measurement("", "", "", i, i, i, i)
 
-			masterWriter ! Flush
+			masterWriter ! GracefulStop
 			// it is not testKit it is masterWriter that receives this message
 			//expectMsg(5 seconds, List(new Measurement("", "", "", 1, 1, 1, 1), new Measurement("", "", "", 2, 2, 2, 2), new Measurement("", "", "", 3, 3, 3, 3)))
 		}

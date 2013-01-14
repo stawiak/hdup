@@ -25,7 +25,7 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 		val start = System.currentTimeMillis
 		for (i <- 1 to 10000) {
 			incomingHandler ! DataGenerator.getRandomMeasurementSingleId
-			//Thread.sleep(10)
+			Thread.sleep(5)
 		}
 
 		println("sent in " + (System.currentTimeMillis - start))

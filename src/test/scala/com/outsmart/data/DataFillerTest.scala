@@ -6,8 +6,9 @@ import java.util.concurrent.TimeUnit
 import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 import com.outsmart.DataFiller
-import com.outsmart.actor.write.{Flush, WriteMasterActor}
+import com.outsmart.actor.write.{WriteMasterActor}
 import com.outsmart.measurement.Measurement
+import com.outsmart.actor.GracefulStop
 
 /**
  * @author Vadim Bobrov
@@ -33,7 +34,7 @@ class DataFillerTest extends FunSuite {
 
 		DataFiller.fillEvenParallel(new DateTime("2012-01-01"), new DateTime("2012-01-05"), 111, masterWriter)
 
-		masterWriter ! Flush
+		masterWriter ! GracefulStop
 
 		system.awaitTermination()
 
@@ -48,7 +49,7 @@ class DataFillerTest extends FunSuite {
 			master ! new Measurement("b", "c", "d" + i, 2, 2, 2, 2)
 
 		println("flushing")
-		master ! Flush
+		master ! GracefulStop
 
 		system.awaitTermination()
 

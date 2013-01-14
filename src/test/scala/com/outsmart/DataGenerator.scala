@@ -37,7 +37,7 @@ object DataGenerator {
 		CUSTOMERS(0),
 		LOCATIONS(0),
 		WIREIDS(0),
-		System.currentTimeMillis() - random.nextInt(Settings.ExpiredTimeWindow) + 30000,
+		System.currentTimeMillis(),// - random.nextInt(Settings.ExpiredTimeWindow) + 30000,
 		random.nextDouble(),
 		random.nextDouble(),
 		random.nextDouble()
