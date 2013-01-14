@@ -12,7 +12,6 @@ import com.outsmart.actor.{GracefulStop, DoctorGoebbels}
 /**
  * @author Vadim Bobrov
  */
-case object Flush
 class WriteMasterActor extends DoctorGoebbels {
 
 	import context._
@@ -57,11 +56,9 @@ class WriteMasterActor extends DoctorGoebbels {
 			getRouter(msmt) ! msmt
 		}
 
-		case Flush => routers.values foreach (_ ! Flush)
-
-
 		case GracefulStop =>
 			log.debug("write master received graceful stop")
+			routers.values foreach (_ ! GracefulStop)
 			onBlackSpot()
 
 

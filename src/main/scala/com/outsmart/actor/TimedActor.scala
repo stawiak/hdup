@@ -12,8 +12,6 @@ case object Tick
 trait TimedActor extends Actor with ActorLogging {
 
 	override def preStart() {
-		super.preStart()
-
 		context.system.scheduler.schedule(Duration.Zero, 1000 milliseconds, self, Tick)
 	}
 

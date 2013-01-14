@@ -18,8 +18,6 @@ class IncomingHandlerActor extends FinalCountDown {
 	var writeMaster: ActorRef = _
 
 	override def preStart() {
-		super.preStart()
-
 		// start write master as top level actor
 		writeMaster = context.system.actorOf(Props[WriteMasterActor], name = "writeMaster")
 	}
@@ -36,8 +34,8 @@ class IncomingHandlerActor extends FinalCountDown {
 		}
 
 		case GracefulStop =>
-			log.debug("incoming handler received graceful stop")
-			killChild(timeWindowManager, () => killChild(writeMaster, () => {log.debug("proceeding with graceful shutdown"); system.shutdown()}) )
+			log.debug("incoming handler received graceful stop - stopping time window and then write master")
+			killChild(timeWindowManager, () => killChild(writeMaster, () => system.shutdown()) )
 	}
 
 

@@ -6,6 +6,7 @@ import com.outsmart.util.Util
 import Util.withOpenClose
 import com.outsmart.Settings
 import com.outsmart.measurement.Measurement
+import com.outsmart.actor.GracefulStop
 
 /**
   * @author Vadim Bobrov
@@ -22,19 +23,19 @@ class WriteWorkerActor(val tableName : String, val batchSize: Int = Settings.Bat
 			measurements = msmt :: measurements
 
 			if(measurements.length == batchSize)
-				submitJob
+				submitJob()
 		}
 
 
-		case Flush =>  {
-			submitJob
+		case GracefulStop =>  {
+			submitJob()
 		}
 
 	}
 
 
 	def submitJob() {
-		log.info("sumbitting write job to " + tableName)
+		log.info("submitting write job to " + tableName)
 		withOpenClose(writer) {
 			// this can fail anytime and should be retried
 			measurements foreach writer.write
