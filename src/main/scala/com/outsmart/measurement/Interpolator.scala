@@ -68,7 +68,7 @@ object Interpolator {
 
 		var output = List[TimedValue]()
 		if(!(tv1 < tv2 && tv2 < tv3 && tv3 < tv4)) {
-			//println("skipping duplicate")
+			//debug("skipping duplicate")
 			return output
 		}
 

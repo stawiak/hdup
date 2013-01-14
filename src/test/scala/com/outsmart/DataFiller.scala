@@ -3,14 +3,14 @@ package com.outsmart
 import dao.Writer
 import measurement.Measurement
 import org.joda.time.DateTime
-import util.Util
+import util.{Loggable, Util}
 import Util.withOpenClose
 import akka.actor.ActorRef
 
 /**
  * @author Vadim Bobrov
  */
-object DataFiller {
+object DataFiller extends Loggable{
 
 	var writer = Writer()
 	/**
@@ -22,7 +22,7 @@ object DataFiller {
 
 			for (i <- 0 until records) {
 				writer.write(DataGenerator.getRandomMeasurement)
-				if (i % 1000 == 0) println(i)
+				if (i % 1000 == 0) debug(i)
 			}
 
 		}
@@ -38,7 +38,7 @@ object DataFiller {
 
 			for (i <- 0 until records) {
 				writer.write(new Measurement(customer, location, wireid, i.asInstanceOf[Long], 8, 88, 888))
-				if (i % 1000 == 0) println(i)
+				if (i % 1000 == 0) debug(i)
 			}
 
 		}
@@ -58,7 +58,7 @@ object DataFiller {
 
 			for(l <- start.getMillis until end.getMillis by 300000) {
 				if ((l % 3600000) == 0)
-					println("filling for " + new DateTime(l))
+					debug("filling for " + new DateTime(l))
 
 				for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
 					writer.write(new Measurement(DataGenerator.getCustomer(i), DataGenerator.getLocation(j), DataGenerator.getWireId(k), l, value, value, value))
@@ -67,7 +67,7 @@ object DataFiller {
 
 			}
 
-			println("generated " + counter + " msmts")
+			debug("generated " + counter + " msmts")
 
 		}
 	}
@@ -84,7 +84,7 @@ object DataFiller {
 
 		for(l <- start.getMillis until end.getMillis by 300000) {
 			if ((l % 3600000) == 0)
-				println("filling for " + new DateTime(l))
+				debug("filling for " + new DateTime(l))
 
 			for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
 				actor ! new Measurement(DataGenerator.getCustomer(i), DataGenerator.getLocation(j), DataGenerator.getWireId(k), l, value, value, value)
@@ -92,7 +92,7 @@ object DataFiller {
 			}
 		}
 
-		println("generated " + counter + " msmts")
+		debug("generated " + counter + " msmts")
 	}
 
 	/**

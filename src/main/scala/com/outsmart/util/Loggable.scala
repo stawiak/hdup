@@ -1,12 +1,13 @@
 package com.outsmart.util
 
+import org.slf4j.LoggerFactory
 /**
  * @author Vadim Bobrov
  */
 trait Loggable {
   self =>
 
-  //val logger = Slf4jLoggerFactory.getLogger(self.getClass())
+  val logger = LoggerFactory.getLogger(self.getClass())
 
   /*
     Note the use of the parameterless function msg: => T as input parameter for the debug method. The main reason why we use the isDebugEnabled() check
@@ -17,6 +18,7 @@ trait Loggable {
     no unnecessary String is computed.
   */
   def debug[T](msg: => T):Unit = {
-    //if (logger.isDebugEnabled()) logger.debug(msg.toString)
+    if (logger.isDebugEnabled())
+		logger.debug(msg.toString)
   }
 }

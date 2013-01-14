@@ -9,17 +9,16 @@ import com.outsmart.DataFiller
 import com.outsmart.actor.write.{WriteMasterActor}
 import com.outsmart.measurement.Measurement
 import com.outsmart.actor.GracefulStop
+import com.outsmart.util.{Timing, Loggable}
 
 /**
  * @author Vadim Bobrov
  */
-class DataFillerTest extends FunSuite {
+class DataFillerTest extends FunSuite with Timing{
 
 
 	test("even fill") {
-		val start = System.currentTimeMillis
-		DataFiller.fillEven(new DateTime("2012-06-01"), new DateTime("2012-06-05"), 66)
-		println("filled in " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis - start) + " min")
+		time(DataFiller.fillEven(new DateTime("2012-06-01"), new DateTime("2012-06-05"), 66))
 	}
 
 
@@ -38,7 +37,7 @@ class DataFillerTest extends FunSuite {
 
 		system.awaitTermination()
 
-		println("filled in " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis - start) + " min")
+		debug("filled in " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis - start) + " min")
 	}
 
 	test("even fill parallel simple") {
@@ -48,7 +47,7 @@ class DataFillerTest extends FunSuite {
 		for (i <- 0 until 1000)
 			master ! new Measurement("b", "c", "d" + i, 2, 2, 2, 2)
 
-		println("flushing")
+		debug("flushing")
 		master ! GracefulStop
 
 		system.awaitTermination()

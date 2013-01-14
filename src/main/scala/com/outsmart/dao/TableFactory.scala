@@ -6,11 +6,12 @@ import com.outsmart.Settings
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.conf.Configuration
 import java.io.IOException
+import com.outsmart.util.Loggable
 
 /**
  * @author Vadim Bobrov
 */
-object TableFactory {
+object TableFactory extends Loggable{
 
   /** it is recommended that you create HTable instances only once—and one per thread
       * and reuse that instance for the rest of the lifetime of your client application.
@@ -46,7 +47,7 @@ object TableFactory {
     try {
       pool.getTable(Bytes.toBytes(tableName))
     } catch {
-      case e: Exception => {println("caught exception " + e); null}
+      case e: Exception => {debug("caught exception " + e); null}
     }
   }
 

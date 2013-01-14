@@ -3,11 +3,12 @@ package com.outsmart.dao
 import actors.Futures._
 import org.joda.time.DateTime
 import com.outsmart.measurement.MeasuredValue
+import com.outsmart.util.Loggable
 
 /**
  * @author Vadim Bobrov
 */
-class Grabber(scanner : Scanner) {
+class Grabber(scanner : Scanner) extends Loggable{
 
 	//TODO consider apply
   /**
@@ -21,7 +22,7 @@ class Grabber(scanner : Scanner) {
   }
 
   private def runScan(customer : String, location : String, wireid : String, arg : (String, String)) : Array[MeasuredValue] = {
-    println("starting scanner in thread " + Thread.currentThread().getId + " for " + customer + ", " + location + ", " + wireid + " from " + arg._1 + " to " + arg._2)
+    debug("starting scanner in thread " + Thread.currentThread().getId + " for " + customer + ", " + location + ", " + wireid + " from " + arg._1 + " to " + arg._2)
     scanner.scan(customer, location, wireid, new DateTime(arg._1), new DateTime(arg._2))
   }
 }

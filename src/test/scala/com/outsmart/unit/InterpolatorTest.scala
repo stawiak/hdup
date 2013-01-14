@@ -6,11 +6,12 @@ import com.outsmart.measurement.{TimedValue, Interpolator}
 import util.Random
 import actors.Futures._
 import collection.SortedSet
+import com.outsmart.util.{Timing, Loggable}
 
 /**
  * @author Vadim Bobrov
  */
-class InterpolatorTest extends FlatSpec with ShouldMatchers {
+class InterpolatorTest extends FlatSpec with ShouldMatchers with Timing{
 
 	import Interpolator._
 
@@ -130,11 +131,9 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 			uniqueValues += new TimedValue(random.nextInt(MillisPerDay),random.nextDouble())
 
 		val sorted = uniqueValues.toArray
-		println("length after " + sorted.length)
+		debug("length after " + sorted.length)
 
-		val start = System.currentTimeMillis
-		println("returned " + new Interpolator(sorted.iterator).iterator.toArray.length)
-		println("done in " + (System.currentTimeMillis - start))
+		time { debug("returned " + new Interpolator(sorted.iterator).iterator.toArray.length) }
 	}
 
 	"interpolation" should "work with multiple device measurements within one day" in {
@@ -149,12 +148,12 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 
 			val sorted = uniqueValues.toArray
 
-			val start = System.currentTimeMillis
-			new Interpolator(sorted.iterator).iterator.toArray.length
-			totalTime += (System.currentTimeMillis - start)
+
+			time { new Interpolator(sorted.iterator).iterator.toArray.length }
+
 		}
 
-		println("total time " + totalTime)
+		debug("total time " + totalTime)
 
 	}
 
@@ -170,12 +169,8 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers {
 			msmts = uniqueValues.toArray :: msmts
 		}
 
-		val start = System.currentTimeMillis
+		time { msmts map ( c => future { new Interpolator(c.iterator).iterator.toArray }) map (_()) reduce (_ zip _ map (a => a._1 + a._2)) }
 
-
-		msmts map ( c => future { new Interpolator(c.iterator).iterator.toArray }) map (_()) reduce (_ zip _ map (a => a._1 + a._2))
-
-		println("done in " + (System.currentTimeMillis - start))
 	}
 
 

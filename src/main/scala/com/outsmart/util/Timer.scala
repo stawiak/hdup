@@ -5,9 +5,9 @@ package com.outsmart.util
  */
 object Timer {
 
-  def periodicCall(seconds: Int, callback: () => Unit) {
+  def periodicCall(seconds: Int, callback: => Unit) {
     while (true) {
-      callback()
+      callback
       Thread.sleep(seconds * 1000)
     }
   }

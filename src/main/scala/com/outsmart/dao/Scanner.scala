@@ -69,8 +69,6 @@ object Scanner {
 
 			var res : Result = null
 
-			println("init scanner")
-
 			val iterator = Iterator.continually(results.next()) takeWhile (_ != null)
 
 			iterator foreach (res => {
