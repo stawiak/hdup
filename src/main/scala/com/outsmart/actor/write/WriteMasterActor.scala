@@ -3,7 +3,7 @@ package com.outsmart.actor.write
 import akka.actor._
 import com.outsmart.measurement.{Rollup, Interpolated, Measurement}
 import com.outsmart.Settings
-import akka.routing.{DefaultResizer, SmallestMailboxRouter}
+import akka.routing.{Broadcast, DefaultResizer, SmallestMailboxRouter}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import akka.util.Duration
 import com.outsmart.actor.{GracefulStop, DoctorGoebbels}
@@ -58,7 +58,7 @@ class WriteMasterActor extends DoctorGoebbels {
 
 		case GracefulStop =>
 			log.debug("write master received graceful stop")
-			routers.values foreach (_ ! GracefulStop)
+			routers.values foreach (_ ! Broadcast(GracefulStop))
 			onBlackSpot()
 
 
