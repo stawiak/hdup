@@ -2,14 +2,14 @@ package com.outsmart.actor.service
 
 import com.outsmart.measurement._
 import scala.Some
-import akka.actor.Actor
+import akka.actor.{ActorLogging, Actor}
 
 /**
  * Actor interface to interpolation. Given a measurement send back interpolated values
  *
  * @author Vadim Bobrov
  */
-class InterpolatorActor(val boundary: Int = 60000) extends Actor {
+class InterpolatorActor(val boundary: Int = 60000) extends Actor with ActorLogging {
 
 	var tv1, tv2, tv3, tv4 : Option[TimedValue] = None
 
