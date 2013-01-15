@@ -32,7 +32,7 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 		case GracefulStop =>
 			log.debug("time window received graceful stop")
 			// send out remaining measurements
-			for (tv <- measurements)
+			for (tv <- measurements.sortWith(_ < _))
 				aggregatorFactory(tv.customer, tv.location) ! tv
 
 			children foreach ( _ ! GracefulStop)
