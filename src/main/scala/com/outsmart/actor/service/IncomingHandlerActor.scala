@@ -6,6 +6,7 @@ import com.outsmart.actor.write.{WriteMasterActor, WriterMasterAwareActor}
 import com.outsmart.Settings
 import com.outsmart.actor.{GracefulStop, FinalCountDown}
 import akka.actor.DeadLetter
+import akka.dispatch.Terminate
 
 
 /**
@@ -45,8 +46,17 @@ class IncomingHandlerActor extends FinalCountDown {
 }
 class DeadLetterListener extends Actor with ActorLogging {
 
+	var lostMsmt = 0
+
 	def receive = {
-		case d: DeadLetter => log.debug(d.toString())
+		case Terminate => ;
+		case Terminated => ;
+		case DeadLetter(msmt: Measurement, sender: ActorRef, recipient: ActorRef) =>  {
+
+			lostMsmt += 1
+			log.debug("lost " + lostMsmt )
+			log.debug("dead letter: " + sender + " " + recipient)
+		}
 	}
 
 }
