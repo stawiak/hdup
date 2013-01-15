@@ -3,11 +3,12 @@ package com.outsmart.unit
 import org.scalatest.FlatSpec
 import com.outsmart.DataGenerator
 import org.scalatest.matchers.ShouldMatchers
+import com.outsmart.util.Timing
 
 /**
  * @author Vadim Bobrov
  */
-class DataGeneratorTest extends FlatSpec with ShouldMatchers {
+class DataGeneratorTest extends FlatSpec with ShouldMatchers with Timing {
 
 
 	"Randon customer name" should "start with customer" in {
@@ -41,5 +42,11 @@ class DataGeneratorTest extends FlatSpec with ShouldMatchers {
 		DataGenerator.getRandomMeasurement
 	}
 
+	"daily data iterator" should "return correct number of measurements" in {
+		time {
+			val iterator = DataGenerator.dailyDataIterator(60 * 24)
+			iterator.length should be (3456000)
+		}
+	}
 
 }
