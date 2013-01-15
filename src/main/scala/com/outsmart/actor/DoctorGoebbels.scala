@@ -12,8 +12,8 @@ trait DoctorGoebbels extends FinalCountDown {
 
 	import context._
 
-	override def onBlackSpot() {
-		super.onBlackSpot()
+	override def onBlackSpot(depressionMode: Boolean = true) {
+		super.onBlackSpot(depressionMode)
 		// send everyone a poison pill and wait for them to die, then kick the bucket
 		children foreach (_ ! Broadcast(PoisonPill))
 		children foreach (_ ! PoisonPill)
