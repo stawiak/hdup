@@ -2,6 +2,7 @@ package com.outsmart.actor
 
 import akka.actor._
 import akka.actor.Terminated
+import com.outsmart.measurement.Interpolated
 
 /**
  * @author Vadim Bobrov
@@ -40,17 +41,16 @@ trait FinalCountDown extends Actor with ActorLogging {
 		}
 	}
 
-
 	/**
 	 * execute this function to start shutdown procedure
+	 * @param depressionMode if in depressionMode - no messages from children or elsewhere will be received!!
 	 */
-	def onBlackSpot() {
+	def onBlackSpot(depressionMode: Boolean = true) {
 		children foreach watch
-		// from now on receive only bad news
-		become(lastMoments)
+		become(if (depressionMode) badNews else badNews orElse receive)
 	}
 
-	final def lastMoments : Receive = {
+	final def badNews : Receive = {
 
 		case Terminated(ref) =>
 			log.debug("another one bites the dust {}", ref.path)
@@ -63,7 +63,9 @@ trait FinalCountDown extends Actor with ActorLogging {
 				if (isInstanceOf[LastMohican])
 					context.system.shutdown()
 				else
-					stop(self)
+					// send a poison pill rather than stop to process
+					// messages received if not in depression
+					self ! PoisonPill
 			}
 
 	}
