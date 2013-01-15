@@ -1,10 +1,11 @@
 package com.outsmart.actor.service
 
-import akka.actor.{ActorRef, Props}
+import akka.actor._
 import com.outsmart.measurement.Measurement
 import com.outsmart.actor.write.{WriteMasterActor, WriterMasterAwareActor}
 import com.outsmart.Settings
 import com.outsmart.actor.{GracefulStop, FinalCountDown}
+import akka.actor.DeadLetter
 
 
 /**
@@ -19,7 +20,10 @@ class IncomingHandlerActor extends FinalCountDown {
 
 	override def preStart() {
 		// start write master as top level actor
-		writeMaster = context.system.actorOf(Props[WriteMasterActor], name = "writeMaster")
+		writeMaster = system.actorOf(Props[WriteMasterActor], name = "writeMaster")
+
+		val listener = system.actorOf(Props[DeadLetterListener])
+		system.eventStream.subscribe(listener, classOf[DeadLetter])
 	}
 
 	protected def receive: Receive = {
@@ -38,6 +42,11 @@ class IncomingHandlerActor extends FinalCountDown {
 			killChild(timeWindowManager, () => killChild(writeMaster, () => system.shutdown()) )
 	}
 
+}
+class DeadLetterListener extends Actor with ActorLogging {
 
+	def receive = {
+		case d: DeadLetter => log.debug(d.toString())
+	}
 
 }
