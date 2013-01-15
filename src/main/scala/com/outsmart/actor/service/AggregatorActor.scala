@@ -44,7 +44,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 
 		case GracefulStop =>
 			log.debug("aggregator received graceful stop")
-			onBlackSpot()
+			onBlackSpot(depressionMode = false)
 	}
 
 	private def processRollups() {
