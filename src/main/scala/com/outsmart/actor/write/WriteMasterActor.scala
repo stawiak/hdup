@@ -61,8 +61,8 @@ class WriteMasterActor extends FinalCountDown {
 
 		case GracefulStop =>
 			log.debug("write master received graceful stop")
-			routers.values foreach (_ ! Broadcast(GracefulStop))
 			waitAndDie()
+			children foreach (_ ! Broadcast(GracefulStop))
 			children foreach (_ ! Broadcast(PoisonPill))
 
 
