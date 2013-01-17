@@ -10,18 +10,18 @@ import com.outsmart.Settings
  * @author Vadim Bobrov
 */
 trait Scanner {
-  def scan(customer : String, location : String, wireid : String, start : DateTime, end : DateTime) : Array[MeasuredValue] = {
+  def scan(customer : String, location : String, wireid : String, start : DateTime, end : DateTime) : List[MeasuredValue] = {
     scan(customer, location, wireid, start.getMillis, end.getMillis)
   }
 
-  def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[MeasuredValue]
+  def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : List[MeasuredValue]
 }
 
 object Scanner {
-	def apply() : Scanner = new ScannerImpl()
+	def apply(tableName : String = Settings.TableName) : Scanner = new ScannerImpl(tableName)
 
 
-	private class ScannerImpl extends Scanner {
+	private class ScannerImpl(private val tableName : String = Settings.TableName) extends Scanner {
 
 		/**
 		Sometimes it might be necessary to find a specific row, or the one just before the re-
@@ -47,9 +47,9 @@ object Scanner {
     stop row. If no stop row was specified, the scan will run to the end of the table.
 		  */
 
-		def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[MeasuredValue] = {
+		def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : List[MeasuredValue] = {
 
-			val table = TableFactory()
+			val table = TableFactory(tableName)
 
 			var output = List[MeasuredValue]()
 
@@ -81,7 +81,7 @@ object Scanner {
 			})
 
 			results.close()
-			output.toArray
+			output
 		}
 
 

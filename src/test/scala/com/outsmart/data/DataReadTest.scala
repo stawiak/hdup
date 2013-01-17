@@ -12,7 +12,7 @@ class DataReadTest extends FunSuite with Loggable{
 	test("returns the results of a single scanner") {
 		val grabber : Grabber = new Grabber(Scanner())
 
-		val res = grabber.grab("customer0", "location0", "wireid0", Array[(String, String)](
+		val res = grabber.grab("customer0", "location0", "wireid0", List[(String, String)](
 			("2012-02-01", "2012-02-05")
 		))
 
@@ -25,7 +25,7 @@ class DataReadTest extends FunSuite with Loggable{
 	test("returns the results of two scanners") {
 		val grabber : Grabber = new Grabber(Scanner())
 
-		val res = grabber.grab("customer1", "location1", "wireid1", Array[(String, String)](
+		val res = grabber.grab("customer1", "location1", "wireid1", List[(String, String)](
 			("2012-02-01", "2012-02-05"),
 			("2012-03-01", "2012-03-05")
 		))

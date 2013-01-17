@@ -24,7 +24,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 			writeMaster !  new Measurement(customer, location, "", tv._1, tv._2, 0, 0) with Rollup
 	}
 
-	protected def receive: Receive = {
+	override def receive: Receive = {
 
 		// received back from interpolator - add to rollups and save to storage
 		case ismt : Interpolated =>

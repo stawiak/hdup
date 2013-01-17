@@ -16,7 +16,7 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
 
-	protected def receive: Receive = {
+	override def receive: Receive = {
 
 		case msmt : Measurement =>
 

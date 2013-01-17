@@ -48,6 +48,8 @@ trait FinalCountDown extends Actor with ActorLogging {
 	def onBlackSpot(depressionMode: Boolean = true) {
 		children foreach watch
 		become(if (depressionMode) badNews else badNews orElse receive)
+		if (depressionMode)
+			log.debug("stopped listening to messages")
 	}
 
 	final def badNews : Receive = {

@@ -13,7 +13,7 @@ class GrabberTest extends FlatSpec with ShouldMatchers {
 	val grabber : Grabber = new Grabber(new TestScannerImpl())
 
 	"A single scanner" should "return 3 values" in {
-		val res = grabber.grab("customer1", "location1", "wireid1", Array[(String, String)](
+		val res = grabber.grab("customer1", "location1", "wireid1", List[(String, String)](
 			("2012-01-01", "2012-01-05")
 		))
 
@@ -21,7 +21,7 @@ class GrabberTest extends FlatSpec with ShouldMatchers {
 	}
 
 	it should "be 1,2,3" in {
-		val res = grabber.grab("customer1", "location1", "wireid1", Array[(String, String)](
+		val res = grabber.grab("customer1", "location1", "wireid1", List[(String, String)](
 			("2012-01-01", "2012-01-05")
 		))
 
@@ -33,7 +33,7 @@ class GrabberTest extends FlatSpec with ShouldMatchers {
 
 	"2 scanners" should "return 6 values" in {
 
-		val res = grabber.grab("customer1", "location1", "wireid1", Array[(String, String)](
+		val res = grabber.grab("customer1", "location1", "wireid1", List[(String, String)](
 			("2012-01-01", "2012-01-05"),
 			("2012-01-01", "2012-01-05")
 		))

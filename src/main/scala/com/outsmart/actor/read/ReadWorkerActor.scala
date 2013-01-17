@@ -1,4 +1,4 @@
-package com.outsmart.actor.write
+package com.outsmart.actor.read
 
 import akka.actor.{ActorLogging, Actor}
 import com.outsmart.dao.Writer
@@ -6,13 +6,13 @@ import com.outsmart.util.Util
 import Util.withOpenClose
 import com.outsmart.Settings
 import com.outsmart.measurement.Measurement
-import com.outsmart.actor.{GracefulStop}
+import com.outsmart.actor.GracefulStop
 import com.outsmart.actor.util.Stats
 
 /**
   * @author Vadim Bobrov
   */
-class WriteWorkerActor(val tableName : String, val batchSize: Int = Settings.BatchSize) extends Actor with ActorLogging{
+class ReadWorkerActor(val tableName : String, val batchSize: Int = Settings.BatchSize) extends Actor with ActorLogging{
 
 	val writer = Writer(tableName)
 	var measurements = List[Measurement]() //new Array[Measurement](batchSize)

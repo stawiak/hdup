@@ -7,7 +7,7 @@ import com.outsmart.measurement.Measurement
 import akka.testkit.{TestProbe, ImplicitSender, TestKit, TestActorRef}
 import com.outsmart.actor.service.TimeWindowActor
 import com.typesafe.config.ConfigFactory
-import akka.util.duration._
+import scala.concurrent.duration._
 
 /**
  * @author Vadim Bobrov

@@ -21,7 +21,7 @@ object FaultHandlingDocSpec{
 		var counter : Int = 0
 		var received = List[Measurement]()
 
-		protected def receive: Receive = {
+		override def receive: Receive = {
 
 			case msmt: Measurement => {
 				counter += 1

@@ -33,7 +33,7 @@ class DoctorGoebbelsTest(_system: ActorSystem) extends TestKit(_system) with Fla
 	case object WaitMessage
 	class TestDoctorGoebbelsActor extends FinalCountDown with LastMohican {
 
-		protected def receive: Receive = {
+		override def receive: Receive = {
 
 			case newChild : Props =>
 				val newOne = context.actorOf(newChild)
@@ -48,7 +48,7 @@ class DoctorGoebbelsTest(_system: ActorSystem) extends TestKit(_system) with Fla
 
 	class TestChildActor extends Actor with ActorLogging {
 
-		protected def receive: Receive = {
+		override def receive: Receive = {
 			case WaitMessage =>
 				log.info("received wait message")
 				waitMillis(2000)

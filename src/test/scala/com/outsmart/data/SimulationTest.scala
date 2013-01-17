@@ -9,6 +9,8 @@ import com.typesafe.config.ConfigFactory
 import com.outsmart.DataGenerator
 import com.outsmart.actor.{GracefulStop, LastMohican, FinalCountDown}
 import com.outsmart.util.{Timing, Loggable}
+import akka.agent.Agent
+import com.outsmart.actor.util.{Counter, Stats}
 
 /**
  * @author Vadim Bobrov
@@ -16,7 +18,7 @@ import com.outsmart.util.{Timing, Loggable}
 class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest with Timing{
 
 	def this() = this(ActorSystem("prod", ConfigFactory.load().getConfig("prod")))
-	val incomingHandler = system.actorOf(Props[IncomingHandlerActor with FinalCountDown with LastMohican], name = "incomingHandler")
+	val incomingHandler = system.actorOf(Props[IncomingHandlerActor with LastMohican], name = "incomingHandler")
 
 	override def afterAll() {
 		system.awaitTermination()
@@ -35,7 +37,9 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 
 
 	"incoming handler" should "be able to correctly process daily data" in {
-		time { DataGenerator.dailyDataIterator(20) foreach  (incomingHandler ! _) }
+		Stats.sentWriteMaster = new Counter()
+		Stats.receivedWriteWorker = new Counter()
+		time { DataGenerator.dailyDataIterator(60) foreach  (incomingHandler ! _) }
 		incomingHandler ! GracefulStop
 	}
 

@@ -1,27 +1,37 @@
-package com.outsmart.actor.write
+package com.outsmart.actor.read
 
 import akka.actor._
-import com.outsmart.measurement.{Rollup, Interpolated, Measurement}
+import com.outsmart.measurement.{MeasuredValue, Rollup, Interpolated, Measurement}
 import com.outsmart.Settings
-import akka.routing.{RoundRobinRouter, Broadcast, DefaultResizer, SmallestMailboxRouter}
+import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
+import com.outsmart.actor.{DoctorGoebbels, GracefulStop}
+import com.outsmart.actor.write.WriteWorkerActor
+import akka.actor.OneForOneStrategy
+import akka.routing.Broadcast
+import akka.pattern.ask
+import akka.pattern.pipe
 import concurrent.duration._
-import com.outsmart.actor.{GracefulStop, DoctorGoebbels}
-import com.outsmart.actor.util.Stats
+import concurrent.Future
+import akka.util.Timeout
 
 
 /**
  * @author Vadim Bobrov
  */
-class WriteMasterActor extends DoctorGoebbels {
+case class RollupReadRequest(val customer : String, val location : String, val periods : List[(String, String)])
+case class ReadRequest(val customer : String, val location : String, val wireid : String, val periods : List[(String, String)])
+case class ScanRequest(val customer : String, val location : String, val wireid : String, val period : (String, String))
+class ReadMasterActor extends DoctorGoebbels {
 
 	import context._
+	implicit val timeout = Timeout(10 seconds)
+	type Result = List[MeasuredValue]
 
 	// Since a restart does not clear out the mailbox, it often is best to terminate
 	// the children upon failure and re-create them explicitly from the supervisor
 
 	var routers = Map[String, ActorRef]()
-	var counter = 0
 
 	val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 	var routerFactory : (ActorContext, String, Int) => ActorRef = {(actorContext : ActorContext, tableName : String, batchSize : Int) =>
@@ -53,14 +63,22 @@ class WriteMasterActor extends DoctorGoebbels {
 
 	override def receive: Receive = {
 
-		case msmt : Measurement => {
-			counter += 1
-			getRouter(msmt) ! msmt
-			Stats.sentWriteMaster.++
+		case ReadRequest(customer, location, wireid, periods) => {
+			//getRouter(msmt) ! msmt
+			//periods map (period => future { Scanner().scan(customer, location, wireid, new DateTime(period._1), new DateTime(period._2)) }) flatMap (_())
+
+			// we are sending Future(List(Future(List(Measurements))))
+			Future.sequence(periods map (period => (routers("") ? ScanRequest(customer, location, wireid, period)).mapTo[List[MeasuredValue]])) pipeTo sender
+
+
+
+
+
+
 		}
 
 		case GracefulStop =>
-			log.debug("write master received graceful stop")
+			log.debug("read master received graceful stop")
 			routers.values foreach (_ ! Broadcast(GracefulStop))
 			onBlackSpot()
 

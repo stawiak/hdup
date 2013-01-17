@@ -10,9 +10,9 @@ import util.Loggable
  */
 object DataGenerator extends Loggable{
 
-	private val CustomerNumber = 20
-	private val LocationNumber = 2
-	private val WireNumber = 300
+	private val CustomerNumber = 1//20
+	private val LocationNumber = 1//2
+	private val WireNumber = 1//300
 
 	private val CUSTOMERS =  new Array[String](CustomerNumber)
 	private val LOCATIONS =  Array[String]("location0", "location1")
@@ -78,7 +78,7 @@ object DataGenerator extends Loggable{
 				curLocation = 0; curWireId = 0
 			}
 
-			new Measurement(
+			val msmt = new Measurement(
 				CUSTOMERS(curCustomer),
 				LOCATIONS(curLocation),
 				WIREIDS(curWireId),
@@ -87,6 +87,9 @@ object DataGenerator extends Loggable{
 				random.nextDouble(),
 				random.nextDouble()
 			)
+
+			debug(msmt)
+			msmt
 		}
 	}
 

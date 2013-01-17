@@ -13,7 +13,7 @@ class InterpolatorActor(val boundary: Int = 60000) extends Actor with ActorLoggi
 
 	var tv1, tv2, tv3, tv4 : Option[TimedValue] = None
 
-	protected def receive: Receive = {
+	override def receive: Receive = {
 
 		case msmt : Measurement => {
 
