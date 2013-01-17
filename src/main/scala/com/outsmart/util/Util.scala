@@ -2,17 +2,17 @@ package com.outsmart.util
 
 /**
  * @author Vadim Bobrov
-*/
+ */
 object Util {
 
-  def withOpenClose(oc : OpenClosable)(op: => Unit) {
-    oc.open()
+	def using[T <: { def open() : Unit; def close() : Unit  }](oc : T)(op: => Unit) {
+		oc.open()
 
-    try{
-      op
-    } finally {
-      oc.close()
-    }
+		try{
+			op
+		} finally {
+			oc.close()
+		}
 
-  }
+	}
 }

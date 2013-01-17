@@ -1,6 +1,5 @@
 package com.outsmart.dao
 
-import com.outsmart.util.OpenClosable
 import com.outsmart.measurement.Measurement
 import com.outsmart.Settings
 import org.apache.hadoop.hbase.client.{Put, HTableInterface}
@@ -9,9 +8,10 @@ import org.apache.hadoop.hbase.util.Bytes
 /**
  * @author Vadim Bobrov
 */
-trait Writer extends OpenClosable {
-  def write(msmt: Measurement)
-
+trait Writer {
+	def open()
+  	def write(msmt: Measurement)
+	def close()
 }
 
 object Writer {

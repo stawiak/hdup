@@ -4,7 +4,7 @@ import dao.Writer
 import measurement.Measurement
 import org.joda.time.DateTime
 import util.{Loggable, Util}
-import Util.withOpenClose
+import Util.using
 import akka.actor.ActorRef
 
 /**
@@ -18,7 +18,7 @@ object DataFiller extends Loggable{
 	 * @param records number of records
 	 */
 	def fillRandom(records : Int) {
-		withOpenClose(writer) {
+		using(writer) {
 
 			for (i <- 0 until records) {
 				writer.write(DataGenerator.getRandomMeasurement)
@@ -34,7 +34,7 @@ object DataFiller extends Loggable{
 	 * @param records number of records
 	 */
 	def fill(customer:String, location:String, wireid:String, records : Int) {
-		withOpenClose(writer) {
+		using(writer) {
 
 			for (i <- 0 until records) {
 				writer.write(new Measurement(customer, location, wireid, i.asInstanceOf[Long], 8, 88, 888))
@@ -52,7 +52,7 @@ object DataFiller extends Loggable{
 	 * @param value value to fill
 	 */
 	def fillEven(start:DateTime, end:DateTime, value:Double) {
-		withOpenClose(writer) {
+		using(writer) {
 
 			var counter = 0
 
@@ -100,7 +100,7 @@ object DataFiller extends Loggable{
 	 * @param value value to fill
 	 */
 	def fillSimple(customer: String, location: String, wireid: String, timestamp: Long, value:Double) {
-		withOpenClose(writer) {
+		using(writer) {
 			writer.write(new Measurement(customer, location, wireid, timestamp, value, value, value))
 		}
 	}

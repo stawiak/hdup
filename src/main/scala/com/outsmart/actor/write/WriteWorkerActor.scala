@@ -3,7 +3,7 @@ package com.outsmart.actor.write
 import akka.actor.{ActorLogging, Actor}
 import com.outsmart.dao.Writer
 import com.outsmart.util.Util
-import Util.withOpenClose
+import Util.using
 import com.outsmart.Settings
 import com.outsmart.measurement.Measurement
 import com.outsmart.actor.{GracefulStop}
@@ -40,7 +40,7 @@ class WriteWorkerActor(val tableName : String, val batchSize: Int = Settings.Bat
 
 	def submitJob() {
 		log.debug("submitting write job to " + tableName)
-		withOpenClose(writer) {
+		using(writer) {
 			// this can fail anytime and should be retried
 			measurements foreach writer.write
 		}
