@@ -5,23 +5,21 @@ import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit, TestActorRef}
 import com.typesafe.config.ConfigFactory
-import com.outsmart.actor.{GracefulStop, LastMohican, FinalCountDown}
+import com.outsmart.actor.{DoctorGoebbels, GracefulStop, LastMohican, FinalCountDown}
 import akka.routing.RoundRobinRouter
 import annotation.tailrec
 
 /**
  * @author Vadim Bobrov
  */
-class DoctorGoebbelsTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest {
+class DoctorGoebbelsTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
 
 	def this() = this(ActorSystem("test", ConfigFactory.load().getConfig("test")))
 
-	val actorUnderTest = TestActorRef(new TestDoctorGoebbelsActor())
-
-
 	"Doctor Goebbels actor" should "wait for the children to shutdown before shutting down" in {
+		val actorUnderTest = TestActorRef(new TestDoctorGoebbelsActor(), name = "parent")
 		actorUnderTest !  Props(new TestChildActor()).withRouter(new RoundRobinRouter(3))
-		actorUnderTest !  Props(new TestChildActor())
+		//actorUnderTest !  Props(new TestChildActor())
 
 		actorUnderTest !  GracefulStop
 	}
@@ -31,12 +29,12 @@ class DoctorGoebbelsTest(_system: ActorSystem) extends TestKit(_system) with Fla
 	}
 
 	case object WaitMessage
-	class TestDoctorGoebbelsActor extends FinalCountDown with LastMohican {
+	class TestDoctorGoebbelsActor extends DoctorGoebbels with LastMohican {
 
 		override def receive: Receive = {
 
 			case newChild : Props =>
-				val newOne = context.actorOf(newChild)
+				val newOne = context.actorOf(newChild, name = "child")
 				newOne ! WaitMessage
 				newOne ! WaitMessage
 
