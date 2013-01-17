@@ -36,7 +36,7 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 				aggregatorFactory(tv.customer, tv.location) ! tv
 
 			children foreach ( _ ! GracefulStop)
-			onBlackSpot()
+			waitAndDie()
 
 	}
 

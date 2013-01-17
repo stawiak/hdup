@@ -5,7 +5,7 @@ import com.outsmart.measurement.{MeasuredValue, Rollup, Interpolated, Measuremen
 import com.outsmart.Settings
 import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
-import com.outsmart.actor.{DoctorGoebbels, GracefulStop}
+import com.outsmart.actor.{FinalCountDown, GracefulStop}
 import com.outsmart.actor.write.WriteWorkerActor
 import akka.actor.OneForOneStrategy
 import akka.routing.Broadcast
@@ -22,7 +22,7 @@ import akka.util.Timeout
 case class RollupReadRequest(val customer : String, val location : String, val periods : List[(String, String)])
 case class ReadRequest(val customer : String, val location : String, val wireid : String, val periods : List[(String, String)])
 case class ScanRequest(val customer : String, val location : String, val wireid : String, val period : (String, String))
-class ReadMasterActor extends DoctorGoebbels {
+class ReadMasterActor extends FinalCountDown {
 
 	import context._
 	implicit val timeout = Timeout(10 seconds)
@@ -80,8 +80,8 @@ class ReadMasterActor extends DoctorGoebbels {
 		case GracefulStop =>
 			log.debug("read master received graceful stop")
 			routers.values foreach (_ ! Broadcast(GracefulStop))
-			onBlackSpot()
-
+			waitAndDie()
+			children foreach (_ ! Broadcast(PoisonPill))
 
 	}
 }

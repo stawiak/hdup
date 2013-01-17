@@ -45,7 +45,7 @@ trait FinalCountDown extends Actor with ActorLogging {
 	 * execute this function to start shutdown procedure
 	 * @param depressionMode if in depressionMode - no messages from children or elsewhere will be received!!
 	 */
-	def onBlackSpot(depressionMode: Boolean = true) {
+	def waitAndDie(depressionMode: Boolean = true) {
 		children foreach watch
 		become(if (depressionMode) badNews else badNews orElse receive)
 		if (depressionMode)

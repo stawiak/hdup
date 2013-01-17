@@ -1,6 +1,6 @@
 package com.outsmart.actor.service
 
-import akka.actor.{Props, ActorRef}
+import akka.actor.{PoisonPill, Props, ActorRef}
 import com.outsmart.measurement._
 import com.outsmart.actor.write.WriterMasterAwareActor
 import com.outsmart.actor._
@@ -11,7 +11,7 @@ import com.outsmart.Settings
  *
  * @author Vadim Bobrov
  */
-class AggregatorActor(val customer: String, val location: String, var timeWindow : Int = Settings.ExpiredTimeWindow) extends DoctorGoebbels with WriterMasterAwareActor with TimedActor {
+class AggregatorActor(val customer: String, val location: String, var timeWindow : Int = Settings.ExpiredTimeWindow) extends FinalCountDown with WriterMasterAwareActor with TimedActor {
 
 	import context._
 	var interpolatorFactory  : String => ActorRef = DefaultInterpolatorFactory.get
@@ -44,7 +44,8 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 
 		case GracefulStop =>
 			log.debug("aggregator received graceful stop")
-			onBlackSpot(depressionMode = false)
+			waitAndDie(depressionMode = false)
+			children foreach (_ ! PoisonPill)
 	}
 
 	private def processRollups() {

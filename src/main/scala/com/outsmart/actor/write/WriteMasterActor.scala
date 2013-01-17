@@ -6,14 +6,14 @@ import com.outsmart.Settings
 import akka.routing.{RoundRobinRouter, Broadcast, DefaultResizer, SmallestMailboxRouter}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
-import com.outsmart.actor.{GracefulStop, DoctorGoebbels}
+import com.outsmart.actor.{FinalCountDown, GracefulStop}
 import com.outsmart.actor.util.Stats
 
 
 /**
  * @author Vadim Bobrov
  */
-class WriteMasterActor extends DoctorGoebbels {
+class WriteMasterActor extends FinalCountDown {
 
 	import context._
 
@@ -62,7 +62,8 @@ class WriteMasterActor extends DoctorGoebbels {
 		case GracefulStop =>
 			log.debug("write master received graceful stop")
 			routers.values foreach (_ ! Broadcast(GracefulStop))
-			onBlackSpot()
+			waitAndDie()
+			children foreach (_ ! Broadcast(PoisonPill))
 
 
 	}
