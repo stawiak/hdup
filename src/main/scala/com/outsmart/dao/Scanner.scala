@@ -53,8 +53,8 @@ object Scanner {
 
 			var output = List[MeasuredValue]()
 
-			val startRowKey = RowKeyUtils.createRowKey(customer, location, wireid, end)
-			val endRowKey = RowKeyUtils.createRowKey(customer, location, wireid, start)
+			val startRowKey = if(tableName == Settings.RollupTableName) RowKeyUtils.createRollupRowKey(customer, location, end) else RowKeyUtils.createRowKey(customer, location, wireid, end)
+			val endRowKey = if(tableName == Settings.RollupTableName) RowKeyUtils.createRollupRowKey(customer, location, start) else RowKeyUtils.createRowKey(customer, location, wireid, start)
 
 			val scan = new Scan(startRowKey, endRowKey)
 

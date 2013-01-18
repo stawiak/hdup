@@ -33,6 +33,26 @@ object RowKeyUtils {
     rowkey
   }
 
+	/**
+	 * create rowkey using customer, location and reversed timestamp
+	 * @param customer
+	 * @param location
+	 * @param timestamp
+	 * @return
+	 */
+	def createRollupRowKey(customer : String, location : String, timestamp : Long) : Array[Byte] = {
+
+		val rowkey = new Array[Byte](SIZEOF_STRING + SIZEOF_STRING + Bytes.SIZEOF_LONG)
+
+		Bytes.putBytes(rowkey, 0, getHash(customer), 0, SIZEOF_STRING)
+		Bytes.putBytes(rowkey, SIZEOF_STRING, getHash(location), 0, SIZEOF_STRING)
+
+		val reverseTimestamp = Long.MaxValue - timestamp
+		Bytes.putLong(rowkey, SIZEOF_STRING + SIZEOF_STRING, reverseTimestamp)
+
+		rowkey
+	}
+
   /**
    * create partial rowkey using only part of the entire key
    * @param customer
