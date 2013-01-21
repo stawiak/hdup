@@ -1,5 +1,6 @@
-package com.outsmart;
+package com.outsmart.interpolation;
 
+import com.outsmart.interpolation.SlidingInterpolatorImpl;
 import com.outsmart.measurement.TimedValue;
 import org.junit.Before;
 import org.junit.Test;

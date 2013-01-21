@@ -1,11 +1,9 @@
-package com.outsmart;
+package com.outsmart.interpolation;
 
 import com.outsmart.measurement.TimedValue;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Vadim Bobrov

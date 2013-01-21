@@ -1,4 +1,4 @@
-package com.outsmart;
+package com.outsmart.interpolation;
 
 import com.outsmart.measurement.TimedValue;
 
