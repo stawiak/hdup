@@ -18,12 +18,12 @@ public class SlidingInterpolatorImpl implements Interpolator {
 		nQueue.offer(tv);
 
 		if(nQueue.isFull())
-			return bilinear(nQueue.get(0), nQueue.get(1), nQueue.get(3), nQueue.get(3));
+			return bilinear(nQueue.get(0), nQueue.get(1), nQueue.get(2), nQueue.get(3));
 		else
 			return Collections.emptyList();
 	}
 
-	public List<TimedValue> bilinear(TimedValue tv1, TimedValue tv2, TimedValue tv3, TimedValue tv4) {
+	protected List<TimedValue> bilinear(TimedValue tv1, TimedValue tv2, TimedValue tv3, TimedValue tv4) {
 		return bilinear(tv1, tv2, tv3, tv4, 60000);
 	}
 
@@ -34,7 +34,7 @@ public class SlidingInterpolatorImpl implements Interpolator {
 	 * @param tv1 tv2 tv3 tv4	four consecutive points (must be in ascending order)
 	 * @return					sequence of interpolations
 	 */
-	public List<TimedValue> bilinear(TimedValue tv1, TimedValue tv2, TimedValue tv3, TimedValue tv4, int boundary) {
+	protected List<TimedValue> bilinear(TimedValue tv1, TimedValue tv2, TimedValue tv3, TimedValue tv4, int boundary) {
 		// ensure strictly ascending
 		//require(tv1 < tv2 && tv2 < tv3 && tv3 < tv4, "bilinear arguments out of order " + tv1.timestamp + " " + tv3.timestamp + " " + tv3.timestamp + " " + tv4.timestamp)
 
@@ -99,7 +99,7 @@ public class SlidingInterpolatorImpl implements Interpolator {
 	 * prereq: strictly in ascending order by X
 	 * @return (0,0) if parallel, (-1,-1) if intersect outside [x2, x3], coordinates of intersection otherwise
 	 */
-	private Point findIntersection(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
+	protected Point findIntersection(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
 		// ensure strictly ascending
 		assert (x1 < x2 && x2 < x3 && x3 < x4);
 
@@ -124,19 +124,19 @@ public class SlidingInterpolatorImpl implements Interpolator {
 	 * @param x interpolation point converted to double for math
 	 * @return interpolation value
 	 */
-	public double linearInterpolate(double x, double x1, double y1, double x2, double y2) {
+	protected double linearInterpolate(double x, double x1, double y1, double x2, double y2) {
 		assert (x1 != x2);
 		return (x - x1) * (y2 - y1)/(x2 - x1) + y1;
 	}
 
-	static private class Point {
+	static protected class Point {
 		private final long x;
 		private final double y;
 
 		static public final Point parallel = new Point(0,0);
 		static public final Point outside = new Point(-1, -1);
 
-		private Point(long x, double y) {
+		public Point(long x, double y) {
 			this.x = x;
 			this.y = y;
 		}
@@ -147,6 +147,29 @@ public class SlidingInterpolatorImpl implements Interpolator {
 
 		public double getY() {
 			return y;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+
+			Point point = (Point) o;
+
+			if (x != point.x) return false;
+			if (Double.compare(point.y, y) != 0) return false;
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			int result;
+			long temp;
+			result = (int) (x ^ (x >>> 32));
+			temp = y != +0.0d ? Double.doubleToLongBits(y) : 0L;
+			result = 31 * result + (int) (temp ^ (temp >>> 32));
+			return result;
 		}
 	}
 
