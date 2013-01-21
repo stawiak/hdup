@@ -169,7 +169,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers with Timing{
 			msmts = uniqueValues.toArray :: msmts
 		}
 
-		time { msmts map ( c => future { new Interpolator(c.iterator).iterator.toArray }) map (_()) reduce (_ zip _ map (a => a._1 + a._2)) }
+		time { msmts map ( c => future { new Interpolator(c.iterator).iterator.toArray }) map (_()) reduce (_ zip _ map (a => a._1.add(a._2))) }
 
 	}
 
