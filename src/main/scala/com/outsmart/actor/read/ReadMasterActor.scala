@@ -19,11 +19,6 @@ import akka.util.Timeout
 /**
  * @author Vadim Bobrov
  */
-//case class RollupReadRequest(customer : String, location : String, override val periods : List[(String, String)]) extends ReadRequest(periods)
-//case class MeasurementReadRequest(customer : String, location : String, override val periods : List[(String, String)]) extends ReadRequest(periods)
-
-//case class ReadRequest(periods : List[(String, String)])
-
 class ReadMasterActor extends FinalCountDown {
 
 	import context._
@@ -65,16 +60,11 @@ class ReadMasterActor extends FinalCountDown {
 
 		case request : ReadRequest => {
 
-			// we are sending Future(List(Future(List(Measurements))))
-			//Future.sequence(periods map (period => (routers("") ? ScanRequest(customer, location, wireid, period)).mapTo[List[MeasuredValue]])) pipeTo sender
+			//val f: Future[List[List[MeasuredValue]]] = Future.sequence(request.scanRequests.map(getRouter(request) ? _).map(_.mapTo[List[MeasuredValue]]))
+			//f.map(_.flatMap(identity)) pipeTo sender
 
-			val res = for {
-				scanRequest <- request.scanRequests
-				scannerResults = (getRouter(request) ? scanRequest).mapTo[List[MeasuredValue]]
-				mv <- scannerResults
-			} yield mv
-			sender ! res
 
+			Future.traverse(request.scanRequests)(req => (getRouter(request) ? req).mapTo[List[MeasuredValue]]).map(_.flatten) pipeTo sender
 
 		}
 

@@ -9,17 +9,17 @@ import org.joda.time.DateTime
   */
 class ReadWorkerActor(val tableName : String) extends Actor with ActorLogging{
 
-	val writer = Writer(tableName)
+	val scanner = Scanner(tableName)
 
 
 	override def receive: Receive = {
 
 		case request : MeasurementScanRequest => {
-			sender ! Scanner(tableName).scan(request.customer, request.location, request.wireid, new DateTime(request.period._1), new DateTime(request.period._2))
+			sender ! scanner.scan(request.customer, request.location, request.wireid, new DateTime(request.period._1), new DateTime(request.period._2))
 		}
 
 		case request : RollupScanRequest => {
-			sender ! Scanner(tableName).scan(request.customer, request.location, new DateTime(request.period._1), new DateTime(request.period._2))
+			sender ! scanner.scan(request.customer, request.location, new DateTime(request.period._1), new DateTime(request.period._2))
 		}
 
 	}
