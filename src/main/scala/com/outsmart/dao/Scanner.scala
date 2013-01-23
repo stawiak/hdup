@@ -10,11 +10,17 @@ import com.outsmart.Settings
  * @author Vadim Bobrov
 */
 trait Scanner {
-  def scan(customer : String, location : String, wireid : String, start : DateTime, end : DateTime) : List[MeasuredValue] = {
-    scan(customer, location, wireid, start.getMillis, end.getMillis)
-  }
+	def scan(customer : String, location : String, wireid : String, start : DateTime, end : DateTime) : List[MeasuredValue] = {
+		scan(customer, location, wireid, start.getMillis, end.getMillis)
+	}
 
-  def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : List[MeasuredValue]
+	def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : List[MeasuredValue]
+
+	def scan(customer : String, location : String, start : DateTime, end : DateTime) : List[MeasuredValue] = {
+		scan(customer, location, start.getMillis, end.getMillis)
+	}
+
+	def scan(customer : String, location : String, start : Long, end : Long) : List[MeasuredValue]
 }
 
 object Scanner {

@@ -24,6 +24,7 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 		system.awaitTermination()
 	}
 
+/*
 	"incoming handler" should "be able to handle continuous message flow" in {
 		time {
 			for (i <- 1 to 10000) {
@@ -34,6 +35,7 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 
 		incomingHandler ! GracefulStop
 	}
+*/
 
 
 	"incoming handler" should "be able to correctly process daily data" in {

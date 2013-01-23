@@ -1,51 +1,27 @@
 package com.outsmart.actor.read
 
 import akka.actor.{ActorLogging, Actor}
-import com.outsmart.dao.Writer
-import com.outsmart.util.Util
-import Util.using
-import com.outsmart.Settings
-import com.outsmart.measurement.Measurement
-import com.outsmart.actor.GracefulStop
-import com.outsmart.actor.util.Stats
+import com.outsmart.dao.{Scanner, Writer}
+import org.joda.time.DateTime
 
 /**
   * @author Vadim Bobrov
   */
-class ReadWorkerActor(val tableName : String, val batchSize: Int = Settings.BatchSize) extends Actor with ActorLogging{
+class ReadWorkerActor(val tableName : String) extends Actor with ActorLogging{
 
 	val writer = Writer(tableName)
-	var measurements = List[Measurement]() //new Array[Measurement](batchSize)
 
 
 	override def receive: Receive = {
 
-		case msmt : Measurement => {
-			log.debug("write worker received msmt")
-			Stats.receivedWriteWorker.++
-			measurements = msmt :: measurements
-
-			if(measurements.length == batchSize)
-				submitJob()
+		case request : MeasurementScanRequest => {
+			sender ! Scanner(tableName).scan(request.customer, request.location, request.wireid, new DateTime(request.period._1), new DateTime(request.period._2))
 		}
 
-
-		case GracefulStop =>  {
-			log.debug("write worker received graceful stop")
-			submitJob()
+		case request : RollupScanRequest => {
+			sender ! Scanner(tableName).scan(request.customer, request.location, new DateTime(request.period._1), new DateTime(request.period._2))
 		}
 
-	}
-
-
-	def submitJob() {
-		log.debug("submitting write job to " + tableName)
-		using(writer) {
-			// this can fail anytime and should be retried
-			measurements foreach writer.write
-		}
-
-		measurements = List[Measurement]()
 	}
 
  }
