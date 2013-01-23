@@ -3,26 +3,20 @@ package com.outsmart.actor.read
 /**
  * @author Vadim Bobrov
  */
-abstract case class ReadRequest() {
-	def scanRequests() : List[ScanRequest]
-}
+case class MeasurementScanRequest(customer : String, location : String, wireid: String, period : (String, String))
+case class RollupScanRequest(customer : String, location : String, period : (String, String))
 
-abstract case class ScanRequest()
+case class MeasurementReadRequest(customer : String, location : String, wireid: String, periods : List[(String, String)]) {
 
-case class MeasurementScanRequest(customer : String, location : String, wireid: String, period : (String, String)) extends ScanRequest
-case class RollupScanRequest(customer : String, location : String, period : (String, String)) extends ScanRequest
-
-case class MeasurementReadRequest(customer : String, location : String, wireid: String, periods : List[(String, String)]) extends ReadRequest {
-
-	override def scanRequests() : List[ScanRequest] = {
+	def scanRequests() = {
 		periods map (MeasurementScanRequest(customer, location, wireid, _))
 	}
 
 }
 
-case class RollupReadRequest(customer : String, location : String, periods : List[(String, String)]) extends ReadRequest {
+case class RollupReadRequest(customer : String, location : String, periods : List[(String, String)]) {
 
-	override def scanRequests() : List[ScanRequest] = {
+	def scanRequests() = {
 		periods map (RollupScanRequest(customer, location, _))
 	}
 

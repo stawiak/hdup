@@ -41,7 +41,7 @@ class ReadMasterActor extends FinalCountDown {
 		}
 
 
-	private def getRouter(request : ReadRequest) : ActorRef = {
+	private def getRouter(request : AnyRef) : ActorRef = {
 
 		val tableName = request match  {
 			case RollupReadRequest => Settings.RollupTableName
@@ -58,7 +58,7 @@ class ReadMasterActor extends FinalCountDown {
 
 	override def receive: Receive = {
 
-		case request : ReadRequest => {
+		case request : RollupReadRequest => {
 
 			//val f: Future[List[List[MeasuredValue]]] = Future.sequence(request.scanRequests.map(getRouter(request) ? _).map(_.mapTo[List[MeasuredValue]]))
 			//f.map(_.flatMap(identity)) pipeTo sender
