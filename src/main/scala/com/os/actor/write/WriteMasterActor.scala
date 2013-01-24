@@ -56,7 +56,6 @@ class WriteMasterActor extends FinalCountDown {
 		case msmt : Measurement => {
 			counter += 1
 			getRouter(msmt) ! msmt
-			Stats.sentWriteMaster.++
 		}
 
 		case GracefulStop =>

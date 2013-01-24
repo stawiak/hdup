@@ -29,6 +29,13 @@
     </repositories>
 
     <dependencies>
+        <!--servlet-api should be commented for embedded Tomcat tests-->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>

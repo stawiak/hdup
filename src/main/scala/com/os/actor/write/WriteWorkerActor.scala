@@ -21,7 +21,6 @@ class WriteWorkerActor(val tableName : String, val batchSize: Int = Settings.Bat
 	override def receive: Receive = {
 
 		case msmt : Measurement => {
-			Stats.receivedWriteWorker.++
 			measurements = msmt :: measurements
 
 			if(measurements.length == batchSize)

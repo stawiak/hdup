@@ -41,7 +41,7 @@ class IncomingHandlerActor extends FinalCountDown {
 
 		case GracefulStop =>
 			log.debug("incoming handler received graceful stop - stopping time window and then write master")
-			killChild(timeWindowManager, () => killChild(writeMaster, () => {log.debug("sent by wm " + Stats.sentWriteMaster());log.debug("received by wm " + Stats.receivedWriteWorker()); system.shutdown()}) )
+			killChild(timeWindowManager, () => killChild(writeMaster, () => {system.shutdown()}) )
 	}
 
 }

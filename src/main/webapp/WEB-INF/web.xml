@@ -18,6 +18,12 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
 
+    <listener>
+        <listener-class>
+            com.os.rest.ApplicationListener
+        </listener-class>
+    </listener>
+
     <servlet-mapping>
         <servlet-name>rest</servlet-name>
         <url-pattern>/service/*</url-pattern>

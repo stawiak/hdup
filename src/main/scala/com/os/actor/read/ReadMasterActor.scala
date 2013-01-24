@@ -58,6 +58,10 @@ class ReadMasterActor extends FinalCountDown {
 
 	override def receive: Receive = {
 
+		case s: String => {
+			sender ! Array[MeasuredValue](new MeasuredValue(149,149,149,149), new MeasuredValue(151,151,151,151))
+		}
+
 		case request : RollupReadRequest => {
 
 			//val f: Future[List[List[MeasuredValue]]] = Future.sequence(request.scanRequests.map(getRouter(request) ? _).map(_.mapTo[List[MeasuredValue]]))
