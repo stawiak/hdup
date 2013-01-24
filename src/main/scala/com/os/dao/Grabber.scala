@@ -1,9 +1,11 @@
 package com.os.dao
 
-import actors.Futures._
 import org.joda.time.DateTime
 import com.os.measurement.MeasuredValue
 import com.os.util.Loggable
+import concurrent.{Await, Future}
+import concurrent.ExecutionContext.Implicits.global
+import concurrent.duration.Duration
 
 /**
  * @author Vadim Bobrov
@@ -18,7 +20,7 @@ class Grabber(scanner : Scanner) extends Loggable{
    * @return
    */
   def grab(customer : String, location : String, wireid : String, periods : List[(String, String)]) : List[MeasuredValue] = {
-    periods map (period => future { runScan(customer, location, wireid, period) }) flatMap (_())
+    periods map (period => Future { runScan(customer, location, wireid, period) }) flatMap (Await.result(_, Duration.Inf))
   }
 
   private def runScan(customer : String, location : String, wireid : String, arg : (String, String)) : List[MeasuredValue] = {
