@@ -15,11 +15,11 @@ class ReadWorkerActor(val tableName : String) extends Actor with ActorLogging{
 	override def receive: Receive = {
 
 		case request : MeasurementScanRequest => {
-			sender ! scanner.scan(request.customer, request.location, request.wireid, new DateTime(request.period._1), new DateTime(request.period._2))
+			sender ! scanner.scan(request.customer, request.location, request.wireid, request.period)
 		}
 
 		case request : RollupScanRequest => {
-			sender ! scanner.scan(request.customer, request.location, new DateTime(request.period._1), new DateTime(request.period._2))
+			sender ! scanner.scan(request.customer, request.location, request.period)
 		}
 
 	}

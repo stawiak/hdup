@@ -68,7 +68,7 @@ class ReadMasterActor extends FinalCountDown {
 			//f.map(_.flatMap(identity)) pipeTo sender
 
 
-			Future.traverse(request.scanRequests)(req => (getRouter(request) ? req).mapTo[List[MeasuredValue]]).map(_.flatten) pipeTo sender
+			//Future.traverse(request.scanRequests)(req => (getRouter(request) ? req).mapTo[Array[MeasuredValue]]).map(_.flatten) pipeTo sender
 
 		}
 

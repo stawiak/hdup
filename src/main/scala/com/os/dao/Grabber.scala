@@ -1,6 +1,6 @@
 package com.os.dao
 
-import org.joda.time.DateTime
+import org.joda.time.{Interval}
 import com.os.measurement.MeasuredValue
 import com.os.util.Loggable
 import concurrent.{Await, Future}
@@ -19,12 +19,11 @@ class Grabber(scanner : Scanner) extends Loggable{
    * @param periods array of start and end times
    * @return
    */
-  def grab(customer : String, location : String, wireid : String, periods : List[(String, String)]) : List[MeasuredValue] = {
+  def grab(customer : String, location : String, wireid : String, periods : Array[Interval]) : Array[MeasuredValue] = {
     periods map (period => Future { runScan(customer, location, wireid, period) }) flatMap (Await.result(_, Duration.Inf))
   }
 
-  private def runScan(customer : String, location : String, wireid : String, arg : (String, String)) : List[MeasuredValue] = {
-    debug("starting scanner in thread " + Thread.currentThread().getId + " for " + customer + ", " + location + ", " + wireid + " from " + arg._1 + " to " + arg._2)
-    scanner.scan(customer, location, wireid, new DateTime(arg._1), new DateTime(arg._2))
+  private def runScan(customer : String, location : String, wireid : String, period : Interval) : Array[MeasuredValue] = {
+    scanner.scan(customer, location, wireid, period)
   }
 }

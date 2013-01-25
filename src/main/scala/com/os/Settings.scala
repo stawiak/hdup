@@ -35,7 +35,8 @@ object Settings {
 
 	val TablePoolSize = 100
 
-	val Host = "192.168.152.128"
+	val Host = "node0"
+	//val Host = "192.168.152.128"
 	//val Host = "10.0.0.158"
 
 	val ExpiredTimeWindow = 570000				// time to incoming measurement expiration in milliseconds

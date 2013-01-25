@@ -1,4 +1,4 @@
-package com.os.rest;
+package com.os;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;

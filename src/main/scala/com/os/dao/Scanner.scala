@@ -1,33 +1,34 @@
 package com.os.dao
 
-import org.joda.time.DateTime
+import org.joda.time.{Interval, DateTime}
 import com.os.measurement.MeasuredValue
 import org.apache.hadoop.hbase.client.{Result, Scan}
 import org.apache.hadoop.hbase.util.Bytes
 import com.os.Settings
+import collection.mutable.ArrayBuffer
 
 /**
  * @author Vadim Bobrov
 */
 trait Scanner {
-	def scan(customer : String, location : String, wireid : String, start : DateTime, end : DateTime) : List[MeasuredValue] = {
-		scan(customer, location, wireid, start.getMillis, end.getMillis)
+	def scan(customer: String, location: String, wireid: String, period: Interval) : Array[MeasuredValue] = {
+		scan(customer, location, wireid, period.getStartMillis, period.getEndMillis)
 	}
 
-	def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : List[MeasuredValue]
+	def scan(customer: String, location: String, wireid: String, start: Long, end: Long) : Array[MeasuredValue]
 
-	def scan(customer : String, location : String, start : DateTime, end : DateTime) : List[MeasuredValue] = {
-		scan(customer, location, start.getMillis, end.getMillis)
+	def scan(customer : String, location : String, period: Interval) : Array[MeasuredValue] = {
+		scan(customer, location, period.getStartMillis, period.getEndMillis)
 	}
 
-	def scan(customer : String, location : String, start : Long, end : Long) : List[MeasuredValue]
+	def scan(customer: String, location: String, start: Long, end: Long) : Array[MeasuredValue]
 }
 
 object Scanner {
-	def apply(tableName : String = Settings.TableName) : Scanner = new ScannerImpl(tableName)
+	def apply(tableName: String = Settings.TableName) : Scanner = new ScannerImpl(tableName)
 
 
-	private class ScannerImpl(private val tableName : String = Settings.TableName) extends Scanner {
+	private class ScannerImpl(private val tableName: String = Settings.TableName) extends Scanner {
 
 		/**
 		Sometimes it might be necessary to find a specific row, or the one just before the re-
@@ -53,23 +54,23 @@ object Scanner {
 		stop row. If no stop row was specified, the scan will run to the end of the table.
 		  */
 
-		def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : List[MeasuredValue] = {
+		def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[MeasuredValue] = {
 			val startRowKey = RowKeyUtils.createRowKey(customer, location, wireid, end)
 			val endRowKey = RowKeyUtils.createRowKey(customer, location, wireid, start)
 			scan(startRowKey, endRowKey)
 		}
 
-		def scan(customer : String, location : String, start : Long, end : Long) : List[MeasuredValue] = {
+		def scan(customer : String, location : String, start : Long, end : Long) : Array[MeasuredValue] = {
 			val startRowKey = RowKeyUtils.createRollupRowKey(customer, location, end)
 			val endRowKey = RowKeyUtils.createRollupRowKey(customer, location, start)
 			scan(startRowKey, endRowKey)
 		}
 
-		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte]) : List[MeasuredValue] = {
+		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte]) : Array[MeasuredValue] = {
 
 			val table = TableFactory(tableName)
 
-			var output = List[MeasuredValue]()
+			var output = ArrayBuffer.empty[MeasuredValue]
 
 			val scan = new Scan(startRowKey, endRowKey)
 
@@ -92,11 +93,11 @@ object Scanner {
 				val vampire = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName))
 
 				val row = res.getRow
-				output = new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire)) :: output
+				output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
 			})
 
 			results.close()
-			output
+			output.toArray
 		}
 
 

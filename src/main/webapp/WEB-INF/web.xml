@@ -20,7 +20,7 @@
 
     <listener>
         <listener-class>
-            com.os.rest.ApplicationListener
+            com.os.ApplicationListener
         </listener-class>
     </listener>
 

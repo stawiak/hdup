@@ -20,7 +20,7 @@ object MeasuredValue {
 	 */
 	def minuteBoundary(arg: Seq[MeasuredValue]) : (Long, Long) = {
 		// don't need to specify ordering method anymore
-		//val sorted = arg sortWith (_.timestamp < _.timestamp)
+		//val sorted = period sortWith (_.timestamp < _.timestamp)
 		val sorted = arg.sorted
 		val first = (sorted head).timestamp
 		val last = (sorted last).timestamp
@@ -38,7 +38,7 @@ object MeasuredValue {
 
 		//TODO: !!!!!!!!!
 		for (ts <- borders._1 to borders._2 by 60000)
-		yield null //new MeasuredValue(ts, apprx(ts, arg))
+		yield null //new MeasuredValue(ts, apprx(ts, period))
 	}
 
 

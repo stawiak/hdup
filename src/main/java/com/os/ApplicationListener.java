@@ -1,4 +1,4 @@
-package com.os.rest;
+package com.os;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
