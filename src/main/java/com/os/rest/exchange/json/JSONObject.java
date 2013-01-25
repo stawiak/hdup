@@ -3,8 +3,6 @@
  */
 package com.os.rest.exchange.json;
 
-import com.os.rest.exchange.json.jsonClasses.JSONHelper;
-
 import java.util.HashMap;
 import java.util.Set;
 
