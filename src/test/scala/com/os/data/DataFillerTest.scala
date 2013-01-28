@@ -6,10 +6,10 @@ import java.util.concurrent.TimeUnit
 import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 import com.os.DataFiller
-import com.os.actor.write.{WriteMasterActor}
+import com.os.actor.write.WriteMasterActor
 import com.os.measurement.Measurement
 import com.os.actor.GracefulStop
-import com.os.util.{Timing, Loggable}
+import com.os.util.Timing
 
 /**
  * @author Vadim Bobrov

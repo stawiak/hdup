@@ -2,7 +2,6 @@ package com.os.actor
 
 import akka.actor._
 import akka.actor.Terminated
-import com.os.measurement.Interpolated
 
 /**
  * @author Vadim Bobrov

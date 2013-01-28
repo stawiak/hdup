@@ -6,7 +6,7 @@ import com.os.measurement.{TimedValue, Interpolator}
 import util.Random
 import actors.Futures._
 import collection.SortedSet
-import com.os.util.{Timing, Loggable}
+import com.os.util.Timing
 
 /**
  * @author Vadim Bobrov

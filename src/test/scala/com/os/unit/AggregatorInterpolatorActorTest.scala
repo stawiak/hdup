@@ -3,9 +3,9 @@ package com.os.unit
 import org.scalatest.{OneInstancePerTest, BeforeAndAfterAll, WordSpec}
 import org.scalatest.matchers.MustMatchers
 import akka.actor._
-import com.os.measurement.{Rollup, Interpolated, Measurement}
+import com.os.measurement.Measurement
 import akka.testkit.{TestProbe, ImplicitSender, TestKit, TestActorRef}
-import com.os.actor.service.{AggregatorActor, TimeWindowActor}
+import com.os.actor.service.AggregatorActor
 import com.typesafe.config.ConfigFactory
 
 /**

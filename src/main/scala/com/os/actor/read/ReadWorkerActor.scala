@@ -1,8 +1,9 @@
 package com.os.actor.read
 
 import akka.actor.{ActorLogging, Actor}
-import com.os.dao.{Scanner, Writer}
-import org.joda.time.DateTime
+import com.os.dao.Scanner
+import collection.mutable.ListBuffer
+import com.os.measurement.MeasuredValue
 
 /**
   * @author Vadim Bobrov

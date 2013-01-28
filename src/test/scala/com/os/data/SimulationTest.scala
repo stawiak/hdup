@@ -7,9 +7,8 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.os.actor.service.IncomingHandlerActor
 import com.typesafe.config.ConfigFactory
 import com.os.DataGenerator
-import com.os.actor.{GracefulStop, LastMohican, FinalCountDown}
-import com.os.util.{Timing, Loggable}
-import akka.agent.Agent
+import com.os.actor.{GracefulStop, LastMohican}
+import com.os.util.Timing
 import com.os.actor.util.{Counter, Stats}
 
 /**
@@ -41,7 +40,7 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 	"incoming handler" should "be able to correctly process daily data" in {
 		Stats.sentWriteMaster = new Counter()
 		Stats.receivedWriteWorker = new Counter()
-		time { DataGenerator.dailyDataIterator(60) foreach  (incomingHandler ! _) }
+		time { DataGenerator.dailyDataIterator(20) foreach  (incomingHandler ! _) }
 		incomingHandler ! GracefulStop
 	}
 

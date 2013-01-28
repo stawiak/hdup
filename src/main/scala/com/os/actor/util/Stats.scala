@@ -1,7 +1,5 @@
 package com.os.actor.util
 
-import akka.agent.Agent
-
 
 /**
  * @author Vadim Bobrov

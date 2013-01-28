@@ -3,11 +3,10 @@ package com.os.actor.write
 import akka.actor._
 import com.os.measurement.{Rollup, Interpolated, Measurement}
 import com.os.Settings
-import akka.routing.{RoundRobinRouter, Broadcast, DefaultResizer, SmallestMailboxRouter}
+import akka.routing.{RoundRobinRouter, Broadcast, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
 import com.os.actor.{FinalCountDown, GracefulStop}
-import com.os.actor.util.Stats
 
 
 /**

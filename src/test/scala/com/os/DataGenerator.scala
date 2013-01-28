@@ -2,7 +2,6 @@ package com.os
 
 import measurement.Measurement
 import scala.util.Random
-import org.joda.time.DateTime
 import util.Loggable
 
 /**

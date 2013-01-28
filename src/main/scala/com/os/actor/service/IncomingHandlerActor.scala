@@ -2,11 +2,10 @@ package com.os.actor.service
 
 import akka.actor._
 import com.os.measurement.Measurement
-import com.os.actor.write.{WriteMasterActor, WriterMasterAwareActor}
+import com.os.actor.write.WriteMasterActor
 import com.os.Settings
 import com.os.actor.{GracefulStop, FinalCountDown}
 import akka.actor.DeadLetter
-import com.os.actor.util.Stats
 
 
 /**

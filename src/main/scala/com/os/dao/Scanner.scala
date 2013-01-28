@@ -1,11 +1,11 @@
 package com.os.dao
 
-import org.joda.time.{Interval, DateTime}
+import org.joda.time.Interval
 import com.os.measurement.MeasuredValue
 import org.apache.hadoop.hbase.client.{Result, Scan}
 import org.apache.hadoop.hbase.util.Bytes
 import com.os.Settings
-import collection.mutable.ArrayBuffer
+import collection.mutable.ListBuffer
 
 /**
  * @author Vadim Bobrov
@@ -70,8 +70,8 @@ object Scanner {
 
 			val table = TableFactory(tableName)
 
-			//var output = ArrayBuffer.empty[MeasuredValue]
-			var output = List[MeasuredValue]()
+			val output = new ListBuffer[MeasuredValue]()
+
 
 			val scan = new Scan(startRowKey, endRowKey)
 
@@ -95,7 +95,7 @@ object Scanner {
 
 				val row = res.getRow
 				//output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
-				output = new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire)) :: output
+				output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
 			})
 
 			results.close()

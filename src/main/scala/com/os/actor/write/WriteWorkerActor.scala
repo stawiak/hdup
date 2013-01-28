@@ -6,8 +6,7 @@ import com.os.util.Util
 import Util.using
 import com.os.Settings
 import com.os.measurement.Measurement
-import com.os.actor.{GracefulStop}
-import com.os.actor.util.Stats
+import com.os.actor.GracefulStop
 
 /**
   * @author Vadim Bobrov
