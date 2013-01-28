@@ -11,17 +11,17 @@ import collection.mutable.ArrayBuffer
  * @author Vadim Bobrov
 */
 trait Scanner {
-	def scan(customer: String, location: String, wireid: String, period: Interval) : Array[MeasuredValue] = {
+	def scan(customer: String, location: String, wireid: String, period: Interval) : Iterable[MeasuredValue] = {
 		scan(customer, location, wireid, period.getStartMillis, period.getEndMillis)
 	}
 
-	def scan(customer: String, location: String, wireid: String, start: Long, end: Long) : Array[MeasuredValue]
+	def scan(customer: String, location: String, wireid: String, start: Long, end: Long) : Iterable[MeasuredValue]
 
-	def scan(customer : String, location : String, period: Interval) : Array[MeasuredValue] = {
+	def scan(customer : String, location : String, period: Interval) : Iterable[MeasuredValue] = {
 		scan(customer, location, period.getStartMillis, period.getEndMillis)
 	}
 
-	def scan(customer: String, location: String, start: Long, end: Long) : Array[MeasuredValue]
+	def scan(customer: String, location: String, start: Long, end: Long) : Iterable[MeasuredValue]
 }
 
 object Scanner {
@@ -54,23 +54,24 @@ object Scanner {
 		stop row. If no stop row was specified, the scan will run to the end of the table.
 		  */
 
-		def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Array[MeasuredValue] = {
+		def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Iterable[MeasuredValue] = {
 			val startRowKey = RowKeyUtils.createRowKey(customer, location, wireid, end)
 			val endRowKey = RowKeyUtils.createRowKey(customer, location, wireid, start)
 			scan(startRowKey, endRowKey)
 		}
 
-		def scan(customer : String, location : String, start : Long, end : Long) : Array[MeasuredValue] = {
+		def scan(customer : String, location : String, start : Long, end : Long) : Iterable[MeasuredValue] = {
 			val startRowKey = RowKeyUtils.createRollupRowKey(customer, location, end)
 			val endRowKey = RowKeyUtils.createRollupRowKey(customer, location, start)
 			scan(startRowKey, endRowKey)
 		}
 
-		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte]) : Array[MeasuredValue] = {
+		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte]) : Iterable[MeasuredValue] = {
 
 			val table = TableFactory(tableName)
 
-			var output = ArrayBuffer.empty[MeasuredValue]
+			//var output = ArrayBuffer.empty[MeasuredValue]
+			var output = List[MeasuredValue]()
 
 			val scan = new Scan(startRowKey, endRowKey)
 
@@ -93,11 +94,12 @@ object Scanner {
 				val vampire = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName))
 
 				val row = res.getRow
-				output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
+				//output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
+				output = new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire)) :: output
 			})
 
 			results.close()
-			output.toArray
+			output
 		}
 
 

@@ -15,6 +15,7 @@ class ReadWorkerActor(val tableName : String) extends Actor with ActorLogging{
 	override def receive: Receive = {
 
 		case request : MeasurementScanRequest => {
+			log.debug("scan started for {} in {}", request, this.hashCode())
 			sender ! scanner.scan(request.customer, request.location, request.wireid, request.period)
 		}
 

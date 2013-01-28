@@ -11,7 +11,7 @@ case class RollupScanRequest(customer : String, location : String, period : Inte
 case class MeasurementReadRequest(customer : String, location : String, wireid: String, periods : Array[Interval]) {
 
 	def scanRequests() = {
-		periods map (MeasurementScanRequest(customer, location, wireid, _))
+		(periods map (MeasurementScanRequest(customer, location, wireid, _))).toTraversable
 	}
 
 }
@@ -19,7 +19,7 @@ case class MeasurementReadRequest(customer : String, location : String, wireid: 
 case class RollupReadRequest(customer : String, location : String, periods : Array[Interval]) {
 
 	def scanRequests() = {
-		periods map (RollupScanRequest(customer, location, _))
+		(periods map (RollupScanRequest(customer, location, _))).toTraversable
 	}
 
 }

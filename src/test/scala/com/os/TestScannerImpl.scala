@@ -7,11 +7,11 @@ import measurement.MeasuredValue
  * @author Vadim Bobrov
  */
 class TestScannerImpl extends Scanner{
-	def scan(customer: String, location: String, wireid: String, start: Long, end: Long): Array[MeasuredValue] = {
-		Array(new MeasuredValue(1,1,1,1),new MeasuredValue(2,2,2,2),new MeasuredValue(3,3,3,3))
+	def scan(customer: String, location: String, wireid: String, start: Long, end: Long): Iterable[MeasuredValue] = {
+		List(new MeasuredValue(1,1,1,1),new MeasuredValue(2,2,2,2),new MeasuredValue(3,3,3,3))
 	}
 
-	def scan(customer: String, location: String, start: Long, end: Long): Array[MeasuredValue] = {
-		Array(new MeasuredValue(1,1,1,1),new MeasuredValue(2,2,2,2),new MeasuredValue(3,3,3,3))
+	def scan(customer: String, location: String, start: Long, end: Long): Iterable[MeasuredValue] = {
+		List(new MeasuredValue(1,1,1,1),new MeasuredValue(2,2,2,2),new MeasuredValue(3,3,3,3))
 	}
 }

@@ -2,8 +2,10 @@ package com.os.rest;
 
 import akka.util.Timeout;
 import com.os.ActorService;
+import com.os.actor.read.MeasurementReadRequest;
 import com.os.measurement.MeasuredValue;
 import com.os.rest.exchange.TimeSeriesData;
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +37,15 @@ public class ReadService {
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody String getMessage() throws Exception {
 
-		//MeasurementReadRequest readRequest = new MeasurementReadRequest("a", "b", "c")
-		Timeout timeout = new Timeout(10000);
-		Future<Object> future = ask(actorService.getReadMaster(), "question", 10000);
-		MeasuredValue[] res = (MeasuredValue[])Await.result(future, timeout.duration());
-		TimeSeriesData tsd = new TimeSeriesData();
+		Timeout timeout = new Timeout(60000);
+		MeasurementReadRequest readRequest = new MeasurementReadRequest("customer0", "location0", "wireid0", new Interval[]{new Interval(0, Long.MAX_VALUE)});
 
+
+		Future<Object> future = ask(actorService.getReadMaster(), readRequest, 10000);
+
+		Iterable<MeasuredValue> res = (Iterable<MeasuredValue>)Await.result(future, timeout.duration());
+
+		TimeSeriesData tsd = new TimeSeriesData();
 		for(MeasuredValue mv : res)
 			tsd.put(new Timestamp(mv.timestamp()), mv.energy());
 
