@@ -18,6 +18,7 @@
         <akka.version>2.1.0</akka.version>
         <jackson.version>1.9.11</jackson.version>
         <tomcat-embed-version>7.0.30</tomcat-embed-version>
+        <spray-version>1.1-M7</spray-version>
     </properties>
 
     <repositories>
@@ -38,8 +39,15 @@
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-can</artifactId>
-            <version>1.1-M7</version>
+            <version>${spray-version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-routing</artifactId>
+            <version>${spray-version}</version>
+        </dependency>
+
         <!--servlet-api should be commented for embedded Tomcat tests-->
         <dependency>
             <groupId>javax.servlet</groupId>
