@@ -21,6 +21,7 @@ class ReadWorkerActor(val tableName : String) extends Actor with ActorLogging{
 		}
 
 		case request : RollupScanRequest => {
+			log.debug("scan started for {} in {}", request, this.hashCode())
 			sender ! scanner.scan(request.customer, request.location, request.period)
 		}
 

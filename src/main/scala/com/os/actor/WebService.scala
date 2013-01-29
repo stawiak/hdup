@@ -2,7 +2,7 @@ package com.os.actor
 
 import akka.actor.{Props, ActorSystem, Actor}
 import akka.pattern.ask
-import read.{ReadMasterActor, MeasurementReadRequest}
+import read.{RollupReadRequest, ReadMasterActor, MeasurementReadRequest}
 import spray.routing._
 import spray.http.MediaTypes._
 import org.joda.time.Interval
@@ -40,37 +40,53 @@ trait WebService extends HttpService {
 	implicit val timeout: Timeout = Duration(100, "sec") // for the actor 'asks' we use below
 
 	val route = {
-		// extract URI path element as Int
-		pathPrefix(PathElement) { customer: String =>
-			pathPrefix(PathElement) { location: String =>
-				pathPrefix(PathElement) { wire: String =>
-					get {
+		get {
+			pathPrefix(PathElement) { customer: String =>
+				pathPrefix(PathElement) { location: String =>
+
+					pathPrefix(PathElement) { wireid: String =>
 						parameters("from".as[Long] ? 0L, "to".as[Long] ? Long.MaxValue) { (fromTime: Long, toTime: Long) =>
 							respondWithMediaType(`application/json`) { // XML is marshalled to `text/xml` by default, so we simply override here
 								complete {
-									val readRequest = new MeasurementReadRequest(customer, location, wire, Array[Interval](new Interval(fromTime, toTime)))
-
-
-									val system = ActorSystem("prod", ConfigFactory.load().getConfig("prod"))
-									val readMaster = system.actorOf(Props[ReadMasterActor], "readMaster")
-
-									val res: Iterable[MeasuredValue] = Await.result((readMaster ? readRequest).mapTo[Iterable[MeasuredValue]], timeout.duration)
-
-
-									val tsd = new TimeSeriesData()
-									for(mv <- res)
-										tsd.put(new Timestamp(mv.timestamp), mv.energy)
-
-									tsd.toJSONString
-									// marshal custom object with in-scope marshaller
-									/*<h1>customer</h1>*/
+									readRequest(customer, location, fromTime, toTime, Option(wireid))
 								}
 							}
 						}
+					} ~
+					parameters("from".as[Long] ? 0L, "to".as[Long] ? Long.MaxValue) { (fromTime: Long, toTime: Long) =>
+						respondWithMediaType(`application/json`) { // XML is marshalled to `text/xml` by default, so we simply override here
+							complete {
+								readRequest(customer, location, fromTime, toTime)
+							}
+						}
 					}
+
+
+
 				}
 			}
 		}
+	}
+
+
+	private def readRequest(customer: String, location: String, fromTime: Long, toTime: Long, wireid: Option[String] = None): String = {
+		val readRequest =
+			if (wireid.isDefined)
+				new MeasurementReadRequest(customer, location, wireid.get, Array[Interval](new Interval(fromTime, toTime)))
+			else
+				new RollupReadRequest(customer, location, Array[Interval](new Interval(fromTime, toTime)))
+
+		val system = ActorSystem("prod", ConfigFactory.load().getConfig("prod"))
+		val readMaster = system.actorOf(Props[ReadMasterActor], "readMaster")
+		val tsd = new TimeSeriesData()
+
+
+		Await.result((readMaster ? readRequest).mapTo[Iterable[MeasuredValue]], timeout.duration) foreach (mv => tsd.put(new Timestamp(mv.timestamp), mv.energy))
+
+
+		tsd.toJSONString
+		// marshal custom object with in-scope marshaller
+		/*<h1>customer</h1>*/
 	}
 
 }
