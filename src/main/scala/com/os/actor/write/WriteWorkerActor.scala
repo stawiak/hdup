@@ -2,7 +2,7 @@ package com.os.actor.write
 
 import akka.actor.{ActorLogging, Actor}
 import com.os.dao.Writer
-import Util.using
+import com.os.util.Util._
 import com.os.Settings
 import com.os.measurement.Measurement
 import com.os.actor.GracefulStop
