@@ -1,12 +1,11 @@
 package com.os.actor
 
-import akka.actor.{Props, ActorSystem, Actor}
+import akka.actor.Actor
 import akka.pattern.ask
-import read.{RollupReadRequest, ReadMasterActor, MeasurementReadRequest}
+import read.{ReadMasterAware, RollupReadRequest, MeasurementReadRequest}
 import spray.routing._
 import spray.http.MediaTypes._
 import org.joda.time.Interval
-import com.typesafe.config.ConfigFactory
 import com.os.measurement.MeasuredValue
 import concurrent.Await
 import com.os.rest.exchange.TimeSeriesData
@@ -35,7 +34,8 @@ class WebServiceActor extends Actor with WebService {
 
 
 // this trait defines our service behavior independently from the service actor
-trait WebService extends HttpService {
+trait WebService extends HttpService with ReadMasterAware {
+	this: Actor =>
 
 	implicit val timeout: Timeout = Duration(100, "sec") // for the actor 'asks' we use below
 
@@ -76,8 +76,7 @@ trait WebService extends HttpService {
 			else
 				new RollupReadRequest(customer, location, Array[Interval](new Interval(fromTime, toTime)))
 
-		val system = ActorSystem("prod", ConfigFactory.load().getConfig("prod"))
-		val readMaster = system.actorOf(Props[ReadMasterActor], "readMaster")
+
 		val tsd = new TimeSeriesData()
 
 
@@ -85,8 +84,6 @@ trait WebService extends HttpService {
 
 
 		tsd.toJSONString
-		// marshal custom object with in-scope marshaller
-		/*<h1>customer</h1>*/
 	}
 
 }

@@ -2,7 +2,7 @@ package com.os.actor.service
 
 import akka.actor.{PoisonPill, Props, ActorRef}
 import com.os.measurement._
-import com.os.actor.write.WriterMasterAwareActor
+import com.os.actor.write.WriterMasterAware
 import com.os.actor._
 import com.os.Settings
 
@@ -11,7 +11,7 @@ import com.os.Settings
  *
  * @author Vadim Bobrov
  */
-class AggregatorActor(val customer: String, val location: String, var timeWindow : Int = Settings.ExpiredTimeWindow) extends FinalCountDown with WriterMasterAwareActor with TimedActor {
+class AggregatorActor(val customer: String, val location: String, var timeWindow : Int = Settings.ExpiredTimeWindow) extends FinalCountDown with WriterMasterAware with TimedActor {
 
 	import context._
 	var interpolatorFactory  : String => ActorRef = DefaultInterpolatorFactory.get

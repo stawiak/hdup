@@ -2,8 +2,6 @@ package com.os.actor.read
 
 import akka.actor.{ActorLogging, Actor}
 import com.os.dao.Scanner
-import collection.mutable.ListBuffer
-import com.os.measurement.MeasuredValue
 
 /**
   * @author Vadim Bobrov
