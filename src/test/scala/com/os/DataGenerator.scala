@@ -55,7 +55,7 @@ object DataGenerator extends Loggable{
 
 	class DailyDataIterator(val minutes: Int = 20) extends Iterator[Measurement] {
 
-		val start = System.currentTimeMillis() - Settings.ExpiredTimeWindow + 60 * 1000
+		val start = System.currentTimeMillis() - Settings.ExpiredTimeWindow + 60 * 1000 - (1000 * 60 * minutes)
 		var curTime = start
 		var curCustomer, curLocation, curWireId = 0
 

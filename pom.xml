@@ -4,10 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>hdup</groupId>
-    <artifactId>hdup</artifactId>
+    <groupId>com.os</groupId>
+    <artifactId>chaos</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
+    <description>The nothingness from which all else sprang</description>
 
     <properties>
         <java.version>1.7</java.version>
@@ -150,6 +151,12 @@
             <artifactId>akka-testkit_2.10</artifactId>
             <version>${akka.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-all</artifactId>
+            <version>5.7.0</version>
         </dependency>
 
         <!-- -->

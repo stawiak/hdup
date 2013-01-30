@@ -23,6 +23,15 @@ libraryDependencies ++= Seq(
     )
 
 
+libraryDependencies += "com.typesafe.akka" % "akka-camel_2.10.0-RC2" % "2.1.0-RC2"
+
+libraryDependencies += "org.apache.camel" % "camel-jetty" % "2.10.0"
+
+libraryDependencies += "org.apache.activemq" % "activemq-camel" % "5.7.0"
+
+libraryDependencies += "org.apache.activemq" % "activemq-core" % "5.7.0"
+
+
 libraryDependencies += "org.apache.hadoop" % "hadoop-core" % "1.0.4"
 
 libraryDependencies += "org.apache.hbase" % "hbase" % "0.92.1"

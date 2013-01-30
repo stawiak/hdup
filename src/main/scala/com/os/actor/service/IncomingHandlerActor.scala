@@ -23,7 +23,7 @@ class IncomingHandlerActor extends FinalCountDown {
 		// start write master as top level actor
 		writeMaster = system.actorOf(Props[WriteMasterActor], name = "writeMaster")
 
-		val listener = system.actorOf(Props[DeadLetterListener])
+		val listener = system.actorOf(Props[DeadLetterListener], name = "deadLetterListener")
 		system.eventStream.subscribe(listener, classOf[DeadLetter])
 	}
 

@@ -3,8 +3,8 @@ package com.os
 import dao.Writer
 import measurement.Measurement
 import org.joda.time.DateTime
-import util.{Util, Loggable}
-import Util.using
+import util.Loggable
+import com.os.util.Util._
 import akka.actor.ActorRef
 
 /**

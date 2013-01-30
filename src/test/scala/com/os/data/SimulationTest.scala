@@ -40,7 +40,7 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 	"incoming handler" should "be able to correctly process daily data" in {
 		Stats.sentWriteMaster = new Counter()
 		Stats.receivedWriteWorker = new Counter()
-		time { DataGenerator.dailyDataIterator(20) foreach  (incomingHandler ! _) }
+		time { DataGenerator.dailyDataIterator(60 * 5) foreach  (incomingHandler ! _) }
 		incomingHandler ! GracefulStop
 	}
 
