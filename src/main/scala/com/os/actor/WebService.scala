@@ -41,6 +41,14 @@ trait WebService extends HttpService with ReadMasterAware {
 
 	val route = {
 		get {
+			path("stop") {
+				complete {
+					context.system.shutdown()
+					"shutting down"
+				}
+			}
+		} ~
+		get {
 			pathPrefix(PathElement) { customer: String =>
 				pathPrefix(PathElement) { location: String =>
 
@@ -65,6 +73,7 @@ trait WebService extends HttpService with ReadMasterAware {
 
 				}
 			}
+
 		}
 	}
 
