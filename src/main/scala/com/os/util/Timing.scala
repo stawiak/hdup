@@ -13,7 +13,7 @@ trait Timing extends Loggable {
 	def time(f: => Unit) {
 		val startTime = System.currentTimeMillis
 		f
-		logger.debug("execution took " + (System.currentTimeMillis - startTime) + " ms")
+		println("execution took " + (System.currentTimeMillis - startTime) + " ms")
 	}
 
 }

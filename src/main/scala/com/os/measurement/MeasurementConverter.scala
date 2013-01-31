@@ -1,11 +1,12 @@
 package com.os.measurement
 
-import javax.jms.{Session, MapMessage}
+import javax.jms.{TextMessage, Session, MapMessage}
+import com.os.util.Timing
 
 /**
  * @author Vadim Bobrov
  */
-object MeasurementConverter {
+object MeasurementConverter extends Timing {
 
 	// to and from JMS MapMessage
 	implicit def measurementToJMSMapMessage(msmt: Measurement)(implicit session: Session): MapMessage = {
@@ -32,6 +33,32 @@ object MeasurementConverter {
 			msg.getDouble("current"),
 			msg.getDouble("vampire")
 		)
+	}
+
+	// to and from JMS TextMessage
+	implicit def measurementToJMSTextMessage(msmt: Measurement)(implicit session: Session): TextMessage = {
+		val sep = '?'
+		val sb = new StringBuilder()
+
+		sb.append(msmt.customer)
+		sb.append(sep)
+		sb.append(msmt.location)
+		sb.append(sep)
+		sb.append(msmt.wireid)
+		sb.append(sep)
+		sb.append(msmt.timestamp)
+		sb.append(sep)
+		sb.append(msmt.energy)
+		sb.append(sep)
+		sb.append(msmt.current)
+		sb.append(sep)
+		sb.append(msmt.vampire)
+
+		session.createTextMessage(sb.result())
+	}
+
+	implicit def jmsTextMessageToMeasurement(msg: TextMessage): Measurement = {
+		new Measurement("","","", 1,1,1,1)
 	}
 
 }

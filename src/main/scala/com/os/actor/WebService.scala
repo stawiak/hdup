@@ -3,6 +3,7 @@ package com.os.actor
 import akka.actor.Actor
 import akka.pattern.ask
 import read.{ReadMasterAware, RollupReadRequest, MeasurementReadRequest}
+import service.TimeWindowAware
 import spray.routing._
 import spray.http.MediaTypes._
 import org.joda.time.Interval
@@ -17,7 +18,7 @@ import concurrent.duration.Duration
  * @author Vadim Bobrov
  */
 
-
+case object Monitor
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
 class WebServiceActor extends Actor with WebService {
@@ -34,7 +35,7 @@ class WebServiceActor extends Actor with WebService {
 
 
 // this trait defines our service behavior independently from the service actor
-trait WebService extends HttpService with ReadMasterAware {
+trait WebService extends HttpService with ReadMasterAware with TimeWindowAware {
 	this: Actor =>
 
 	implicit val timeout: Timeout = Duration(100, "sec") // for the actor 'asks' we use below
@@ -45,6 +46,21 @@ trait WebService extends HttpService with ReadMasterAware {
 				complete {
 					context.system.shutdown()
 					"shutting down"
+				}
+			} ~
+			path("stats") {
+				respondWithMediaType(`text/html`) {
+					complete {
+						val timeWindowStats = Await.result((timeWindow ? Monitor).mapTo[Map[String, Int]], timeout.duration)
+						<html>
+							<body>
+								<h1>Stats</h1>
+								<p>
+									window length: <b>{timeWindowStats("length")}</b>
+								</p>
+							</body>
+						</html>
+					}
 				}
 			}
 		} ~

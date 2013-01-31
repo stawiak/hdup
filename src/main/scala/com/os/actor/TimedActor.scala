@@ -1,6 +1,6 @@
 package com.os.actor
 
-import akka.actor.{Cancellable, ActorLogging, Actor}
+import akka.actor.{Cancellable, Actor}
 import concurrent.duration._
 
 
@@ -9,13 +9,17 @@ import concurrent.duration._
  * @author Vadim Bobrov
 */
 case object Tick
-trait TimedActor extends Actor with ActorLogging {
+trait TimedActor {
+	this: Actor =>
+
+	val interval: FiniteDuration = 5 second
+
 	import context.dispatcher
 
 	var schedule: Cancellable = _
 
 	override def preStart() {
-		schedule = context.system.scheduler.schedule(Duration.Zero, 1 second, self, Tick)
+		schedule = context.system.scheduler.schedule(Duration.Zero, interval, self, Tick)
 	}
 
 	override def postStop() {

@@ -12,6 +12,8 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 
 	import context._
 
+	override val interval = Settings.TimeWindowProcessInterval
+
 	var measurements = List[Measurement]()
 
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
@@ -24,10 +26,12 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 			//TODO aggregation should be done by .... what???
 			measurements ::= msmt
 
-			processWindow
-
 		// send old measurements for aggregation and interpolation
 		case Tick => processWindow
+
+		case Monitor =>
+			log.info("time window length: {}", measurements.length)
+			sender ! Map("length" -> measurements.length)
 
 		case GracefulStop =>
 			log.debug("time window received graceful stop")
@@ -46,17 +50,24 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 	 * and remove them from window
 	 */
 	private def processWindow() {
-		val current = System.currentTimeMillis()
-		// if any of the existing measurements are more than 9.5 minutes old
-		// sort by time, interpolate, save to storage and discard
-		val oldmsmt = (measurements filter (current - _.timestamp > expiredTimeWindow)).sortWith(_ < _)
+		log.debug("processing time window")
+		try {
+			val current = System.currentTimeMillis()
+			// if any of the existing measurements are more than 9.5 minutes old
+			// sort by time, interpolate, save to storage and discard
+			val oldmsmt = (measurements filter (current - _.timestamp > expiredTimeWindow)).sortWith(_ < _)
+			log.debug("old values to send {}", oldmsmt.size)
 
-		for (tv <- oldmsmt) {
-			//log.info("sending to interpolation")
-			aggregatorFactory(tv.customer, tv.location) ! tv
+			for (tv <- oldmsmt)
+				aggregatorFactory(tv.customer, tv.location) ! tv
+
+			// discard old values
+			measurements = measurements filter (current - _.timestamp <= expiredTimeWindow)
+		} catch {
+			case e: Exception =>
+				log.error(e, e.getMessage)
+				//log.debug(measurements.mkString("\n"))
 		}
-		// discard old values
-		measurements = measurements filter (current - _.timestamp <= expiredTimeWindow)
 
 	}
 

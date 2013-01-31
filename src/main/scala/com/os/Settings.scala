@@ -1,5 +1,6 @@
 package com.os
 
+import concurrent.duration._
 /**
  * @author Vadim Bobrov
  */
@@ -41,4 +42,6 @@ object Settings {
 
 	val ExpiredTimeWindow = 570000				// time to incoming measurement expiration in milliseconds
 												// measurements older than that are not interpolated
+
+	val TimeWindowProcessInterval = 10 second	// time between time window processing
 }
