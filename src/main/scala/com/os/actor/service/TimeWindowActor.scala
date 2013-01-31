@@ -55,14 +55,16 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 			val current = System.currentTimeMillis()
 			// if any of the existing measurements are more than 9.5 minutes old
 			// sort by time, interpolate, save to storage and discard
-			val oldmsmt = (measurements filter (current - _.timestamp > expiredTimeWindow)).sortWith(_ < _)
+			val(oldmsmt, newmsmt) = measurements span (current - _.timestamp > expiredTimeWindow)
+
+
 			log.debug("old values to send {}", oldmsmt.size)
 
-			for (tv <- oldmsmt)
+			for (tv <- oldmsmt.sortWith(_ < _))
 				aggregatorFactory(tv.customer, tv.location) ! tv
 
 			// discard old values
-			measurements = measurements filter (current - _.timestamp <= expiredTimeWindow)
+			measurements = newmsmt
 		} catch {
 			case e: Exception =>
 				log.error(e, e.getMessage)
