@@ -8,7 +8,7 @@ import akka.actor.PoisonPill
 /**
  * @author Vadim Bobrov
  */
-class MessageListenerActor(host: String, queue: String) extends ActiveMQActor(host, queue) {
+class MessageListenerActor(host: String, queue: String) extends ActiveMQActor(host, queue) with TopAware {
 
 	val timeWindow = context.system.actorFor("/user/top/timeWindow")
 
@@ -22,6 +22,8 @@ class MessageListenerActor(host: String, queue: String) extends ActiveMQActor(ho
 
 		case msg : TextMessage => {
 			log.debug("received text {}", msg.getText)
+			if (msg.getText.equalsIgnoreCase("stop"))
+				top ! GracefulStop
 		}
 
 		case msg : Message => {

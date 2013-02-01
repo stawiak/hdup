@@ -39,5 +39,9 @@ object MeasurementMessageSender {
 		producer.send(destination, msg)
 	}
 
+	def sendStop() {
+		producer.send(destination, session.createTextMessage("stop"))
+	}
+
 
 }

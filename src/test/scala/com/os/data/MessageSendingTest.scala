@@ -15,13 +15,14 @@ class MessageSendingTest extends FunSuite with Timing{
 		MeasurementMessageSender.stop()
 	}
 
-	test("single message sending timing") {
+	test("JMS message sending") {
 		time {
 			val it = DataGenerator.dailyDataIterator(20, true)
 			MeasurementMessageSender.start()
 			for (i <- 1 to 1000000) {
 				MeasurementMessageSender.send(it.next())
 			}
+			MeasurementMessageSender.sendStop()
 			MeasurementMessageSender.stop()
 		}
 	}
