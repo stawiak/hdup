@@ -39,12 +39,13 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware {
 	this: Actor =>
 
 	implicit val timeout: Timeout = Duration(100, "sec") // for the actor 'asks' we use below
+	val master = context.system.actorFor("/user/top")
 
 	val route = {
 		get {
 			path("stop") {
 				complete {
-					context.system.shutdown()
+					master ! GracefulStop
 					"shutting down"
 				}
 			} ~

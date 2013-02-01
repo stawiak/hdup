@@ -10,6 +10,6 @@ trait TimeWindowAware {
 
 	this: Actor =>
 	// made settable for testability
-	var timeWindow = context.system.actorFor("/user/incomingHandler/timeWindow")
+	var timeWindow = context.system.actorFor("/user/top/timeWindow")
 
 }

@@ -14,9 +14,9 @@ import MediaTypes._
 import org.joda.time.Interval
 import com.os.measurement.MeasuredValue
 import com.os.rest.exchange.TimeSeriesData
-import com.typesafe.config.ConfigFactory
 import concurrent.Await
 import java.sql.Timestamp
+import com.os.Settings
 
 /**
  * @author Vadim Bobrov
@@ -37,7 +37,7 @@ class RestService extends Actor with SprayActorLogging {
 			val readRequest = new MeasurementReadRequest("customer0", "location0", "wireid0", Array[Interval](new Interval(0, Long.MaxValue)))
 
 
-			val system = ActorSystem("prod", ConfigFactory.load().getConfig("prod"))
+			val system = ActorSystem("prod", Settings.config)
 			val readMaster = system.actorOf(Props[ReadMasterActor], "readMaster")
 
 			val res: Iterable[MeasuredValue] = Await.result((readMaster ? readRequest).mapTo[Iterable[MeasuredValue]], timeout.duration)

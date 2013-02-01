@@ -3,7 +3,6 @@ package com.os.data
 import org.scalatest.FunSuite
 import com.os.{DataGenerator, MeasurementMessageSender}
 import com.os.util.Timing
-import com.os.measurement.Measurement
 
 /**
  * @author Vadim Bobrov
@@ -12,8 +11,19 @@ class MessageSendingTest extends FunSuite with Timing{
 
 	test("message sending and receiving") {
 		MeasurementMessageSender.start()
-		DataGenerator.dailyDataIterator(20) foreach  (MeasurementMessageSender.send _)
+		time {DataGenerator.dailyDataIterator(20, false) foreach  (MeasurementMessageSender.send _)}
 		MeasurementMessageSender.stop()
+	}
+
+	test("single message sending timing") {
+		time {
+			val it = DataGenerator.dailyDataIterator(20, true)
+			MeasurementMessageSender.start()
+			for (i <- 1 to 1000000) {
+				MeasurementMessageSender.send(it.next())
+			}
+			MeasurementMessageSender.stop()
+		}
 	}
 
 

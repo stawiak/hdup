@@ -10,6 +10,6 @@ trait WriterMasterAware {
 
 	this: Actor =>
 	// made settable for testability
-	var writeMaster = context.system.actorFor("/user/writeMaster")
+	var writeMaster = context.system.actorFor("/user/top/writeMaster")
 
 }

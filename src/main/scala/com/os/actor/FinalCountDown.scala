@@ -27,7 +27,7 @@ trait FinalCountDown extends Actor with ActorLogging {
 	/**
 	 * kill a child actor and do andThen when it's dead
 	 */
-	def killChild(child : ActorRef, andThenDo : () => Unit) {
+	def killChild(child : ActorRef, andThenDo : () => Unit = () => {}) {
 		watch(child)
 		become(waitForDeath(child, andThenDo))
 		log.debug("sending graceful stop to " + child.path)

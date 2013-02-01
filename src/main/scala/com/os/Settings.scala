@@ -1,10 +1,19 @@
 package com.os
 
 import concurrent.duration._
+import com.typesafe.config.ConfigFactory
+
 /**
  * @author Vadim Bobrov
  */
 object Settings {
+
+	val config = ConfigFactory.load().getConfig("prod")
+
+	val ActiveMQHOst = config.getString("activemq.host")
+
+	val HttpPort = config.getInt("port")
+	val HttpHost = config.getString("host")
 
 	/*
 	  You may need to find a sweet spot between a low number of RPCs and the memory
@@ -44,4 +53,5 @@ object Settings {
 												// measurements older than that are not interpolated
 
 	val TimeWindowProcessInterval = 10 second	// time between time window processing
+
 }

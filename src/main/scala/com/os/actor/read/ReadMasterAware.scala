@@ -10,6 +10,6 @@ trait ReadMasterAware {
 
 	this: Actor =>
 	// made settable for testability
-	var readMaster = context.system.actorFor("/user/readMaster")
+	var readMaster = context.system.actorFor("/user/top/readMaster")
 
 }

@@ -4,27 +4,30 @@ import akka.actor.{ActorRef, Props}
 import com.os.measurement.Measurement
 import com.os.Settings
 import com.os.actor._
+import write.WriterMasterAware
 
 /**
   * @author Vadim Bobrov
   */
-class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends FinalCountDown with TimedActor {
+class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends FinalCountDown with WriterMasterAware with TimedActor {
 
 	import context._
 
 	override val interval = Settings.TimeWindowProcessInterval
-
 	var measurements = List[Measurement]()
-
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
 
 	override def receive: Receive = {
 
 		case msmt : Measurement =>
 
+			writeMaster ! msmt
 			//TODO instead of tagging measurement one can also use pattern matching on sender
 			//TODO aggregation should be done by .... what???
-			measurements ::= msmt
+			// if less than 9.5 minutes old - add to time window
+			if (System.currentTimeMillis() - msmt.timestamp < Settings.ExpiredTimeWindow)
+				measurements ::= msmt
+
 
 		// send old measurements for aggregation and interpolation
 		case Tick => processWindow
