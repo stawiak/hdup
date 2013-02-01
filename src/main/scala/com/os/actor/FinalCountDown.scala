@@ -27,7 +27,7 @@ trait FinalCountDown extends Actor with ActorLogging {
 	/**
 	 * kill a child actor and do andThen when it's dead
 	 */
-	def killChild(child : ActorRef, andThenDo : () => Unit = () => {}) {
+	protected def killChild(child : ActorRef, andThenDo : () => Unit = () => {}) {
 		watch(child)
 		become(waitForDeath(child, andThenDo))
 		log.debug("sending graceful stop to " + child.path)
@@ -35,7 +35,6 @@ trait FinalCountDown extends Actor with ActorLogging {
 
 		def waitForDeath(toWait : ActorRef, andThenDo : () => Unit) : Receive = {
 			case Terminated(ref) =>
-				log.debug("death of " + ref.path + " while waiting for "  + toWait.path)
 				andThenDo()
 		}
 	}
@@ -44,30 +43,35 @@ trait FinalCountDown extends Actor with ActorLogging {
 	 * execute this function to start shutdown procedure
 	 * @param depressionMode if in depressionMode - no messages from children or elsewhere will be received!!
 	 */
-	def waitAndDie(depressionMode: Boolean = true) {
+	protected def waitAndDie(depressionMode: Boolean = true) {
 		children foreach watch
 		become(if (depressionMode) badNews else badNews orElse receive)
 		if (depressionMode)
 			log.debug("stopped listening to messages")
+
+		// if there are no children already - no Terminated will come in
+		theEnd()
 	}
 
-	final def badNews : Receive = {
+	private def theEnd() {
+		if (children.isEmpty) {
+			// all children done - safe to commit suicide
+			// but execute last will first
+			lastWill()
+
+			if (isInstanceOf[LastMohican])
+				context.system.shutdown()
+			else
+				// send a poison pill rather than stop to process
+				// messages received if not in depression
+				self ! PoisonPill
+		}
+	}
+
+	private final def badNews : Receive = {
 
 		case Terminated(ref) =>
 			log.debug("another one bites the dust {}", ref.path)
-
-			if (children.isEmpty) {
-				// all children done - safe to commit suicide
-				// but execute last will first
-				lastWill()
-
-				if (isInstanceOf[LastMohican])
-					context.system.shutdown()
-				else
-					// send a poison pill rather than stop to process
-					// messages received if not in depression
-					self ! PoisonPill
-			}
-
+			theEnd()
 	}
 }

@@ -20,6 +20,9 @@ class DeadLetterListener extends Actor with ActorLogging {
 			log.debug("lost " + lostMsmt )
 			log.debug("dead letter: " + sender + " " + recipient + " " + msmt)
 		}
+
+		case GracefulStop =>
+			self ! PoisonPill
 	}
 
 }

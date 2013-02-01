@@ -1,6 +1,6 @@
 package com.os.actor
 
-import akka.actor.Actor
+import akka.actor.{PoisonPill, Actor}
 import akka.pattern.ask
 import read.{ReadMasterAware, RollupReadRequest, MeasurementReadRequest}
 import service.TimeWindowAware
@@ -30,7 +30,10 @@ class WebServiceActor extends Actor with WebService {
 	// this actor only runs our route, but you could add
 	// other things here, like request stream processing
 	// or timeout handling
-	def receive = runRoute(route)
+	def receive = runRoute(route) orElse {
+		case GracefulStop =>
+			self ! PoisonPill
+	}
 }
 
 
@@ -38,7 +41,7 @@ class WebServiceActor extends Actor with WebService {
 trait WebService extends HttpService with ReadMasterAware with TimeWindowAware with TopAware {
 	this: Actor =>
 
-	implicit val timeout: Timeout = 60 second
+	implicit val timeout: Timeout = 60 seconds
 
 	val route = {
 		get {

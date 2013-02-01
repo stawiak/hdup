@@ -22,7 +22,7 @@ import akka.util.Timeout
 class ReadMasterActor extends FinalCountDown {
 
 	import context._
-	implicit val timeout = Timeout(10 seconds)
+	implicit val timeout: Timeout = 10 seconds
 
 	// Since a restart does not clear out the mailbox, it often is best to terminate
 	// the children upon failure and re-create them explicitly from the supervisor

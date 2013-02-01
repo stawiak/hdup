@@ -52,7 +52,7 @@ class TopActor  extends FinalCountDown with LastMohican {
 			sender ! webService
 
 		case GracefulStop =>
-			log.debug("master received graceful stop - stopping top level actors")
+			log.debug("top received graceful stop - stopping top level actors")
 			// time window must be flushed before stopping write master
 			killChild(timeWindow, () => killChild(writeMaster))
 			// do the rest
