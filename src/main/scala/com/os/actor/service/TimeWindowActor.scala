@@ -5,8 +5,7 @@ import com.os.measurement.Measurement
 import com.os.Settings
 import com.os.actor._
 import write.WriterMasterAware
-import concurrent.duration.{Duration, FiniteDuration}
-import java.util.concurrent.TimeUnit
+import concurrent.duration.Duration
 
 /**
   * @author Vadim Bobrov
@@ -15,7 +14,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration = Settings.ExpiredTimeWin
 
 	import context._
 
-	override val interval = new FiniteDuration(Settings.TimeWindowProcessInterval, TimeUnit.MILLISECONDS)
+	override val interval = Settings.TimeWindowProcessInterval
 
 	var measurements = List[Measurement]()
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get

@@ -34,27 +34,28 @@ object Settings {
 	  will end up receiving a lease expired error, in the form of a Scan
 		nerTimeoutException being thrown.
 	  */
-	val ScanCacheSize = hBaseConfig.getInt("scanCacheSize")    								// how many rows are retrieved with every RPC call
+	val ScanCacheSize = hBaseConfig.getInt("scanCacheSize")    									// how many rows are retrieved with every RPC call
 
 
-	val TableName = hBaseConfig.getString("tableName")              						// table for actual measurements
-	val MinuteInterpolatedTableName = hBaseConfig.getString("minuteInterpolatedTableName")  // table for minute interpolation
-	val RollupTableName = hBaseConfig.getString("rollupTableName")			    			// table for minute rollup by location
+	val TableName = hBaseConfig.getString("tableName")              							// table for actual measurements
+	val MinuteInterpolatedTableName = hBaseConfig.getString("minuteInterpolatedTableName")  	// table for minute interpolation
+	val RollupTableName = hBaseConfig.getString("rollupTableName")			    				// table for minute rollup by location
 
 
-	val ColumnFamilyName = hBaseConfig.getString("columnFamilyName")      					// stands for data
-	val EnergyQualifierName = hBaseConfig.getString("energyQualifierName")   				// stands for energy
-	val CurrentQualifierName = hBaseConfig.getString("currentQualifierName")  				// stands for current
-	val VampireQualifierName = hBaseConfig.getString("vampireQualifierName")	  			// stands for volt-amp-reactive
+	val ColumnFamilyName = hBaseConfig.getString("columnFamilyName")      						// stands for data
+	val EnergyQualifierName = hBaseConfig.getString("energyQualifierName")   					// stands for energy
+	val CurrentQualifierName = hBaseConfig.getString("currentQualifierName")  					// stands for current
+	val VampireQualifierName = hBaseConfig.getString("vampireQualifierName")	  				// stands for volt-amp-reactive
 
-	val BatchSize = hBaseConfig.getInt("batchSize")            								// default writer batch size - can be lost
-	val DerivedDataBatchSize = hBaseConfig.getInt("interpolatedBatchSize")					// writer batch size for minute interpolations- can be lost
+	val BatchSize = hBaseConfig.getInt("batchSize")            									// default writer batch size - can be lost
+	val DerivedDataBatchSize = hBaseConfig.getInt("interpolatedBatchSize")						// writer batch size for minute interpolations- can be lost
 
 	val TablePoolSize = hBaseConfig.getInt("tablePoolSize")
 
-	val ExpiredTimeWindow = config.getAnyRef("expiredTimeWindow").asInstanceOf[Duration] //570000				// time to incoming measurement expiration in milliseconds
-												// measurements older than that are not interpolated
+	val ExpiredTimeWindow = Duration(config.getMilliseconds("expiredTimeWindow"), MILLISECONDS) // time to incoming measurement expiration in milliseconds
+																								// measurements older than that are not interpolated
 
-	val TimeWindowProcessInterval = config.getInt("timeWindowProcessInterval")	// time between time window processing
+	val TimeWindowProcessInterval = FiniteDuration(config.getMilliseconds("timeWindowProcessInterval"), MILLISECONDS)
+																								// time between time window processing
 
 }
