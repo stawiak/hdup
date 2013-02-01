@@ -52,14 +52,13 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 		val current = System.currentTimeMillis()
 		// if any of the rollups are more than 9.5 minutes old
 		// save to storage and discard
-		val oldmsmt = rollups filter (current - _._1 > timeWindow)
-
+		val(oldmsmt, newmsmt) = rollups span (current - _._1 > timeWindow)
 
 		for( tv <- oldmsmt)
 			writeMaster !  new Measurement(customer, location, "", tv._1, tv._2, 0, 0) with Rollup
 
 		// discard old values
-		rollups = rollups filter (current - _._1 <= timeWindow)
+		rollups = newmsmt
 	}
 
 	object DefaultInterpolatorFactory {
