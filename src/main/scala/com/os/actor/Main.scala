@@ -1,8 +1,12 @@
 package com.os.actor
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.pattern.ask
 import spray.can.server.SprayCanHttpServerApp
 import com.os.Settings
+import akka.util.Timeout
+import concurrent.duration._
+import scala.util.{Failure, Success}
 
 /**
  * @author Vadim Bobrov
@@ -11,10 +15,16 @@ import com.os.Settings
 object Main extends App with SprayCanHttpServerApp {
 
 	override lazy val system = ActorSystem("prod", Settings.config)
-	val master = system.actorOf(Props[TopActor], name = "top")
-	val webService = system.actorFor("/user/top/webService")
+	val top = system.actorOf(Props[TopActor], name = "top")
+	implicit val timeout: Timeout = 60 second
+	implicit val dispatcher = system.dispatcher
 
-	// create a new HttpServer using our handler and tell it where to bind to
-	newHttpServer(webService) ! Bind(interface = Settings.HttpHost, port = Settings.HttpPort)
+	val webService = (top ? GetWebService).mapTo[ActorRef]
+
+	webService onComplete {
+		case Success(result) ⇒ newHttpServer(result) ! Bind(interface = Settings.HttpHost, port = Settings.HttpPort)
+		case Failure(failure) ⇒ system.shutdown()
+	}
+
 
 }

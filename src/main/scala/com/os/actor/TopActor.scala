@@ -13,6 +13,7 @@ import akka.actor.SupervisorStrategy.{Escalate, Resume}
  * responsible for: global fault tolerance, startup and graceful shutdown of actor system
  * @author Vadim Bobrov
  */
+case object GetWebService
 class TopActor  extends FinalCountDown with LastMohican {
 
 	import context._
@@ -27,7 +28,7 @@ class TopActor  extends FinalCountDown with LastMohican {
 
 	override def preStart() {
 		// start top level actors
-		timeWindow = actorOf(Props[TimeWindowActor], name = "timeWindow")
+		timeWindow = actorOf(Props(new TimeWindowActor()), name = "timeWindow")
 		readMaster = actorOf(Props[ReadMasterActor], name = "readMaster")
 		writeMaster = actorOf(Props[WriteMasterActor], name = "writeMaster")
 		messageListener = actorOf(Props(new MessageListenerActor(Settings.ActiveMQHOst, "msmt")), name = "jmsListener")
@@ -37,13 +38,18 @@ class TopActor  extends FinalCountDown with LastMohican {
 		system.eventStream.subscribe(deadLetterListener, classOf[DeadLetter])
 	}
 
+
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
 			case _: Exception     				⇒ Resume
 			case _: Throwable                	⇒ Escalate
 		}
 
+
 	override def receive: Receive = {
+
+		case GetWebService =>
+			sender ! webService
 
 		case GracefulStop =>
 			log.debug("master received graceful stop - stopping top level actors")

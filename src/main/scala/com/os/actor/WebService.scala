@@ -12,7 +12,7 @@ import concurrent.Await
 import com.os.rest.exchange.TimeSeriesData
 import java.sql.Timestamp
 import akka.util.Timeout
-import concurrent.duration.Duration
+import concurrent.duration._
 
 /**
  * @author Vadim Bobrov
@@ -35,17 +35,16 @@ class WebServiceActor extends Actor with WebService {
 
 
 // this trait defines our service behavior independently from the service actor
-trait WebService extends HttpService with ReadMasterAware with TimeWindowAware {
+trait WebService extends HttpService with ReadMasterAware with TimeWindowAware with TopAware {
 	this: Actor =>
 
-	implicit val timeout: Timeout = Duration(100, "sec") // for the actor 'asks' we use below
-	val master = context.system.actorFor("/user/top")
+	implicit val timeout: Timeout = 60 second
 
 	val route = {
 		get {
 			path("stop") {
 				complete {
-					master ! GracefulStop
+					top ! GracefulStop
 					"shutting down"
 				}
 			} ~
