@@ -21,6 +21,7 @@ object MeasurementMessageSender {
 		//connection.setExceptionListener(this);
 
 		session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)
+
 		destination = session.createQueue("msmt")
 		producer = session.createProducer(destination)
 
@@ -34,7 +35,9 @@ object MeasurementMessageSender {
 	}
 
 	def send(msmt: Measurement) {
-		producer.send(destination, msmt)
+		val msg: MapMessage = msmt
+		producer.send(destination, msg)
 	}
+
 
 }

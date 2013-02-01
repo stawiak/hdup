@@ -50,15 +50,11 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 	 * and remove them from window
 	 */
 	private def processWindow() {
-		log.debug("processing time window")
 		try {
 			val current = System.currentTimeMillis()
 			// if any of the existing measurements are more than 9.5 minutes old
 			// sort by time, interpolate, save to storage and discard
 			val(oldmsmt, newmsmt) = measurements span (current - _.timestamp > expiredTimeWindow)
-
-
-			log.debug("old values to send {}", oldmsmt.size)
 
 			for (tv <- oldmsmt.sortWith(_ < _))
 				aggregatorFactory(tv.customer, tv.location) ! tv

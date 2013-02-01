@@ -53,9 +53,14 @@ object DataGenerator extends Loggable{
 	def getLocation(i : Int) = LOCATIONS(i)
 	def getWireId(i : Int) = WIREIDS(i)
 
-	class DailyDataIterator(val minutes: Int = 20) extends Iterator[Measurement] {
+	/**
+	 * Generate test data
+	 * @param minutes  for how long to generate
+	 * @param realTime use real time or every 5 minutes (warning!! if false time will be in future)
+	 */
+	class DailyDataIterator(val minutes: Int = 20, val realTime: Boolean = false) extends Iterator[Measurement] {
 
-		val start = System.currentTimeMillis() - Settings.ExpiredTimeWindow + 60 * 1000 - (1000 * 60 * minutes)
+		val start = System.currentTimeMillis()// - Settings.ExpiredTimeWindow + 60 * 1000 - (1000 * 60 * minutes)
 		var curTime = start
 		var curCustomer, curLocation, curWireId = 0
 
@@ -65,7 +70,11 @@ object DataGenerator extends Loggable{
 		def next(): Measurement = {
 
 			if (curCustomer == CustomerNumber - 1 && curLocation == LocationNumber - 1 && curWireId == WireNumber - 1) {
-				curTime += 1000 * 60 * 5
+				if (realTime)
+					curTime = System.currentTimeMillis()
+				else
+					curTime += 1000 * 60 * 5
+
 				curCustomer = 0; curLocation = 0; curWireId = 0
 			} else if(curWireId != WireNumber - 1)
 				curWireId += 1
@@ -92,6 +101,6 @@ object DataGenerator extends Loggable{
 		}
 	}
 
-	def dailyDataIterator(minutes: Int): Iterator[Measurement] = new DailyDataIterator(minutes)
+	def dailyDataIterator(minutes: Int, realTime: Boolean): Iterator[Measurement] = new DailyDataIterator(minutes, realTime)
 
 }

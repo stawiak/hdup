@@ -44,7 +44,7 @@ class DataGeneratorTest extends FlatSpec with ShouldMatchers with Timing {
 
 	"daily data iterator" should "return correct number of measurements" in {
 		time {
-			val iterator = DataGenerator.dailyDataIterator(60 * 24)
+			val iterator = DataGenerator.dailyDataIterator(60 * 24, false)
 			iterator.length should be (3456000)
 		}
 	}
