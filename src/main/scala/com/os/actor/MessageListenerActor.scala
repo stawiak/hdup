@@ -14,8 +14,9 @@ class MessageListenerActor(host: String, queue: String) extends ActiveMQActor(ho
 	override def receive: Receive = {
 
 		case msg : MapMessage => {
-			val msmt: Measurement = msg
-			incomingHandler ! msmt
+			val msmt: Option[Measurement] = msg
+			if (msmt.isDefined)
+				incomingHandler ! msmt.get
 		}
 
 		case msg : TextMessage => {
