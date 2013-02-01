@@ -20,7 +20,7 @@ class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with Fl
 		system.shutdown()
 	}
 
-	val testTimeWindow = TestActorRef(new TimeWindowActor(10000))
+	val testTimeWindow = TestActorRef(new TimeWindowActor(10 seconds))
 	testTimeWindow.underlyingActor.aggregatorFactory =  TestAggregationFactory.get
 
 	"time window" should "send nothing before expiration window expire" in {

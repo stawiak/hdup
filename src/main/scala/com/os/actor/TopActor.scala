@@ -31,7 +31,7 @@ class TopActor  extends FinalCountDown with LastMohican {
 		timeWindow = actorOf(Props(new TimeWindowActor()), name = "timeWindow")
 		readMaster = actorOf(Props[ReadMasterActor], name = "readMaster")
 		writeMaster = actorOf(Props[WriteMasterActor], name = "writeMaster")
-		messageListener = actorOf(Props(new MessageListenerActor(Settings.ActiveMQHOst, "msmt")), name = "jmsListener")
+		messageListener = actorOf(Props(new MessageListenerActor(Settings.ActiveMQHost, Settings.ActiveMQPort, Settings.ActiveMQQueue)), name = "jmsListener")
 		webService = actorOf(Props[WebServiceActor], name = "webService")
 		deadLetterListener = actorOf(Props[DeadLetterListener], name = "deadLetterListener")
 

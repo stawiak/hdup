@@ -7,7 +7,7 @@ import javax.jms._
 /**
  * @author Vadim Bobrov
  */
-abstract class ActiveMQActor(host: String, queue: String) extends Actor with ActorLogging with MessageListener {
+abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Actor with ActorLogging with MessageListener {
 
 	var connection: Connection = _
 	var session: Session = _
@@ -19,7 +19,7 @@ abstract class ActiveMQActor(host: String, queue: String) extends Actor with Act
 
 
 	override def preStart() {
-		val connectionFactory = new ActiveMQConnectionFactory("tcp://" + host + ":61616")
+		val connectionFactory = new ActiveMQConnectionFactory("tcp://" + host + ":" + port)
 		connection = connectionFactory.createConnection()
 		//connection.setExceptionListener(this);
 

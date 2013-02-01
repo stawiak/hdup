@@ -12,7 +12,7 @@ case object Tick
 trait TimedActor {
 	this: Actor =>
 
-	val interval: FiniteDuration = 5 second
+	val interval: FiniteDuration = 5 seconds
 
 	import context.dispatcher
 

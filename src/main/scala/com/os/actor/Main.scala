@@ -22,8 +22,8 @@ object Main extends App with SprayCanHttpServerApp {
 	val webService = (top ? GetWebService).mapTo[ActorRef]
 
 	webService onComplete {
-		case Success(result) ⇒ newHttpServer(result) ! Bind(interface = Settings.HttpHost, port = Settings.HttpPort)
-		case Failure(failure) ⇒ system.shutdown()
+		case Success(result) => newHttpServer(result) ! Bind(interface = Settings.HttpHost, port = Settings.HttpPort)
+		case Failure(failure) => system.shutdown()
 	}
 
 

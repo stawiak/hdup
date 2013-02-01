@@ -5,13 +5,14 @@ import com.os.measurement._
 import com.os.actor.write.WriterMasterAware
 import com.os.actor._
 import com.os.Settings
+import concurrent.duration.Duration
 
 /**
  * Rollup by customer and location
  *
  * @author Vadim Bobrov
  */
-class AggregatorActor(val customer: String, val location: String, var timeWindow : Int = Settings.ExpiredTimeWindow) extends FinalCountDown with WriterMasterAware with TimedActor {
+class AggregatorActor(val customer: String, val location: String, var timeWindow : Duration = Settings.ExpiredTimeWindow) extends FinalCountDown with WriterMasterAware with TimedActor {
 
 	import context._
 	var interpolatorFactory  : String => ActorRef = DefaultInterpolatorFactory.get
@@ -52,7 +53,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 		val current = System.currentTimeMillis()
 		// if any of the rollups are more than 9.5 minutes old
 		// save to storage and discard
-		val(oldmsmt, newmsmt) = rollups span (current - _._1 > timeWindow)
+		val(oldmsmt, newmsmt) = rollups span (current - _._1 > timeWindow.toMillis)
 
 		for( tv <- oldmsmt)
 			writeMaster !  new Measurement(customer, location, "", tv._1, tv._2, 0, 0) with Rollup

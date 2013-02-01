@@ -7,6 +7,7 @@ import com.os.measurement.Measurement
 import akka.testkit.{TestProbe, ImplicitSender, TestKit, TestActorRef}
 import com.os.actor.service.AggregatorActor
 import com.typesafe.config.ConfigFactory
+import scala.concurrent.duration._
 
 /**
  * @author Vadim Bobrov
@@ -20,7 +21,7 @@ class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_sys
 	}
 
 	val writeProbe  = TestProbe()
-	val underTest = TestActorRef(new AggregatorActor("", "", timeWindow = 10000))
+	val underTest = TestActorRef(new AggregatorActor("", "", timeWindow = 10 seconds))
 	underTest.underlyingActor.writeMaster = writeProbe.ref
 
 	"write muster" must {

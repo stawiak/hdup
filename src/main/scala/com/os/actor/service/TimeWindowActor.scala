@@ -5,15 +5,18 @@ import com.os.measurement.Measurement
 import com.os.Settings
 import com.os.actor._
 import write.WriterMasterAware
+import concurrent.duration.{Duration, FiniteDuration}
+import java.util.concurrent.TimeUnit
 
 /**
   * @author Vadim Bobrov
   */
-class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) extends FinalCountDown with WriterMasterAware with TimedActor {
+class TimeWindowActor(var expiredTimeWindow : Duration = Settings.ExpiredTimeWindow) extends FinalCountDown with WriterMasterAware with TimedActor {
 
 	import context._
 
-	override val interval = Settings.TimeWindowProcessInterval
+	override val interval = new FiniteDuration(Settings.TimeWindowProcessInterval, TimeUnit.MILLISECONDS)
+
 	var measurements = List[Measurement]()
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
 
@@ -25,7 +28,7 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 			//TODO instead of tagging measurement one can also use pattern matching on sender
 			//TODO aggregation should be done by .... what???
 			// if less than 9.5 minutes old - add to time window
-			if (System.currentTimeMillis() - msmt.timestamp < Settings.ExpiredTimeWindow)
+			if (System.currentTimeMillis() - msmt.timestamp < Settings.ExpiredTimeWindow.toMillis)
 				measurements ::= msmt
 
 
@@ -57,7 +60,7 @@ class TimeWindowActor(var expiredTimeWindow : Int = Settings.ExpiredTimeWindow) 
 			val current = System.currentTimeMillis()
 			// if any of the existing measurements are more than 9.5 minutes old
 			// sort by time, interpolate, save to storage and discard
-			val(oldmsmt, newmsmt) = measurements span (current - _.timestamp > expiredTimeWindow)
+			val(oldmsmt, newmsmt) = measurements span (current - _.timestamp > expiredTimeWindow.toMillis)
 
 			for (tv <- oldmsmt.sortWith(_ < _))
 				aggregatorFactory(tv.customer, tv.location) ! tv

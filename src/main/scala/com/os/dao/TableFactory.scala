@@ -20,7 +20,7 @@ object TableFactory extends Loggable{
     */
 
   private val config = HBaseConfiguration.create()
-  config.set("hbase.zookeeper.quorum", Settings.Host)
+  config.set("hbase.zookeeper.quorum", Settings.HBaseHost)
 
   // HBase bug 5728: setAutoFlush(boolean) is missing from HTableInterface.
   // Solution: custom HTableInterfaceFactory (suggestion from the HBase user mailing-list)

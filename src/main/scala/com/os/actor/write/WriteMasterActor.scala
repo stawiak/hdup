@@ -37,7 +37,7 @@ class WriteMasterActor extends FinalCountDown {
 	private def getRouter(msmt : Measurement) : ActorRef = {
 
 		val (tableName, batchSize) = msmt match  {
-			case imsmt : Interpolated => (Settings.MinuteInterpolaedTableName, Settings.DerivedDataBatchSize)
+			case imsmt : Interpolated => (Settings.MinuteInterpolatedTableName, Settings.DerivedDataBatchSize)
 			case rmsmt : Rollup => (Settings.RollupTableName, Settings.DerivedDataBatchSize)
 			case _ => (Settings.TableName, Settings.BatchSize)
 		}

@@ -1,6 +1,6 @@
 package com.os.actor
 
-import akka.actor.{PoisonPill, Actor}
+import akka.actor.{ActorLogging, PoisonPill, Actor}
 import akka.pattern.ask
 import read.{ReadMasterAware, RollupReadRequest, MeasurementReadRequest}
 import service.TimeWindowAware
@@ -13,6 +13,7 @@ import com.os.rest.exchange.TimeSeriesData
 import java.sql.Timestamp
 import akka.util.Timeout
 import concurrent.duration._
+import scala.Predef._
 
 /**
  * @author Vadim Bobrov
@@ -21,7 +22,7 @@ import concurrent.duration._
 case object Monitor
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class WebServiceActor extends Actor with WebService {
+class WebServiceActor extends Actor with ActorLogging with WebService {
 
 	// the HttpService trait defines only one abstract member, which
 	// connects the services environment to the enclosing actor or test
@@ -39,7 +40,7 @@ class WebServiceActor extends Actor with WebService {
 
 // this trait defines our service behavior independently from the service actor
 trait WebService extends HttpService with ReadMasterAware with TimeWindowAware with TopAware {
-	this: Actor =>
+	this: Actor with ActorLogging =>
 
 	implicit val timeout: Timeout = 60 seconds
 
@@ -54,15 +55,21 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 			path("stats") {
 				respondWithMediaType(`text/html`) {
 					complete {
-						val timeWindowStats = Await.result((timeWindow ? Monitor).mapTo[Map[String, Int]], timeout.duration)
-						<html>
-							<body>
-								<h1>Stats</h1>
-								<p>
-									window length: <b>{timeWindowStats("length")}</b>
-								</p>
-							</body>
-						</html>
+						val timeWindowStats = try {
+								Await.result((timeWindow ? Monitor).mapTo[Map[String, Int]], timeout.duration)
+							} catch {
+								case e: Exception =>
+									Map("length" -> "n/a")
+							}
+
+							<html>
+								<body>
+									<h1>Stats</h1>
+									<p>
+										window length: <b>{timeWindowStats("length")}</b>
+									</p>
+								</body>
+							</html>
 					}
 				}
 			}
@@ -108,7 +115,12 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 		val tsd = new TimeSeriesData()
 
 
-		Await.result((readMaster ? readRequest).mapTo[Iterable[MeasuredValue]], timeout.duration) foreach (mv => tsd.put(new Timestamp(mv.timestamp), mv.energy))
+		try {
+			Await.result((readMaster ? readRequest).mapTo[Iterable[MeasuredValue]], timeout.duration) foreach (mv => tsd.put(new Timestamp(mv.timestamp), mv.energy))
+		} catch {
+			case e: Exception =>
+				log.error(e, e.getMessage)
+		}
 
 
 		tsd.toJSONString

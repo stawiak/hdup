@@ -8,7 +8,7 @@ import akka.actor.PoisonPill
 /**
  * @author Vadim Bobrov
  */
-class MessageListenerActor(host: String, queue: String) extends ActiveMQActor(host, queue) with TopAware {
+class MessageListenerActor(host: String, port: Int, queue: String) extends ActiveMQActor(host, port, queue) with TopAware {
 
 	val timeWindow = context.system.actorFor("/user/top/timeWindow")
 
