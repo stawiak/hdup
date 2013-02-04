@@ -8,8 +8,8 @@ import com.typesafe.config.ConfigFactory
 import com.os.DataFiller
 import com.os.actor.write.WriteMasterActor
 import com.os.measurement.Measurement
-import com.os.actor.GracefulStop
 import com.os.util.Timing
+import com.os.actor.util.GracefulStop
 
 /**
  * @author Vadim Bobrov

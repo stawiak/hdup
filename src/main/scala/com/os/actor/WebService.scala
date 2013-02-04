@@ -14,6 +14,7 @@ import java.sql.Timestamp
 import akka.util.Timeout
 import concurrent.duration._
 import scala.Predef._
+import util.GracefulStop
 
 /**
  * @author Vadim Bobrov

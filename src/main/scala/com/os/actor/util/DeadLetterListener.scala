@@ -1,4 +1,4 @@
-package com.os.actor
+package com.os.actor.util
 
 import akka.actor._
 import com.os.measurement.Measurement

@@ -1,4 +1,4 @@
-package com.os.actor
+package com.os.actor.util
 
 import akka.event.LoggingReceive
 import akka.actor.{Actor, Props}

@@ -1,4 +1,4 @@
-package com.os.actor
+package com.os.actor.util
 
 import akka.actor.{ActorLogging, Actor}
 import org.apache.activemq.ActiveMQConnectionFactory

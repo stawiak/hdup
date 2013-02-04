@@ -5,7 +5,6 @@ import com.os.measurement.MeasuredValue
 import com.os.Settings
 import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
-import com.os.actor.{FinalCountDown, GracefulStop}
 import akka.actor.OneForOneStrategy
 import akka.routing.Broadcast
 import akka.pattern.ask
@@ -13,7 +12,7 @@ import akka.pattern.pipe
 import concurrent.duration._
 import concurrent.Future
 import akka.util.Timeout
-
+import com.os.actor.util.{GracefulStop, FinalCountDown}
 
 
 /**

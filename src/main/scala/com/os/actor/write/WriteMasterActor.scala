@@ -6,7 +6,7 @@ import com.os.Settings
 import akka.routing.{RoundRobinRouter, Broadcast, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
-import com.os.actor.{FinalCountDown, GracefulStop}
+import com.os.actor.util.{GracefulStop, FinalCountDown}
 
 
 /**

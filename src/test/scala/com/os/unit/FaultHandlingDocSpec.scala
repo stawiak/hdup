@@ -10,7 +10,7 @@ import com.os.unit.FaultHandlingDocSpec.TestWriterActor
 import com.os.measurement.Measurement
 import scala._
 import scala.Predef._
-import com.os.actor.{GracefulStop, LoggingActor}
+import com.os.actor.util.{LoggingActor, GracefulStop}
 
 /**
  * @author Vadim Bobrov

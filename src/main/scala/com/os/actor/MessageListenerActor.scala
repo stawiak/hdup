@@ -4,6 +4,7 @@ import com.os.measurement.Measurement
 import javax.jms._
 import com.os.measurement.MeasurementConverter._
 import akka.actor.PoisonPill
+import util.{GracefulStop, ActiveMQActor}
 
 /**
  * @author Vadim Bobrov

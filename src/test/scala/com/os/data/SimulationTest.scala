@@ -5,9 +5,8 @@ import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}
 import com.os.{Settings, DataGenerator}
-import com.os.actor.GracefulStop
 import com.os.util.Timing
-import com.os.actor.util.{Counter, Stats}
+import com.os.actor.util.{GracefulStop, Counter, Stats}
 
 /**
  * @author Vadim Bobrov

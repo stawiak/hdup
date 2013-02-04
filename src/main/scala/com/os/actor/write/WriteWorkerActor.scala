@@ -5,7 +5,7 @@ import com.os.dao.Writer
 import com.os.util.Util._
 import com.os.Settings
 import com.os.measurement.Measurement
-import com.os.actor.GracefulStop
+import com.os.actor.util.GracefulStop
 
 /**
   * @author Vadim Bobrov

@@ -5,9 +5,9 @@ import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit, TestActorRef}
 import com.typesafe.config.ConfigFactory
-import com.os.actor.{ GracefulStop, LastMohican, FinalCountDown}
 import akka.routing.{Broadcast, RoundRobinRouter}
 import annotation.tailrec
+import com.os.actor.util.{LastMohican, GracefulStop, FinalCountDown}
 
 /**
  * @author Vadim Bobrov
