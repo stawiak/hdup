@@ -7,30 +7,30 @@ import com.os.actor._
 import util.{Tick, TimedActor, GracefulStop, FinalCountDown}
 import write.WriterMasterAware
 import concurrent.duration.Duration
-import collection.immutable.TreeSet
+import com.os.util.{TimeSource, TimeWindowListBuffer, TimeWindow}
+
 
 /**
   * @author Vadim Bobrov
   */
-class TimeWindowActor(var expiredTimeWindow : Duration = Settings.ExpiredTimeWindow) extends FinalCountDown with WriterMasterAware with TimedActor {
+class TimeWindowActor(var expiredTimeWindow : Duration = Settings.ExpiredTimeWindow, val timeSource: TimeSource = new TimeSource {}) extends FinalCountDown with WriterMasterAware with TimedActor {
 
 	import context._
 
 	override val interval = Settings.TimeWindowProcessInterval
 
-	var measurements = List[Measurement]()
+	var measurements:TimeWindow[Measurement] = new TimeWindowListBuffer[Measurement]()
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
 
 	override def receive: Receive = {
 
 		case msmt : Measurement =>
-
 			writeMaster ! msmt
 			//TODO instead of tagging measurement one can also use pattern matching on sender
 			//TODO aggregation should be done by .... what???
 			// if less than 9.5 minutes old - add to time window
-			if (System.currentTimeMillis() - msmt.timestamp < Settings.ExpiredTimeWindow.toMillis)
-				measurements ::= msmt
+			if (timeSource.now - msmt.timestamp < Settings.ExpiredTimeWindow.toMillis)
+				measurements += msmt
 
 
 		// send old measurements for aggregation and interpolation
@@ -58,7 +58,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration = Settings.ExpiredTimeWin
 	 */
 	private def processWindow() {
 		try {
-			val current = System.currentTimeMillis()
+			val current = timeSource.now()
 			// if any of the existing measurements are more than 9.5 minutes old
 			// sort by time, interpolate, save to storage and discard
 			val(oldmsmt, newmsmt) = measurements span (current - _.timestamp > expiredTimeWindow.toMillis)

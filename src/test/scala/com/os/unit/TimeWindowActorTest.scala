@@ -8,58 +8,32 @@ import akka.testkit.{TestProbe, ImplicitSender, TestKit, TestActorRef}
 import com.os.actor.service.TimeWindowActor
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
+import com.os.util.TimeSource
 
 /**
  * @author Vadim Bobrov
  */
 class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest {
 
-	def this() = this(ActorSystem("test", ConfigFactory.load().getConfig("test")))
+	def this() = this(ActorSystem("prod", ConfigFactory.load().getConfig("prod")))
 
 	override def afterAll() {
 		system.shutdown()
 	}
 
-	val testTimeWindow = TestActorRef(new TimeWindowActor(10 seconds))
+	val writeProbe  = TestProbe()
+	val testTimeWindow = TestActorRef(new TimeWindowActor(10 seconds, TestTimeSource))
 	testTimeWindow.underlyingActor.aggregatorFactory =  TestAggregationFactory.get
+	testTimeWindow.underlyingActor.writeMaster = writeProbe.ref
 
-	"time window" should "send nothing before expiration window expire" in {
-		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-
-		TestAggregationFactory.aggregator.expectNoMsg
-	}
-
-
-	it should "send old to interpolator after expiration window expire" in {
-		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		TestAggregationFactory.aggregator.expectNoMsg(1 seconds)
-		Thread.sleep(11000)
-		TestAggregationFactory.aggregator.receiveN(2)
-	}
-
-	it should "not send new to interpolator after expiration window expire" in {
-		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		TestAggregationFactory.aggregator.expectNoMsg(10 milliseconds)
-		Thread.sleep(11000)
-		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		testTimeWindow !  new Measurement("", "", "", System.currentTimeMillis, 0, 0, 0)
-		TestAggregationFactory.aggregator.receiveN(3)
-	}
-
-	it should "send 4 expired messages to interpolator and get one value back" in {
+	"time window" should "send 4 expired messages to interpolator" in {
 		testTimeWindow !  new Measurement("", "", "", 119995,5, 0, 0)
 		testTimeWindow !  new Measurement("", "", "", 119997,3, 0, 0)
 		testTimeWindow !  new Measurement("", "", "", 120001,5, 0, 0)
 		testTimeWindow !  new Measurement("", "", "", 120002,6, 0, 0)
 
-		TestAggregationFactory.aggregator.receiveN(4)
+		TestAggregationFactory.aggregator.receiveN(4, 10 seconds)
 	}
-
-
 
 
 	object TestAggregationFactory {
@@ -67,6 +41,16 @@ class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with Fl
 
 		def get(customer : String, location : String) : ActorRef = {
 			aggregator.ref
+		}
+	}
+
+	object TestTimeSource extends TimeSource {
+		private val times = List(120000, 120000, 120000, 120000, 180000, 240000)
+		var i = 0
+
+		override def now(): Long = {
+			i += 1
+			times(i - 1)
 		}
 	}
 
