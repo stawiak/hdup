@@ -1,7 +1,7 @@
 package com.os
 
 import dao.Writer
-import measurement.Measurement
+import measurement.EnergyMeasurement
 import org.joda.time.DateTime
 import util.Loggable
 import com.os.util.Util._
@@ -37,7 +37,7 @@ object DataFiller extends Loggable{
 		using(writer) {
 
 			for (i <- 0 until records) {
-				writer.write(new Measurement(customer, location, wireid, i.asInstanceOf[Long], 8, 88, 888))
+				writer.write(new EnergyMeasurement(customer, location, wireid, i.asInstanceOf[Long], 8))
 				if (i % 1000 == 0) debug(i)
 			}
 
@@ -61,7 +61,7 @@ object DataFiller extends Loggable{
 					debug("filling for " + new DateTime(l))
 
 				for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
-					writer.write(new Measurement(DataGenerator.getCustomer(i), DataGenerator.getLocation(j), DataGenerator.getWireId(k), l, value, value, value))
+					writer.write(new EnergyMeasurement(DataGenerator.getCustomer(i), DataGenerator.getLocation(j), DataGenerator.getWireId(k), l, value))
 					counter += 1
 				}
 
@@ -87,7 +87,7 @@ object DataFiller extends Loggable{
 				debug("filling for " + new DateTime(l))
 
 			for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
-				actor ! new Measurement(DataGenerator.getCustomer(i), DataGenerator.getLocation(j), DataGenerator.getWireId(k), l, value, value, value)
+				actor ! new EnergyMeasurement(DataGenerator.getCustomer(i), DataGenerator.getLocation(j), DataGenerator.getWireId(k), l, value)
 				counter += 1
 			}
 		}
@@ -101,7 +101,7 @@ object DataFiller extends Loggable{
 	 */
 	def fillSimple(customer: String, location: String, wireid: String, timestamp: Long, value:Double) {
 		using(writer) {
-			writer.write(new Measurement(customer, location, wireid, timestamp, value, value, value))
+			writer.write(new EnergyMeasurement(customer, location, wireid, timestamp, value))
 		}
 	}
 

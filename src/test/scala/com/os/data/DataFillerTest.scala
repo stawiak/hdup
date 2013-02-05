@@ -7,7 +7,7 @@ import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 import com.os.DataFiller
 import com.os.actor.write.WriteMasterActor
-import com.os.measurement.Measurement
+import com.os.measurement.EnergyMeasurement
 import com.os.util.Timing
 import com.os.actor.util.GracefulStop
 
@@ -45,7 +45,7 @@ class DataFillerTest extends FunSuite with Timing{
 
 		val master = system.actorOf(Props(new WriteMasterActor()), name = "writeMaster")
 		for (i <- 0 until 1000)
-			master ! new Measurement("b", "c", "d" + i, 2, 2, 2, 2)
+			master ! new EnergyMeasurement("b", "c", "d" + i, 2, 2)
 
 		debug("flushing")
 		master ! GracefulStop

@@ -7,7 +7,7 @@ import org.scalatest.{BeforeAndAfterAll, WordSpec}
 import com.os.actor.write._
 import com.typesafe.config.ConfigFactory
 import com.os.unit.FaultHandlingDocSpec.TestWriterActor
-import com.os.measurement.Measurement
+import com.os.measurement.{EnergyMeasurement, Measurement}
 import scala._
 import scala.Predef._
 import com.os.actor.util.{LoggingActor, GracefulStop}
@@ -68,7 +68,7 @@ class FaultHandlingDocSpec(_system: ActorSystem) extends TestKit(_system) with W
 		"apply the chosen strategy for its child writers in case of intermittent failure" in {
 
 			for (i <- 1 to 3)
-				masterWriter ! new Measurement("", "", "", i, i, i, i)
+				masterWriter ! new EnergyMeasurement("", "", "", i, i)
 
 			masterWriter ! GracefulStop
 			// it is not testKit it is masterWriter that receives this message

@@ -6,31 +6,14 @@ package com.os.measurement
  */
 trait Interpolated
 trait Rollup
-class Measurement(
-					 val customer: String,
-					 val location: String,
-					 val wireid: String,
-					 override val timestamp: Long,
-					 override val energy: Double,
-					 override val current: Double,
-					 override val vampire: Double
-					 )
+sealed abstract class Measurement(val customer: String, val location: String, val wireid: String, val timestamp: Long, val value: Double) extends Ordered[Measurement] {
 
-	extends MeasuredValue(timestamp, energy, current, vampire){
+	override def toString = "msmt " + customer + "/" + location + "/" + wireid + "/" + timestamp + "/" + value
 
-	override def toString = "measurement " + customer + "/" + location + "/" + wireid + " " + super.toString
+	override def compare(that : Measurement) : Int = this.timestamp.compareTo(that.timestamp)
 
-	override def equals(other : Any)  = other match {
-    case that: Measurement =>
-      that.customer == this.customer &&
-      that.location == this.location &&
-      that.wireid == this.wireid &&
-      that.timestamp == this.timestamp &&
-      that.energy == this.energy &&
-      that.current == this.current &&
-      that.vampire == this.vampire
-    case _ => false
-	}
-
-  //TODO: hashCode!!!
 }
+
+case class EnergyMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
+case class CurrentMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
+case class VampsMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)

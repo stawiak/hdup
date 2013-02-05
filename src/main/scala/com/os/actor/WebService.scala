@@ -7,7 +7,7 @@ import service.TimeWindowAware
 import spray.routing._
 import spray.http.MediaTypes._
 import org.joda.time.Interval
-import com.os.measurement.MeasuredValue
+import com.os.measurement.TimedValue
 import concurrent.Await
 import com.os.rest.exchange.TimeSeriesData
 import java.sql.Timestamp
@@ -117,7 +117,7 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 
 
 		try {
-			Await.result((readMaster ? readRequest).mapTo[Iterable[MeasuredValue]], timeout.duration) foreach (mv => tsd.put(new Timestamp(mv.timestamp), mv.energy))
+			Await.result((readMaster ? readRequest).mapTo[Iterable[TimedValue]], timeout.duration) foreach (mv => tsd.put(new Timestamp(mv.timestamp), mv.value))
 		} catch {
 			case e: Exception =>
 				log.error(e, e.getMessage)

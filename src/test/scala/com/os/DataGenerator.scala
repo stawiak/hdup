@@ -1,6 +1,6 @@
 package com.os
 
-import measurement.Measurement
+import measurement.{EnergyMeasurement, Measurement}
 import scala.util.Random
 import util.Loggable
 
@@ -29,23 +29,19 @@ object DataGenerator extends Loggable{
 	def getRandomLocation = LOCATIONS(random.nextInt(LocationNumber))
 	def getRandomWireId = WIREIDS(random.nextInt(WireNumber))
 
-	def getRandomMeasurement = new Measurement(
+	def getRandomMeasurement = new EnergyMeasurement(
 		getRandomCustomer,
 		getRandomLocation,
 		getRandomWireId,
 		System.currentTimeMillis() - random.nextInt(Settings.ExpiredTimeWindow.toMillis.asInstanceOf[Int]) - 30000,
-		random.nextDouble(),
-		random.nextDouble(),
 		random.nextDouble()
 	)
 
-	def getRandomMeasurementSingleId = new Measurement(
+	def getRandomMeasurementSingleId = new EnergyMeasurement(
 		CUSTOMERS(0),
 		LOCATIONS(0),
 		WIREIDS(0),
 		System.currentTimeMillis(),// - random.nextInt(Settings.ExpiredTimeWindow) + 30000,
-		random.nextDouble(),
-		random.nextDouble(),
 		random.nextDouble()
 	)
 
@@ -86,13 +82,11 @@ object DataGenerator extends Loggable{
 				curLocation = 0; curWireId = 0
 			}
 
-			val msmt = new Measurement(
+			val msmt = new EnergyMeasurement(
 				CUSTOMERS(curCustomer),
 				LOCATIONS(curLocation),
 				WIREIDS(curWireId),
 				curTime,
-				random.nextDouble(),
-				random.nextDouble(),
 				random.nextDouble()
 			)
 

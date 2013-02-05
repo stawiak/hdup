@@ -1,7 +1,7 @@
 package com.os.actor.read
 
 import akka.actor._
-import com.os.measurement.MeasuredValue
+import com.os.measurement.TimedValue
 import com.os.Settings
 import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
@@ -59,7 +59,7 @@ class ReadMasterActor extends FinalCountDown {
 
 		case request : MeasurementReadRequest => {
 			log.debug("received measurement read request {}", request)
-			Future.traverse(request.scanRequests)(req => (getRouter(request) ? req).mapTo[Iterable[MeasuredValue]]).map(_.flatten) pipeTo sender
+			Future.traverse(request.scanRequests)(req => (getRouter(request) ? req).mapTo[Iterable[TimedValue]]).map(_.flatten) pipeTo sender
 		}
 
 		case request : RollupReadRequest => {
@@ -68,7 +68,7 @@ class ReadMasterActor extends FinalCountDown {
 			//f.map(_.flatMap(identity)) pipeTo sender
 
 			log.debug("received rollup read request {}", request)
-			Future.traverse(request.scanRequests)(req => (getRouter(request) ? req).mapTo[Iterable[MeasuredValue]]).map(_.flatten) pipeTo sender
+			Future.traverse(request.scanRequests)(req => (getRouter(request) ? req).mapTo[Iterable[TimedValue]]).map(_.flatten) pipeTo sender
 
 		}
 

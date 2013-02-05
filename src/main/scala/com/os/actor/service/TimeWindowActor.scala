@@ -7,7 +7,7 @@ import com.os.actor._
 import util.{Tick, TimedActor, GracefulStop, FinalCountDown}
 import write.WriterMasterAware
 import concurrent.duration.Duration
-import com.os.util.{TimeSource, TimeWindowListBuffer, TimeWindow}
+import com.os.util.{TimeWindowSortedSetBuffer, TimeSource, TimeWindow}
 
 
 /**
@@ -19,7 +19,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration = Settings.ExpiredTimeWin
 
 	override val interval = Settings.TimeWindowProcessInterval
 
-	var measurements:TimeWindow[Measurement] = new TimeWindowListBuffer[Measurement]()
+	var measurements:TimeWindow[Measurement] = new TimeWindowSortedSetBuffer[Measurement]()
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
 
 	override def receive: Receive = {
@@ -37,8 +37,8 @@ class TimeWindowActor(var expiredTimeWindow : Duration = Settings.ExpiredTimeWin
 		case Tick => processWindow
 
 		case Monitor =>
-			log.info("time window length: {}", measurements.length)
-			sender ! Map("length" -> measurements.length)
+			log.info("time window length: {}", measurements.size)
+			sender ! Map("length" -> measurements.size)
 
 		case GracefulStop =>
 			log.debug("time window received graceful stop")

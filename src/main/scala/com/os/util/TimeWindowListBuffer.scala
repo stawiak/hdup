@@ -21,7 +21,7 @@ class TimeWindowListBuffer[A](var list: List[A] = Nil) extends TimeWindow[A] {
 	/**
 	  * The length of the $coll.
 	  */
-	def length: Int = list.length
+	def size: Int = list.size
 
 	def sortWith(lt: (A, A) => Boolean): TimeWindow[A] = {
 		list.sortWith(lt)

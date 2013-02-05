@@ -1,27 +1,27 @@
 package com.os.dao
 
 import org.joda.time.Interval
-import com.os.measurement.MeasuredValue
 import org.apache.hadoop.hbase.client.{Result, Scan}
 import org.apache.hadoop.hbase.util.Bytes
 import com.os.Settings
 import collection.mutable.ListBuffer
+import com.os.measurement.TimedValue
 
 /**
  * @author Vadim Bobrov
 */
 trait Scanner {
-	def scan(customer: String, location: String, wireid: String, period: Interval) : Iterable[MeasuredValue] = {
+	def scan(customer: String, location: String, wireid: String, period: Interval) : Iterable[TimedValue] = {
 		scan(customer, location, wireid, period.getStartMillis, period.getEndMillis)
 	}
 
-	def scan(customer: String, location: String, wireid: String, start: Long, end: Long) : Iterable[MeasuredValue]
+	def scan(customer: String, location: String, wireid: String, start: Long, end: Long) : Iterable[TimedValue]
 
-	def scan(customer : String, location : String, period: Interval) : Iterable[MeasuredValue] = {
+	def scan(customer : String, location : String, period: Interval) : Iterable[TimedValue] = {
 		scan(customer, location, period.getStartMillis, period.getEndMillis)
 	}
 
-	def scan(customer: String, location: String, start: Long, end: Long) : Iterable[MeasuredValue]
+	def scan(customer: String, location: String, start: Long, end: Long) : Iterable[TimedValue]
 }
 
 object Scanner {
@@ -54,23 +54,23 @@ object Scanner {
 		stop row. If no stop row was specified, the scan will run to the end of the table.
 		  */
 
-		def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Iterable[MeasuredValue] = {
+		def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Iterable[TimedValue] = {
 			val startRowKey = RowKeyUtils.createRowKey(customer, location, wireid, end)
 			val endRowKey = RowKeyUtils.createRowKey(customer, location, wireid, start)
 			scan(startRowKey, endRowKey)
 		}
 
-		def scan(customer : String, location : String, start : Long, end : Long) : Iterable[MeasuredValue] = {
+		def scan(customer : String, location : String, start : Long, end : Long) : Iterable[TimedValue] = {
 			val startRowKey = RowKeyUtils.createRollupRowKey(customer, location, end)
 			val endRowKey = RowKeyUtils.createRollupRowKey(customer, location, start)
 			scan(startRowKey, endRowKey)
 		}
 
-		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte]) : Iterable[MeasuredValue] = {
+		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte]) : Iterable[TimedValue] = {
 
 			val table = TableFactory(tableName)
 
-			val output = new ListBuffer[MeasuredValue]()
+			val output = new ListBuffer[TimedValue]()
 
 
 			val scan = new Scan(startRowKey, endRowKey)
@@ -95,7 +95,7 @@ object Scanner {
 
 				val row = res.getRow
 				//output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
-				output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
+				output += new TimedValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy))
 			})
 
 			results.close()

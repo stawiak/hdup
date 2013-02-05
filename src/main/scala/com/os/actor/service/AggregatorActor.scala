@@ -24,7 +24,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 	override val lastWill: () => Unit = () => {
 		// save remaining rollups
 		for( tv <- rollups)
-			writeMaster !  new Measurement(customer, location, "", tv._1, tv._2, 0, 0) with Rollup
+			writeMaster !  new EnergyMeasurement(customer, location, "", tv._1, tv._2) with Rollup
 	}
 
 	override def receive: Receive = {
@@ -33,9 +33,9 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 		case ismt : Interpolated =>
 			val m = ismt.asInstanceOf[Measurement]
 			if (!rollups.contains(m.timestamp))
-				rollups += (m.timestamp -> m.energy)
+				rollups += (m.timestamp -> m.value)
 			else
-				rollups += (m.timestamp -> (m.energy + rollups(m.timestamp)))
+				rollups += (m.timestamp -> (m.value + rollups(m.timestamp)))
 
 			writeMaster ! ismt
 
@@ -58,7 +58,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 		val(oldmsmt, newmsmt) = rollups span (current - _._1 > timeWindow.toMillis)
 
 		for( tv <- oldmsmt)
-			writeMaster !  new Measurement(customer, location, "", tv._1, tv._2, 0, 0) with Rollup
+			writeMaster !  new EnergyMeasurement(customer, location, "", tv._1, tv._2) with Rollup
 
 		// discard old values
 		rollups = newmsmt

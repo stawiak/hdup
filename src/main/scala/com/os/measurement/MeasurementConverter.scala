@@ -18,23 +18,20 @@ object MeasurementConverter extends Timing {
 		msg.setString("wireid", msmt.wireid)
 
 		msg.setLong("timestamp", msmt.timestamp)
-		msg.setDouble("energy", msmt.energy)
-		msg.setDouble("current", msmt.current)
-		msg.setDouble("vampire", msmt.vampire)
+		msg.setDouble("value", msmt.value)
 		msg
 	}
 
 	implicit def jmsMapMessageToMeasurement(msg: MapMessage): Option[Measurement] = {
 		try {
-			Some(new Measurement(
+			//TODO
+			Some(new EnergyMeasurement(
 				msg.getString("customer"),
 				msg.getString("location"),
 				msg.getString("wireid"),
 
 				msg.getLong("timestamp"),
-				msg.getDouble("energy"),
-				msg.getDouble("current"),
-				msg.getDouble("vampire")
+				msg.getDouble("value")
 			))
 		} catch {
 			case e: Exception =>
@@ -56,11 +53,7 @@ object MeasurementConverter extends Timing {
 		sb.append(sep)
 		sb.append(msmt.timestamp)
 		sb.append(sep)
-		sb.append(msmt.energy)
-		sb.append(sep)
-		sb.append(msmt.current)
-		sb.append(sep)
-		sb.append(msmt.vampire)
+		sb.append(msmt.value)
 
 		session.createTextMessage(sb.result())
 	}
@@ -69,7 +62,8 @@ object MeasurementConverter extends Timing {
 		val values = msg.getText.split(sep)
 
 		try {
-			Some(new Measurement(values(0),values(1),values(2), values(3).toLong, values(4).toDouble, values(5).toDouble, values(6).toDouble))
+			//TODO
+			Some(new EnergyMeasurement(values(0),values(1),values(2), values(3).toLong, values(4).toDouble))
 		} catch {
 			case e: Exception =>
 				log.error(e.getMessage, e)

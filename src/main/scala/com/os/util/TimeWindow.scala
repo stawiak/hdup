@@ -1,8 +1,5 @@
 package com.os.util
 
-import shapeless.list
-
-
 /**
  * @author Vadim Bobrov
  */
@@ -21,7 +18,7 @@ trait TimeWindow[A] {
 	  *
 	  *  Note: the execution of `length` may take time proportial to the length of the sequence.
 	  */
-	def length: Int
+	def size: Int
 
 	def sortWith(lt: (A, A) => Boolean): TimeWindow[A]
 

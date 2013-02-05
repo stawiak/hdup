@@ -1,25 +1,13 @@
 package com.os.unit
 
 import org.scalatest.FlatSpec
-import com.os.measurement.MeasuredValue._
-import scala.Array
-import com.os.measurement.{Measurement, TimedValue, MeasuredValue}
+import com.os.measurement.{EnergyMeasurement, TimedValue}
 import org.scalatest.matchers.ShouldMatchers
 
 /**
  * @author Vadim Bobrov
  */
 class MeasurementTest extends FlatSpec with ShouldMatchers {
-
-	"Lower minute" should  "be lower minute boundary" in {
-		minuteBoundary(Array(
-			new MeasuredValue(120325, 1, 1, 1),
-			new MeasuredValue(130325, 1, 1, 1),
-			new MeasuredValue(120326, 1, 1, 1),
-			new MeasuredValue(120325, 1, 1, 1),
-			new MeasuredValue(215159991, 1, 1, 1)
-		)) should be (120000, 215160000)
-	}
 
 	"Different timed values" should "be equal if timestamp is same" in {
 		val a = new TimedValue(111, 111)
@@ -28,8 +16,8 @@ class MeasurementTest extends FlatSpec with ShouldMatchers {
 	}
 
 	"Measurements" should "be equal when all fields are equal" in {
-		val a = new Measurement("", "", "", 120000,4, 0, 0)
-		val b = new Measurement("", "", "", 120000,4, 0, 0)
+		val a = new EnergyMeasurement("", "", "", 120000,4)
+		val b = new EnergyMeasurement("", "", "", 120000,4)
 		a should be (b)
 	}
 
