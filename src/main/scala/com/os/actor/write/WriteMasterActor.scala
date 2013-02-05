@@ -2,7 +2,6 @@ package com.os.actor.write
 
 import akka.actor._
 import com.os.measurement.{Rollup, Interpolated, Measurement}
-import com.os.Settings
 import akka.routing.{RoundRobinRouter, Broadcast, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._

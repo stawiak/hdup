@@ -2,7 +2,6 @@ package com.os.actor.read
 
 import akka.actor._
 import com.os.measurement.TimedValue
-import com.os.Settings
 import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import akka.actor.OneForOneStrategy

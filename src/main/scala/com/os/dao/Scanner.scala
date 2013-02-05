@@ -6,7 +6,6 @@ import org.apache.hadoop.hbase.util.Bytes
 import com.os.Settings
 import collection.mutable.ListBuffer
 import com.os.measurement.TimedValue
-import com.typesafe.config.Config
 
 /**
  * @author Vadim Bobrov

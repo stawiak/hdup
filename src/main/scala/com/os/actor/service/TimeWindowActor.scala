@@ -2,7 +2,6 @@ package com.os.actor.service
 
 import akka.actor.{ActorRef, Props}
 import com.os.measurement.Measurement
-import com.os.Settings
 import com.os.actor._
 import util._
 import write.WriterMasterAware

@@ -1,7 +1,7 @@
 package com.os
 
 import concurrent.duration._
-import com.typesafe.config.{Config}
+import com.typesafe.config.Config
 
 /**
  * Wrapper around Config so values can be taken as globals

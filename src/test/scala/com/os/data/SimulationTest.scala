@@ -4,7 +4,7 @@ import org.scalatest.{FlatSpec, OneInstancePerTest, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}
-import com.os.{DataGenerator}
+import com.os.DataGenerator
 import com.os.util.Timing
 import com.os.actor.util.{GracefulStop, Counter, Stats}
 import com.typesafe.config.ConfigFactory
