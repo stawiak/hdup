@@ -6,6 +6,7 @@ import org.apache.hadoop.hbase.util.Bytes
 import com.os.Settings
 import collection.mutable.ListBuffer
 import com.os.measurement.TimedValue
+import com.typesafe.config.Config
 
 /**
  * @author Vadim Bobrov
@@ -25,10 +26,10 @@ trait Scanner {
 }
 
 object Scanner {
-	def apply(tableName: String = Settings.TableName) : Scanner = new ScannerImpl(tableName)
+	def apply(tableName: String, settings: Settings) : Scanner = new ScannerImpl(tableName, settings)
 
 
-	private class ScannerImpl(private val tableName: String = Settings.TableName) extends Scanner {
+	private class ScannerImpl(private val tableName: String, settings: Settings) extends Scanner {
 
 		/**
 		Sometimes it might be necessary to find a specific row, or the one just before the re-
@@ -68,19 +69,19 @@ object Scanner {
 
 		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte]) : Iterable[TimedValue] = {
 
-			val table = TableFactory(tableName)
+			val table = TableFactory(tableName, settings)
 
 			val output = new ListBuffer[TimedValue]()
 
 
 			val scan = new Scan(startRowKey, endRowKey)
 
-			scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.EnergyQualifierName))
-			scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.CurrentQualifierName))
-			scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName))
+			scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.EnergyQualifierName))
+			scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.CurrentQualifierName))
+			scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.VampireQualifierName))
 
 			// how many rows are retrieved with every RPC call
-			scan.setCaching(Settings.ScanCacheSize)
+			scan.setCaching(settings.ScanCacheSize)
 
 			val results = table.getScanner(scan)
 
@@ -89,9 +90,9 @@ object Scanner {
 			val iterator = Iterator.continually(results.next()) takeWhile (_ != null)
 
 			iterator foreach (res => {
-				val energy = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.EnergyQualifierName))
-				val current = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.CurrentQualifierName))
-				val vampire = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName))
+				val energy = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.EnergyQualifierName))
+				val current = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.CurrentQualifierName))
+				val vampire = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.VampireQualifierName))
 
 				val row = res.getRow
 				//output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))

@@ -4,17 +4,17 @@ import akka.actor.{PoisonPill, Props, ActorRef}
 import com.os.measurement._
 import com.os.actor.write.WriterMasterAware
 import com.os.actor._
-import com.os.Settings
 import concurrent.duration.Duration
-import util.{Tick, TimedActor, GracefulStop, FinalCountDown}
+import util._
 import com.os.util.TimeSource
+import com.os.measurement.EnergyMeasurement
 
 /**
  * Rollup by customer and location
  *
  * @author Vadim Bobrov
  */
-class AggregatorActor(val customer: String, val location: String, var timeWindow : Duration = Settings.ExpiredTimeWindow, val timeSource: TimeSource = new TimeSource {}) extends FinalCountDown with WriterMasterAware with TimedActor {
+class AggregatorActor(val customer: String, val location: String, var timeWindow : Duration, val timeSource: TimeSource = new TimeSource {}) extends FinalCountDown with WriterMasterAware with TimedActor with SettingsUse {
 
 	import context._
 	var interpolatorFactory  : String => ActorRef = DefaultInterpolatorFactory.get

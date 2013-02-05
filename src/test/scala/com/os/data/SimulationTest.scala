@@ -4,16 +4,17 @@ import org.scalatest.{FlatSpec, OneInstancePerTest, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}
-import com.os.{Settings, DataGenerator}
+import com.os.{DataGenerator}
 import com.os.util.Timing
 import com.os.actor.util.{GracefulStop, Counter, Stats}
+import com.typesafe.config.ConfigFactory
 
 /**
  * @author Vadim Bobrov
  */
 class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest with Timing{
 
-	def this() = this(ActorSystem("prod", Settings.config))
+	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 	val master = system.actorFor("/user/top")
 	val timeWindow = system.actorFor("/user/top/timeWindow")
 

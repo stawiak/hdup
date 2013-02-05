@@ -33,7 +33,7 @@ object DataGenerator extends Loggable{
 		getRandomCustomer,
 		getRandomLocation,
 		getRandomWireId,
-		System.currentTimeMillis() - random.nextInt(Settings.ExpiredTimeWindow.toMillis.asInstanceOf[Int]) - 30000,
+		System.currentTimeMillis() - random.nextInt(570000) - 30000,
 		random.nextDouble()
 	)
 

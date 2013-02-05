@@ -14,7 +14,7 @@ import scala.concurrent.duration._
  */
 class TimeWindowActorRealTimeTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest {
 
-	def this() = this(ActorSystem("prod", ConfigFactory.load().getConfig("prod")))
+	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
 	override def afterAll() {
 		system.shutdown()

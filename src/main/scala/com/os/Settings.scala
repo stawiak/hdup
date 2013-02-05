@@ -1,14 +1,26 @@
 package com.os
 
 import concurrent.duration._
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config}
 
 /**
+ * Wrapper around Config so values can be taken as globals
  * @author Vadim Bobrov
  */
 object Settings {
 
-	val config = ConfigFactory.load().getConfig("prod")
+	var instance: Option[Settings] = None
+
+	def apply(config: Config): Settings = {
+		if (!instance.isDefined)
+			instance = Some(new Settings(config))
+
+		instance.get
+	}
+
+}
+final class Settings(config: Config) {
+
 	val activeMQConfig = config.getConfig("activemq")
 	val hBaseConfig = config.getConfig("hbase")
 

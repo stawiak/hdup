@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, Props}
 import com.os.measurement.Measurement
 import com.os.Settings
 import com.os.actor._
-import util.{Tick, TimedActor, GracefulStop, FinalCountDown}
+import util._
 import write.WriterMasterAware
 import concurrent.duration.Duration
 import com.os.util.{TimeWindowSortedSetBuffer, TimeSource, TimeWindow}
@@ -13,11 +13,11 @@ import com.os.util.{TimeWindowSortedSetBuffer, TimeSource, TimeWindow}
 /**
   * @author Vadim Bobrov
   */
-class TimeWindowActor(var expiredTimeWindow : Duration = Settings.ExpiredTimeWindow, val timeSource: TimeSource = new TimeSource {}) extends FinalCountDown with WriterMasterAware with TimedActor {
+class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}) extends FinalCountDown with WriterMasterAware with TimedActor with SettingsUse {
 
 	import context._
 
-	override val interval = Settings.TimeWindowProcessInterval
+	override val interval = settings.TimeWindowProcessInterval
 
 	var measurements:TimeWindow[Measurement] = new TimeWindowSortedSetBuffer[Measurement]()
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
@@ -29,7 +29,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration = Settings.ExpiredTimeWin
 			//TODO instead of tagging measurement one can also use pattern matching on sender
 			//TODO aggregation should be done by .... what???
 			// if less than 9.5 minutes old - add to time window
-			if (timeSource.now - msmt.timestamp < Settings.ExpiredTimeWindow.toMillis)
+			if (timeSource.now - msmt.timestamp < expiredTimeWindow.toMillis)
 				measurements += msmt
 
 

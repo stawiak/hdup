@@ -3,16 +3,15 @@ package com.os.actor.write
 import akka.actor.{ActorLogging, Actor}
 import com.os.dao.Writer
 import com.os.util.Util._
-import com.os.Settings
 import com.os.measurement.Measurement
-import com.os.actor.util.GracefulStop
+import com.os.actor.util.{SettingsUse, GracefulStop}
 
 /**
   * @author Vadim Bobrov
   */
-class WriteWorkerActor(val tableName : String, val batchSize: Int = Settings.BatchSize) extends Actor with ActorLogging{
+class WriteWorkerActor(val tableName : String, val batchSize: Int) extends Actor with SettingsUse with ActorLogging{
 
-	val writer = Writer(tableName)
+	val writer = Writer(tableName, settings)
 	var measurements = List[Measurement]() //new Array[Measurement](batchSize)
 
 

@@ -12,16 +12,17 @@ import akka.pattern.pipe
 import concurrent.duration._
 import concurrent.Future
 import akka.util.Timeout
-import com.os.actor.util.{GracefulStop, FinalCountDown}
+import com.os.actor.util.{SettingsUse, GracefulStop, FinalCountDown}
 
 
 /**
  * @author Vadim Bobrov
  */
-class ReadMasterActor extends FinalCountDown {
+class ReadMasterActor extends FinalCountDown with SettingsUse {
 
 	import context._
 	implicit val timeout: Timeout = 10 seconds
+
 
 	// Since a restart does not clear out the mailbox, it often is best to terminate
 	// the children upon failure and re-create them explicitly from the supervisor
@@ -43,8 +44,8 @@ class ReadMasterActor extends FinalCountDown {
 	private def getRouter(request : AnyRef) : ActorRef = {
 
 		val tableName = request match  {
-			case RollupReadRequest => Settings.RollupTableName
-			case _ => Settings.TableName
+			case RollupReadRequest => settings.RollupTableName
+			case _ => settings.TableName
 		}
 
 		if (!routers.contains(tableName)) {

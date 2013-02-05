@@ -12,7 +12,8 @@ import akka.actor.ActorRef
  */
 object DataFiller extends Loggable{
 
-	var writer = Writer()
+	//TODO
+	var writer: Writer = _ //Writer()
 	/**
 	 * fills the database with random crap
 	 * @param records number of records

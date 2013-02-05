@@ -15,16 +15,16 @@ trait Writer {
 }
 
 object Writer {
-	def apply(tableName : String = Settings.TableName) : Writer = new WriterImpl(tableName)
+	def apply(tableName : String, settings: Settings) : Writer = new WriterImpl(tableName, settings)
 
 
-	private class WriterImpl(private val tableName : String = Settings.TableName) extends Writer {
+	private class WriterImpl(private val tableName : String, settings: Settings) extends Writer {
 
 		private var table: HTableInterface = _
 
 
 		def open() {
-			table = TableFactory(tableName)
+			table = TableFactory(tableName, settings)
 		}
 
 		/**
@@ -54,14 +54,14 @@ object Writer {
 
 		def write(msmt: Measurement) {
 
-			val rowkey = 	if(tableName == Settings.RollupTableName)
+			val rowkey = 	if(tableName == settings.RollupTableName)
 								RowKeyUtils.createRollupRowKey(msmt.customer, msmt.location, msmt.timestamp)
 							else
 								RowKeyUtils.createRowKey(msmt.customer, msmt.location, msmt.wireid, msmt.timestamp)
 
 			val p = new Put(rowkey)
 
-			p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.EnergyQualifierName),Bytes.toBytes(msmt.value))
+			p.add(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.EnergyQualifierName),Bytes.toBytes(msmt.value))
 			//p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.CurrentQualifierName),Bytes.toBytes(msmt.current))
 			//p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName),Bytes.toBytes(msmt.vampire))
 			// alternatively use

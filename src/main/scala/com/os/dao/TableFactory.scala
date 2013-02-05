@@ -13,21 +13,37 @@ import com.os.util.Loggable
 */
 object TableFactory extends Loggable{
 
-  /** it is recommended that you create HTable instances only once—and one per thread
-      * and reuse that instance for the rest of the lifetime of your client application.
-      * As soon as you need multiple instances of HTable, consider using the HTablePool class
-      * which provides you with a convenient way to reuse multiple instances.
-    */
+	private var instance: Option[TableFactory] = None
 
-  private val config = HBaseConfiguration.create()
-  config.set("hbase.zookeeper.quorum", Settings.HBaseHost)
+	def apply(tableName : String, settings: Settings) : HTableInterface = {
+		try {
+			if (!instance.isDefined)
+				instance = Some(new TableFactory(settings))
 
-  // HBase bug 5728: setAutoFlush(boolean) is missing from HTableInterface.
-  // Solution: custom HTableInterfaceFactory (suggestion from the HBase user mailing-list)
-  private val pool = new HTablePool(config, Settings.TablePoolSize, new NoFlushInterfaceFactory() )
+			instance.get.pool.getTable(Bytes.toBytes(tableName))
+		} catch {
+			case e: Exception => {debug("caught exception " + e); null}
+		}
+	}
+
+}
+
+class TableFactory(settings: Settings) {
+	/** it is recommended that you create HTable instances only once—and one per thread
+	  * and reuse that instance for the rest of the lifetime of your client application.
+	  * As soon as you need multiple instances of HTable, consider using the HTablePool class
+	  * which provides you with a convenient way to reuse multiple instances.
+	  */
+
+	private val config = HBaseConfiguration.create()
+	config.set("hbase.zookeeper.quorum", settings.HBaseHost)
+
+	// HBase bug 5728: setAutoFlush(boolean) is missing from HTableInterface.
+	// Solution: custom HTableInterfaceFactory (suggestion from the HBase user mailing-list)
+	val pool = new HTablePool(config, settings.TablePoolSize, new NoFlushInterfaceFactory() )
 
 
-  /** If you were ever required to access the write buffer content, you would find that
+	/** If you were ever required to access the write buffer content, you would find that
     ArrayList<Put> getWriteBuffer() can be used to get the internal list of buffered
     Put instances you have added so far calling
     table.put(put).
@@ -42,14 +58,7 @@ object TableFactory extends Loggable{
     been flushed will be lost! The servers will have never received that data,
     and therefore there will be no copy of it that can be used to recover from
     this situation.
-  */
-  def apply(tableName : String = Settings.TableName) : HTableInterface = {
-    try {
-      pool.getTable(Bytes.toBytes(tableName))
-    } catch {
-      case e: Exception => {debug("caught exception " + e); null}
-    }
-  }
+	  */
 
 }
 
