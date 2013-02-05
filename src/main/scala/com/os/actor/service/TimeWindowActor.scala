@@ -25,8 +25,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 
 		case msmt : Measurement =>
 			writeMaster ! msmt
-			//TODO instead of tagging measurement one can also use pattern matching on sender
-			//TODO aggregation should be done by .... what???
+
 			// if less than 9.5 minutes old - add to time window
 			if (timeSource.now - msmt.timestamp < expiredTimeWindow.toMillis)
 				measurements += msmt

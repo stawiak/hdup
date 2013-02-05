@@ -4,9 +4,14 @@ package com.os.util
 /**
  * @author Vadim Bobrov
  */
-class TimeWindowListBuffer[A](var list: List[A] = Nil) extends TimeWindow[A] {
+class TimeWindowListBuffer[A] extends TimeWindow[A] {
 
-	//TODO: non-default constructor should be private
+	var list: List[A] = Nil
+
+	private def this(fromList: List[A]) = {
+		this()
+		list = fromList
+	}
 
 	/** Appends a single element to this buffer. This operation takes constant time.
 	  *
@@ -28,7 +33,10 @@ class TimeWindowListBuffer[A](var list: List[A] = Nil) extends TimeWindow[A] {
 		this
 	}
 
-	def span(p: A => Boolean): (TimeWindow[A], TimeWindow[A]) = (new TimeWindowListBuffer(list.span(p)._1), new TimeWindowListBuffer(list.span(p)._2))
+	def span(p: A => Boolean): (TimeWindow[A], TimeWindow[A]) = {
+		val (left, right) = list span  p
+		(new TimeWindowListBuffer(left), new TimeWindowListBuffer(right))
+	}
 
 
 	def foreach(f: A => Unit) { list.foreach(f) }

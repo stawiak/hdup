@@ -27,21 +27,21 @@ class TimeWindowActorRealTimeTest(_system: ActorSystem) extends TestKit(_system)
 
 	"time window" should "send nothing before expiration window expire" in {
 		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis, 0)
-		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis, 0)
+		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis + 1, 0)
 
 		TestAggregationFactory.aggregator.expectNoMsg
 	}
 
 	it should "send expired measurements to write master" in {
 		testTimeWindow !  new EnergyMeasurement("", "", "", 0, 0)
-		testTimeWindow !  new EnergyMeasurement("", "", "", 0, 0)
+		testTimeWindow !  new EnergyMeasurement("", "", "", 1, 0)
 
 		writeProbe.receiveN(2)
 	}
 
 	it should "only store non-expired measurements" in {
 		testTimeWindow !  new EnergyMeasurement("", "", "", 0, 0)
-		testTimeWindow !  new EnergyMeasurement("", "", "", 0, 0)
+		testTimeWindow !  new EnergyMeasurement("", "", "", 1, 0)
 		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis, 0)
 
 		writeProbe.receiveN(2)
@@ -51,7 +51,7 @@ class TimeWindowActorRealTimeTest(_system: ActorSystem) extends TestKit(_system)
 
 	it should "send old to interpolator after expiration window expire" in {
 		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis, 0)
-		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis, 0)
+		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis + 1, 0)
 		TestAggregationFactory.aggregator.expectNoMsg(1 seconds)
 		Thread.sleep(11000)
 		TestAggregationFactory.aggregator.receiveN(2)
@@ -59,12 +59,12 @@ class TimeWindowActorRealTimeTest(_system: ActorSystem) extends TestKit(_system)
 
 	it should "not send new to interpolator after expiration window expire" in {
 		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis, 0)
-		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis, 0)
-		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis, 0)
+		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis + 1, 0)
+		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis + 2, 0)
 		TestAggregationFactory.aggregator.expectNoMsg(10 milliseconds)
 		Thread.sleep(11000)
-		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis, 0)
-		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis, 0)
+		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis + 3, 0)
+		testTimeWindow !  new EnergyMeasurement("", "", "", System.currentTimeMillis + 4, 0)
 		TestAggregationFactory.aggregator.receiveN(3)
 	}
 

@@ -5,7 +5,7 @@ import collection.mutable
 /**
  * @author Vadim Bobrov
  */
-class TimeWindowSortedSetBuffer[A <% Ordered[A]]() extends TimeWindow[A] {
+class TimeWindowSortedSetBuffer[A <% Ordered[A]] extends TimeWindow[A] {
 
 	// from method returns all elements greater than or equal to a
 	// starting element in the set’s ordering. The result of calls
@@ -36,7 +36,10 @@ class TimeWindowSortedSetBuffer[A <% Ordered[A]]() extends TimeWindow[A] {
 	def sortWith(lt: (A, A) => Boolean): TimeWindow[A] = this
 
 
-	def span(p: A => Boolean): (TimeWindow[A], TimeWindow[A]) = (new TimeWindowSortedSetBuffer(set.span(p)._1), new TimeWindowSortedSetBuffer(set.span(p)._2))
+	def span(p: A => Boolean): (TimeWindow[A], TimeWindow[A]) = {
+		val (left, right) = set span  p
+		(new TimeWindowSortedSetBuffer[A](left), new TimeWindowSortedSetBuffer[A](right))
+	}
 
 
 	def foreach(f: A => Unit) { set.foreach(f) }
