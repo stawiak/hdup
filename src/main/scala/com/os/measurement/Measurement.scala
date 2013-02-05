@@ -10,10 +10,41 @@ sealed abstract class Measurement(val customer: String, val location: String, va
 
 	override def toString = "msmt " + customer + "/" + location + "/" + wireid + "/" + timestamp + "/" + value
 
-	override def compare(that : Measurement) : Int = this.timestamp.compareTo(that.timestamp)
+	override def compare(that : Measurement) : Int = {
+		val timestampRes = this.timestamp.compareTo(that.timestamp)
+		if (timestampRes != 0) return timestampRes
+
+		val customerRes = this.customer.compareTo(that.customer)
+		if (customerRes != 0) return customerRes
+
+		val locationRes = this.location.compareTo(that.location)
+		if (locationRes != 0) return locationRes
+
+		val wireidRes = this.wireid.compareTo(that.wireid)
+		if (wireidRes != 0) return wireidRes
+
+		0
+	}
+
+	override def equals(other : Any)  = other match {
+		case that: Measurement =>
+			that.customer == this.customer &&
+				that.location == this.location &&
+				that.wireid == this.wireid &&
+				that.timestamp == this.timestamp
+		case _ => false
+	}
+
+	override def hashCode(): Int = {
+		var result = customer.hashCode()
+		result = 31 * result + location.hashCode()
+		result = 31 * result + wireid.hashCode()
+		result = 31 * result + (timestamp ^ (timestamp >>> 32)).asInstanceOf[Int]
+		result
+	}
 
 }
 
-case class EnergyMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
-case class CurrentMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
-case class VampsMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
+class EnergyMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
+class CurrentMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
+class VampsMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
