@@ -6,7 +6,7 @@ import com.os.actor.write.WriterMasterAware
 import com.os.actor._
 import concurrent.duration.Duration
 import util._
-import com.os.util.TimeSource
+import com.os.util.{TimeWindowHashMap, TimeWindowMap, TimeSource}
 import com.os.measurement.EnergyMeasurement
 
 /**
@@ -18,7 +18,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 
 	import context._
 	var interpolatorFactory  : String => ActorRef = DefaultInterpolatorFactory.get
-	var rollups = Map[Long, Double]()
+	var rollups: TimeWindowMap[Long, Double] = new TimeWindowHashMap[Long, Double]()
 
 
 	override val lastWill: () => Unit = () => {
@@ -31,7 +31,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 
 		// received back from interpolator - add to rollups and save to storage
 		case ismt : Interpolated =>
-			val m = ismt.asInstanceOf[Measurement]
+			val m = ismt.asInstanceOf[EnergyMeasurement]
 			if (!rollups.contains(m.timestamp))
 				rollups += (m.timestamp -> m.value)
 			else
@@ -40,13 +40,15 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 			writeMaster ! ismt
 
 		// send for interpolation
-		case msmt : Measurement => interpolatorFactory(msmt.wireid) ! msmt
+		case msmt : EnergyMeasurement => interpolatorFactory(msmt.wireid) ! msmt
 
 		// flush old rollups
 		case Tick => processRollups()
 
 		case GracefulStop =>
 			log.debug("aggregator received graceful stop")
+			//TODO dump remaining rollups - watch for new messages as depressionMode = false, beware of sortWith not implemented yet in TimeWindowMap
+
 			waitAndDie(depressionMode = false)
 			children foreach (_ ! PoisonPill)
 	}
