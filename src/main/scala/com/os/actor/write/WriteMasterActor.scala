@@ -6,6 +6,7 @@ import akka.routing.{RoundRobinRouter, Broadcast, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
 import com.os.actor.util.{SettingsUse, GracefulStop, FinalCountDown}
+import com.os.measurement._
 
 
 /**
@@ -36,9 +37,11 @@ class WriteMasterActor extends FinalCountDown with SettingsUse {
 	private def getRouter(msmt : Measurement) : ActorRef = {
 
 		val (tableName, batchSize) = msmt match  {
-			case imsmt : Interpolated => (settings.MinuteInterpolatedTableName, settings.DerivedDataBatchSize)
-			case rmsmt : Rollup => (settings.RollupTableName, settings.DerivedDataBatchSize)
-			case _ => (settings.TableName, settings.BatchSize)
+			case msmt: Interpolated => (settings.MinuteInterpolatedTableName, settings.DerivedDataBatchSize)
+			case msmt : Rollup => (settings.RollupTableName, settings.DerivedDataBatchSize)
+			case msmt: EnergyMeasurement => (settings.TableName, settings.BatchSize)
+			case msmt: CurrentMeasurement => (settings.CurrentTableName, settings.BatchSize)
+			case msmt: VampsMeasurement => (settings.VampsTableName, settings.BatchSize)
 		}
 
 		if (!routers.contains(tableName)) {

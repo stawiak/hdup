@@ -8,7 +8,7 @@ import collection.{SortedMap, mutable}
  */
 class TimeWindowSortedMap[A <% Ordered[A], B] extends TimeWindowMap[A, B] {
 
-	var map = SortedMap[A, B]()
+	var map = SortedMap.empty[A, B]
 
 	private def this(fromMap: SortedMap[A, B]) = {
 		this()

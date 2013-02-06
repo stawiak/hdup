@@ -12,7 +12,7 @@ import com.os.actor.util.{SettingsUse, GracefulStop}
 class WriteWorkerActor(val tableName : String, val batchSize: Int) extends Actor with SettingsUse with ActorLogging{
 
 	val writer = Writer(tableName, settings)
-	var measurements = List[Measurement]() //new Array[Measurement](batchSize)
+	var measurements = List.empty[Measurement]
 
 
 	override def receive: Receive = {
@@ -40,7 +40,7 @@ class WriteWorkerActor(val tableName : String, val batchSize: Int) extends Actor
 			measurements foreach writer.write
 		}
 
-		measurements = List[Measurement]()
+		measurements = List.empty[Measurement]
 	}
 
  }

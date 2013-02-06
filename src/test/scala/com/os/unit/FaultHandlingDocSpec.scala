@@ -19,7 +19,7 @@ object FaultHandlingDocSpec{
 	class TestWriterActor extends Actor with ActorLogging {
 
 		var counter : Int = 0
-		var received = List[Measurement]()
+		var received = List.empty[Measurement]
 
 		override def receive: Receive = {
 

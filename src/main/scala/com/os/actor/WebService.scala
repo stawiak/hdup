@@ -14,7 +14,7 @@ import java.sql.Timestamp
 import akka.util.Timeout
 import concurrent.duration._
 import scala.Predef._
-import util.GracefulStop
+import util.{SettingsUse, GracefulStop}
 
 /**
  * @author Vadim Bobrov
@@ -23,7 +23,7 @@ import util.GracefulStop
 case object Monitor
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class WebServiceActor extends Actor with ActorLogging with WebService {
+class WebServiceActor extends Actor with ActorLogging with SettingsUse with WebService {
 
 	// the HttpService trait defines only one abstract member, which
 	// connects the services environment to the enclosing actor or test
@@ -41,7 +41,7 @@ class WebServiceActor extends Actor with ActorLogging with WebService {
 
 // this trait defines our service behavior independently from the service actor
 trait WebService extends HttpService with ReadMasterAware with TimeWindowAware with TopAware {
-	this: Actor with ActorLogging =>
+	this: Actor with ActorLogging with SettingsUse =>
 
 	implicit val timeout: Timeout = 60 seconds
 
@@ -108,7 +108,7 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 	private def readRequest(customer: String, location: String, fromTime: Long, toTime: Long, wireid: Option[String] = None): String = {
 		val readRequest =
 			if (wireid.isDefined)
-				new MeasurementReadRequest(customer, location, wireid.get, Array[Interval](new Interval(fromTime, toTime)))
+				new MeasurementReadRequest(settings.TableName, customer, location, wireid.get, Array[Interval](new Interval(fromTime, toTime)))
 			else
 				new RollupReadRequest(customer, location, Array[Interval](new Interval(fromTime, toTime)))
 

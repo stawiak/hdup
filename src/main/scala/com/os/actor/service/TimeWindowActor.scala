@@ -1,12 +1,12 @@
 package com.os.actor.service
 
 import akka.actor.{ActorRef, Props}
-import com.os.measurement.Measurement
+import com.os.measurement.{EnergyMeasurement, Measurement}
 import com.os.actor._
 import util._
 import write.WriterMasterAware
 import concurrent.duration.Duration
-import com.os.util.{TimeWindowSortedSetBuffer, TimeSource, TimeWindow}
+import com.os.util.{TimeWindowListBuffer, TimeWindowSortedSetBuffer, TimeSource, TimeWindow}
 
 
 /**
@@ -19,18 +19,20 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 	override val interval = settings.TimeWindowProcessInterval
   val interpolation = settings.Interpolation
 
-	var measurements:TimeWindow[Measurement] = new TimeWindowSortedSetBuffer[Measurement]()
+	var measurements:TimeWindow[Measurement] = new TimeWindowListBuffer[Measurement]()
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
 
 	override def receive: Receive = {
 
-		case msmt : Measurement =>
+		case msmt : EnergyMeasurement =>
 			writeMaster ! msmt
 
 			// if less than 9.5 minutes old - add to time window
 			if (interpolation && timeSource.now - msmt.timestamp < expiredTimeWindow.toMillis)
 				measurements += msmt
 
+    case msmt : Measurement =>
+      writeMaster ! msmt
 
 		// send old measurements for aggregation and interpolation
 		case Tick => processWindow

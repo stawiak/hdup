@@ -6,7 +6,7 @@ package com.os.util
  */
 class TimeWindowListBuffer[A] extends TimeWindow[A] {
 
-	var list: List[A] = Nil
+	var list: List[A] = List.empty[A]
 
 	private def this(fromList: List[A]) = {
 		this()

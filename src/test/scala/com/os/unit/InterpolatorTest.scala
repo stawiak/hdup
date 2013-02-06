@@ -158,7 +158,7 @@ class InterpolatorTest extends FlatSpec with ShouldMatchers with Timing{
 	}
 
 	"parallel interpolation and rollup at minute boundaries" should "work with many measurements" in {
-		var msmts = List[Array[TimedValue]]()
+		var msmts = List.empty[Array[TimedValue]]
 		val random : Random = new Random()
 
 		for (i <- 0 until 40) {

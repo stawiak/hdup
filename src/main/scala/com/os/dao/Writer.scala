@@ -61,7 +61,7 @@ object Writer {
 
 			val p = new Put(rowkey)
 
-			p.add(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.EnergyQualifierName),Bytes.toBytes(msmt.value))
+			p.add(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.ValueQualifierName),Bytes.toBytes(msmt.value))
 			//p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.CurrentQualifierName),Bytes.toBytes(msmt.current))
 			//p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName),Bytes.toBytes(msmt.vampire))
 			// alternatively use

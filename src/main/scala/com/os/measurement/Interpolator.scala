@@ -66,7 +66,7 @@ object Interpolator {
 		// ensure strictly ascending
 		//require(tv1 < tv2 && tv2 < tv3 && tv3 < tv4, "bilinear arguments out of order " + tv1.timestamp + " " + tv3.timestamp + " " + tv3.timestamp + " " + tv4.timestamp)
 
-		var output = List[TimedValue]()
+		var output = List.empty[TimedValue]
 
 		//if(!(tv1 < tv2 && tv2 < tv3 && tv3 < tv4)) {
 		if(!(tv1.compareTo(tv2) < 0 && tv2.compareTo(tv3) < 0 && tv3.compareTo(tv4) < 0 )) {

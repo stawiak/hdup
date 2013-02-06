@@ -1,7 +1,7 @@
 package com.os.unit
 
 import org.scalatest.FlatSpec
-import com.os.measurement.EnergyMeasurement
+import com.os.measurement._
 import org.scalatest.matchers.ShouldMatchers
 
 /**
@@ -104,5 +104,26 @@ class MeasurementTest extends FlatSpec with ShouldMatchers {
 		a.compareTo(b) should be (0)
 	}
 
+  "Measurements" should "pattern match correctly" in {
+    val a = new EnergyMeasurement("", "", "", 111, 111)
+    val b = new EnergyMeasurement("", "", "", 111, 222) with Rollup
+    matchResult(a) should be ("energy")
+    matchResult(b) should be ("rollup")
+    matchMeasurementResult(a) should be ("measurement")
+  }
+
+  private def matchResult(msmt: Measurement): String =
+      msmt match  {
+        case msmt: Interpolated => "interpolated"
+        case msmt : Rollup => "rollup"
+        case msmt: EnergyMeasurement => "energy"
+        case msmt: CurrentMeasurement => "current"
+        case msmt: VampsMeasurement => "vamps"
+      }
+
+  private def matchMeasurementResult(msmt: Measurement): String =
+    msmt match  {
+      case msmt: Measurement => "measurement"
+    }
 
 }

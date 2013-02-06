@@ -15,7 +15,7 @@ class InterpolatorActor(val boundary: Int = 60000) extends Actor with ActorLoggi
 
 	override def receive: Receive = {
 
-		case msmt : Measurement => {
+		case msmt : EnergyMeasurement => {
 
 			tv1 = tv2; tv2 = tv3; tv3 = tv4; tv4 = Some(new TimedValue(msmt.timestamp, msmt.value))
 

@@ -5,7 +5,7 @@ package com.os.util
  */
 class TimeWindowHashMap[A, B] extends TimeWindowMap[A, B] {
 
-	var map = Map[A, B]()
+	var map = Map.empty[A, B]
 
 	private def this(fromMap: Map[A, B]) = {
 		this()

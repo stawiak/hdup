@@ -49,15 +49,16 @@ final class Settings(config: Config) {
 	val ScanCacheSize = hBaseConfig.getInt("scanCacheSize")    									// how many rows are retrieved with every RPC call
 
 
-	val TableName = hBaseConfig.getString("tableName")              							// table for actual measurements
+	val TableName = hBaseConfig.getString("tableName")              							// table for actual energy measurements
 	val MinuteInterpolatedTableName = hBaseConfig.getString("minuteInterpolatedTableName")  	// table for minute interpolation
 	val RollupTableName = hBaseConfig.getString("rollupTableName")			    				// table for minute rollup by location
 
+  val CurrentTableName = hBaseConfig.getString("currentTableName")              							// table for actual current measurements
+  val VampsTableName = hBaseConfig.getString("vampsTableName")              							// table for actual vamps measurements
+
 
 	val ColumnFamilyName = hBaseConfig.getString("columnFamilyName")      						// stands for data
-	val EnergyQualifierName = hBaseConfig.getString("energyQualifierName")   					// stands for energy
-	val CurrentQualifierName = hBaseConfig.getString("currentQualifierName")  					// stands for current
-	val VampireQualifierName = hBaseConfig.getString("vampireQualifierName")	  				// stands for volt-amp-reactive
+	val ValueQualifierName = hBaseConfig.getString("valueQualifierName")   					// stands for value
 
 	val BatchSize = hBaseConfig.getInt("batchSize")            									// default writer batch size - can be lost
 	val DerivedDataBatchSize = hBaseConfig.getInt("interpolatedBatchSize")						// writer batch size for minute interpolations- can be lost
