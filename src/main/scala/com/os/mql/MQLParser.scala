@@ -7,17 +7,31 @@ import util.parsing.combinator._
   */
 class MQLParser extends JavaTokenParsers {
 
+	//TODO union
 	//TODO keywords and column, table names case insensitive
 	//TODO multiple conditions
-	def mql: Parser[Any] = select~from~where
-	def select: Parser[Any] = "select"~columnList
+	//TODO make where optional
+	//TODO order by
+	def mql: Parser[MQLQuery] = select ^^ {case s => new MQLQuery(s)}
+
+	def select: Parser[MQLSelect] = ("select"~columnList) ^^ {
+		case "select"~columnList =>
+			new MQLSelect(columnList)
+	}
+
 	def from: Parser[Any] = "from"~tableName
 	def where: Parser[Any] = "where"~condition
 
-	def columnList: Parser[Any] = "*" | repsep(columnName, ",")
-	def columnName: Parser[Any] = "value" | "timestamp"
+	def columnList: Parser[List[MQLColumn]] = ("*" | repsep(columnName, ",")) ^^ {
+		case "*" =>
+			List[MQLColumn](MQLColumnAll())
+		//case ll: List =>
+		//	List[MQLColumn]() ++ ll
+	}
 
-	def tableName: Parser[Any] = "energy" | "current" | "vamps"
+	def columnName: Parser[MQLColumn] = ("value" | "timestamp") ^^ {s => MQLColumn(s)}
+
+	def tableName: Parser[MQLTable] = ("energy" | "current" | "vamps") ^^ {s => MQLTable(s)}
 
 	def condition: Parser[Any] = columnName~("=" | ">" | "<")~expr
 
@@ -27,4 +41,4 @@ class MQLParser extends JavaTokenParsers {
 	def term: Parser[Any] = factor~rep("*"~factor |"/"~factor)
 	def factor: Parser[Any] = floatingPointNumber | "("~expr~")"
 
- }
+}
