@@ -17,6 +17,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 	import context._
 
 	override val interval = settings.TimeWindowProcessInterval
+  val interpolation = settings.Interpolation
 
 	var measurements:TimeWindow[Measurement] = new TimeWindowSortedSetBuffer[Measurement]()
 	var aggregatorFactory  : (String, String) => ActorRef = DefaultAggregatorFactory.get
@@ -27,7 +28,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			writeMaster ! msmt
 
 			// if less than 9.5 minutes old - add to time window
-			if (timeSource.now - msmt.timestamp < expiredTimeWindow.toMillis)
+			if (interpolation && timeSource.now - msmt.timestamp < expiredTimeWindow.toMillis)
 				measurements += msmt
 
 

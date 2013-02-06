@@ -18,7 +18,11 @@ class SettingsTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec 
 	}
 
 	"tests" should "load test configuration" in {
-		system.settings.config.getInt("testMarker") should be (239)
+    import system._
+
+		settings.config.getInt("testMarker") should be (239)
+		settings.config.getBoolean("interpolation") should be (true)
+
 	}
 
 }

@@ -70,4 +70,5 @@ final class Settings(config: Config) {
 	val TimeWindowProcessInterval = FiniteDuration(config.getMilliseconds("timeWindowProcessInterval"), MILLISECONDS)
 																								// time between time window processing
 
+  val Interpolation = config.getBoolean("interpolation")
 }
