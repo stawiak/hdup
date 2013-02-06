@@ -28,7 +28,8 @@ sealed abstract class Measurement(val customer: String, val location: String, va
 
 	override def equals(other : Any)  = other match {
 		case that: Measurement =>
-			that.customer == this.customer &&
+        (that canEqual this) &&
+			  that.customer == this.customer &&
 				that.location == this.location &&
 				that.wireid == this.wireid &&
 				that.timestamp == this.timestamp
@@ -43,8 +44,15 @@ sealed abstract class Measurement(val customer: String, val location: String, va
 		result
 	}
 
+  def canEqual(other: Any) = other.isInstanceOf[Measurement]
 }
 
-class EnergyMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
-class CurrentMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
-class VampsMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value)
+class EnergyMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value) {
+  override def canEqual(other: Any) = other.isInstanceOf[EnergyMeasurement]
+}
+class CurrentMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value) {
+  override def canEqual(other: Any) = other.isInstanceOf[CurrentMeasurement]
+}
+class VampsMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value) {
+  override def canEqual(other: Any) = other.isInstanceOf[VampsMeasurement]
+}
