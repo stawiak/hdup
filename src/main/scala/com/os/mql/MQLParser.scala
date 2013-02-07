@@ -13,7 +13,6 @@ class MQLParser extends JavaTokenParsers {
 
 	implicit def pimpString(str: String): MyRichString = new MyRichString(str)
 
-	//TODO use ~> to drop left hand
 	//TODO order by
 	//TODO where - multiple conditions OR-ed or AND-ed
 	//TODO between-and
@@ -27,19 +26,11 @@ class MQLParser extends JavaTokenParsers {
 		case s~f~w => new MQLQuery(s, f, w)
 	}
 
-	def select: Parser[MQLSelect] = ("select".ignoreCase~columnList) ^^ {
-		case s~columnList =>
-			new MQLSelect(columnList)
-	}
+	def select: Parser[MQLSelect] = ("select".ignoreCase~>columnList) ^^ { new MQLSelect(_)	}
 
-	def from: Parser[MQLFrom] = ("from".ignoreCase~tableName) ^^ {
-		case f~tableName =>
-			new MQLFrom(tableName)
-	}
+	def from: Parser[MQLFrom] = ("from".ignoreCase~>tableName) ^^ {	new MQLFrom(_) }
 
-	def where: Parser[MQLWhere] = "where".ignoreCase~condition ^^ {
-		case w~c => new MQLWhere(c)
-	}
+	def where: Parser[MQLWhere] = "where".ignoreCase~>condition ^^ { new MQLWhere(_) }
 
 	def columnList: Parser[List[MQLColumn]] = ("*" | repsep(columnName, ",")) ^^ {
 		case "*" =>
