@@ -12,21 +12,25 @@ class MQLParser extends JavaTokenParsers {
 	//TODO multiple conditions
 	//TODO make where optional
 	//TODO order by
-	def mql: Parser[MQLQuery] = select ^^ {case s => new MQLQuery(s)}
+	def mql: Parser[MQLQuery] = select~from ^^ {case s~f => new MQLQuery(s, f)}
 
 	def select: Parser[MQLSelect] = ("select"~columnList) ^^ {
 		case "select"~columnList =>
 			new MQLSelect(columnList)
 	}
 
-	def from: Parser[Any] = "from"~tableName
+	def from: Parser[MQLFrom] = ("from"~tableName) ^^ {
+		case "from"~tableName =>
+			new MQLFrom(tableName)
+	}
+
 	def where: Parser[Any] = "where"~condition
 
 	def columnList: Parser[List[MQLColumn]] = ("*" | repsep(columnName, ",")) ^^ {
 		case "*" =>
 			List[MQLColumn](MQLColumnAll())
-		//case ll: List =>
-		//	List[MQLColumn]() ++ ll
+		case cols: List[MQLColumn] =>
+		     cols
 	}
 
 	def columnName: Parser[MQLColumn] = ("value" | "timestamp") ^^ {s => MQLColumn(s)}
