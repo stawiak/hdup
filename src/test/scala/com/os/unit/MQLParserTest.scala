@@ -18,20 +18,7 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 
 	val parser = new MQLParser()
 
-	"query parser" should "parse * in select" in {
-		val mql: String = "select * from rollup"
-		val res = parser.parseAll(parser.query, mql)
-		println(res)
-		res match {
-			case parser.Success(MQLQuery(
-				MQLSelect(List(MQLColumnAll())),
-				MQLFrom(MQLTableRollup()), _
-			), _) =>
-			case x => fail(x.toString)
-		}
-	}
-
-	it should "parse column list in select" in {
+	"query parser" should "parse column list in select" in {
 		val mql: String = "select timestamp, value from energy"
 		val res = parser.parseAll(parser.query, mql)
 		println(res)
@@ -39,6 +26,19 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 			case parser.Success(MQLQuery(
 				MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
 				MQLFrom(MQLTableEnergy()), _
+			), _) =>
+			case x => fail(x.toString)
+		}
+	}
+
+	it should "parse string literal in select" in {
+		val mql: String = "select \"timestamp\", value from energy"
+		val res = parser.parseAll(parser.query, mql)
+		println(res)
+		res match {
+			case parser.Success(MQLQuery(
+			MQLSelect(List(MQLColumnStringLiteral(_), MQLColumnValue())),
+			MQLFrom(MQLTableEnergy()), _
 			), _) =>
 			case x => fail(x.toString)
 		}
@@ -94,7 +94,7 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 	}
 
 	"MQL parser" should "parse union" in {
-		val mql: String = "select timestamp, value from rollup where timestamp = 3.5 union select * from energy"
+		val mql: String = "select timestamp, value from rollup where timestamp = 3.5 union select value from energy"
 		val res = parser.parseAll(parser.mql, mql)
 		println(res)
 		res match {

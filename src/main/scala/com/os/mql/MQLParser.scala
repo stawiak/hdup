@@ -13,10 +13,12 @@ class MQLParser extends JavaTokenParsers {
 
 	implicit def pimpString(str: String): MyRichString = new MyRichString(str)
 
+	//TODO replace \d
+	def longNumber: Parser[String] = """-?\d+""".r
+
 	//TODO order by
 	//TODO where - multiple conditions OR-ed or AND-ed
-	//TODO between-and
-	//TODO "string" and number literals in select
+	//TODO number literals in select
 	//TODO expr in select and where
 	def mql: Parser[MQLUnion] = repsep(query, "union") ^^ {
 		case queries: List[MQLQuery] => new MQLUnion(queries)
@@ -26,20 +28,18 @@ class MQLParser extends JavaTokenParsers {
 		case s~f~w => new MQLQuery(s, f, w)
 	}
 
-	def select: Parser[MQLSelect] = ("select".ignoreCase~>columnList) ^^ { new MQLSelect(_)	}
+	def select: Parser[MQLSelect] = ("select".ignoreCase~>repsep(columnItem, ",")) ^^ { new MQLSelect(_)	}
 
 	def from: Parser[MQLFrom] = ("from".ignoreCase~>tableName) ^^ {	new MQLFrom(_) }
 
 	def where: Parser[MQLWhere] = "where".ignoreCase~>condition ^^ { new MQLWhere(_) }
 
-	def columnList: Parser[List[MQLColumn]] = ("*" | repsep(columnName, ",")) ^^ {
-		case "*" =>
-			List[MQLColumn](MQLColumnAll())
-		case cols: List[MQLColumn] =>
-		     cols
+	def columnItem: Parser[MQLColumn] = (columnName | stringLiteral) ^^ {
+		case col: MQLColumn => col
+		case s: String => MQLColumnStringLiteral(s)
 	}
 
-	def columnName: Parser[MQLColumn] = ("value".ignoreCase | "timestamp".ignoreCase) ^^ {s => MQLColumn(s.toLowerCase)}
+	def columnName: Parser[MQLColumn] = ("value".ignoreCase | "timestamp".ignoreCase) ^^ { case s: String => MQLColumn(s.toLowerCase) }
 
 	def tableName: Parser[MQLTable] = ("energy".ignoreCase | "current".ignoreCase | "vamps".ignoreCase | "interpolated".ignoreCase | "rollup".ignoreCase) ^^ {s => MQLTable(s.toLowerCase)}
 
