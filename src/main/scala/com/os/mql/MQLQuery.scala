@@ -9,9 +9,9 @@ class MQLFrom(val table: MQLTable) {
 
 
 class MQLSelect(val columns: List[MQLColumn]) {
-	override def toString: String = "select\n\t" + columns.mkString
+	override def toString: String = "select\n\t" + columns.mkString(",")
 }
 
 class MQLQuery(val select: MQLSelect, val from: MQLFrom) {
-	override def toString: String = select + "\n" + from
+	override def toString: String = "\n" + select + "\n" + from
 }

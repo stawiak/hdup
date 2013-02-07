@@ -18,9 +18,9 @@ object MQLTable {
 	}
 }
 sealed abstract class MQLTable
-case class MQLTableEnergy() extends MQLTable
-case class MQLTableCurrent() extends MQLTable
-case class MQLTableVamps() extends MQLTable
+case class MQLTableEnergy() extends MQLTable { override def toString: String = "energy" }
+case class MQLTableCurrent() extends MQLTable { override def toString: String = "current" }
+case class MQLTableVamps() extends MQLTable { override def toString: String = "vamps" }
 
 
 

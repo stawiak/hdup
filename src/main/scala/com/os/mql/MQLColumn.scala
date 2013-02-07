@@ -18,6 +18,6 @@ object MQLColumn {
 	}
 }
 sealed abstract class MQLColumn
-case class MQLColumnAll() extends MQLColumn
-case class MQLColumnTimestamp() extends MQLColumn
-case class MQLColumnValue() extends MQLColumn
+case class MQLColumnAll() extends MQLColumn  { override def toString: String = "*" }
+case class MQLColumnTimestamp() extends MQLColumn  { override def toString: String = "timestamp" }
+case class MQLColumnValue() extends MQLColumn  { override def toString: String = "value" }
