@@ -43,10 +43,17 @@ class MQLParser extends JavaTokenParsers {
 
 	def tableName: Parser[MQLTable] = ("energy".ignoreCase | "current".ignoreCase | "vamps".ignoreCase | "interpolated".ignoreCase | "rollup".ignoreCase) ^^ {s => MQLTable(s.toLowerCase)}
 
-	def condition: Parser[MQLCondition] = (columnName~("=" | ">" | "<")~floatingPointNumber) ^^ {
-		case cn~cmp~fpn => new MQLCondition(cn, cmp, fpn.toDouble)
+	def condition: Parser[MQLCondition] = (comparisonCondition | betweenCondition)
+
+	def comparisonCondition: Parser[MQLCondition] = (columnName~("=" | ">" | "<")~floatingPointNumber) ^^ {
+		case cn~cmp~fpn => new MQLComparisonCondition(cn, cmp, fpn.toDouble)
 	}
 
+	def betweenCondition: Parser[MQLCondition] = (columnName~"between"~floatingPointNumber~"and"~floatingPointNumber) ^^ {
+		case cn~between~fps~and~fpe =>
+			assert(fps.toDouble <= fpe.toDouble, "lower BETWEEN AND value less than upper value")
+			new MQLBetweenCondition(cn, fps.toDouble, fpe.toDouble)
+	}
 
 	// arithmetic
 	def expr: Parser[Any] = term~rep("+"~term |"-"~term)
