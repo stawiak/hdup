@@ -13,14 +13,13 @@ class MQLParser extends JavaTokenParsers {
 
 	implicit def pimpString(str: String): MyRichString = new MyRichString(str)
 
-	//TODO improve union instead of repsec
+	//TODO use ~> to drop left hand
 	//TODO order by
 	//TODO where - multiple conditions OR-ed or AND-ed
 	//TODO between-and
-	//TODO string and number literals in select
+	//TODO "string" and number literals in select
 	//TODO expr in select and where
-	def mql: Parser[MQLUnion] = (query~rep("union"~query)) ^^ {
-		case query: MQLQuery => new MQLUnion(List[MQLQuery](query))
+	def mql: Parser[MQLUnion] = repsep(query, "union") ^^ {
 		case queries: List[MQLQuery] => new MQLUnion(queries)
 	}
 
