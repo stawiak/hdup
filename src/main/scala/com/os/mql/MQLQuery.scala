@@ -16,5 +16,10 @@ class MQLWhere(val cond: MQLCondition) {
 }
 
 class MQLQuery(val select: MQLSelect, val from: MQLFrom, val where: Option[MQLWhere]) {
-	override def toString: String = "\n" + select + "\n" + from + (if(where.isDefined) "\n" + where.get else "")
+	override def toString: String = select + "\n" + from + (if(where.isDefined) "\n" + where.get else "")
 }
+
+class MQLUnion(val queries: List[MQLQuery]) {
+	override def toString: String = queries.mkString("\nunion\n")
+}
+
