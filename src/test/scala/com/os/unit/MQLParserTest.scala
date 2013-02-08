@@ -16,7 +16,7 @@ import com.os.mql.MQLTableRollup
  */
 class MQLParserTest extends FlatSpec with ShouldMatchers {
 
-	val parser = new MQLParser()
+	val parser = new MQLParsers()
 
 	"query parser" should "parse column list in select" in {
 		val mql: String = "select timestamp, value from energy"
@@ -110,5 +110,10 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 	}
 
 	//TODO fail parse
+	"date parser" should "parse date" in {
+		val mql: String = "2012-01-02 16:21:55"
+		val res = parser.parseAll(parser.dateTime("yyyy-MM-dd HH:mm:ss"), mql)
+		println(res)
+	}
 
 }
