@@ -2,12 +2,7 @@ package com.os.unit
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import com.os.mql._
-import com.os.mql.MQLFrom
-import com.os.mql.MQLSelect
-import com.os.mql.MQLQuery
-import com.os.mql.MQLTableEnergy
-import com.os.mql.MQLTableRollup
+import com.os.mql.parser.DateParsers
 
 
 /**

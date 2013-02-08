@@ -1,14 +1,15 @@
-package com.os.mql
+package com.os.mql.parser
 
 import util.parsing.combinator._
-import org.joda.time.{DateTime, MutableDateTime}
-import org.joda.time.format.{ISODateTimeFormat, DateTimeFormat}
-import spray.http.parser
+import com.os.mql._
+import model._
+import model.MQLColumnStringLiteral
+import model.MQLComparisonCondition
 
 /**
   * @author Vadim Bobrov
  */
-class MQLParsers extends JavaTokenParsers with DateParsers with ArithmeticParsers {
+class MQLParsers extends JavaTokenParsers with DateParsers with MathParsers {
 
 	class MyRichString(str: String) {
 		def ignoreCase: Parser[String] = ("""(?i)\Q""" + str + """\E""").r
@@ -58,39 +59,4 @@ class MQLParsers extends JavaTokenParsers with DateParsers with ArithmeticParser
 	}
 
 }
-trait ArithmeticParsers extends JavaTokenParsers {
 
-	def expr: Parser[Any] = term~rep("+"~term |"-"~term)
-	def term: Parser[Any] = factor~rep("*"~factor |"/"~factor)
-	def factor: Parser[Any] = floatingPointNumber | "("~expr~")"
-
-}
-
-trait DateParsers extends RegexParsers {
-
-	def toSeconds: Parser[DateTime] = dateTime("yyyy-MM-dd HH:mm:ss")
-	def toDay: Parser[DateTime] = dateTime("yyyy-MM-dd")
-
-	def dateTime(pattern: String): Parser[DateTime] = new Parser[DateTime] {
-		val dateFormat = DateTimeFormat.forPattern(pattern)
-
-		def jodaParse(text: CharSequence, offset: Int) = {
-			val mutableDateTime = new MutableDateTime(0, 1, 1, 0, 0, 0, 0)
-			val upper = offset + dateFormat.getParser.estimateParsedLength
-			val maxInput = text.subSequence(offset, if(upper > text.length) text.length() else upper).toString
-			val newPos = dateFormat.parseInto(mutableDateTime, maxInput, 0)
-			(mutableDateTime.toDateTime, newPos + offset)
-		}
-
-		def apply(in: Input) = {
-			val source = in.source
-			val offset = in.offset
-			val start = handleWhiteSpace(source, offset)
-			val (dateTime, endPos) = jodaParse(source, start)
-			if (endPos >= 0)
-				Success(dateTime, in.drop(endPos - offset))
-			else
-				Failure("Failed to parse date", in.drop(start - offset))
-		}
-	}
-}

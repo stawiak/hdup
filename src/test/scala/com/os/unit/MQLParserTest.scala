@@ -2,13 +2,13 @@ package com.os.unit
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import com.os.mql._
-import com.os.mql.MQLColumnAll
-import com.os.mql.MQLFrom
-import com.os.mql.MQLSelect
-import com.os.mql.MQLQuery
-import com.os.mql.MQLTableEnergy
-import com.os.mql.MQLTableRollup
+import com.os.mql.parser.MQLParsers
+import com.os.mql.model._
+import com.os.mql.model.MQLSelect
+import com.os.mql.model.MQLQuery
+import com.os.mql.model.MQLColumnTimestamp
+import com.os.mql.model.MQLColumnValue
+import scala.Some
 
 
 /**

@@ -1,4 +1,5 @@
-package com.os.mql
+package com.os.mql.model
+
 
 /**
  * @author Vadim Bobrov

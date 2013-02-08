@@ -1,6 +1,6 @@
 package com.os.util
 
-import collection.{SortedMap, mutable}
+import collection.SortedMap
 
 
 /**

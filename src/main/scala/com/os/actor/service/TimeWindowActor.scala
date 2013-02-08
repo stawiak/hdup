@@ -6,7 +6,7 @@ import com.os.actor._
 import util._
 import write.WriterMasterAware
 import concurrent.duration.Duration
-import com.os.util.{TimeWindowListBuffer, TimeWindowSortedSetBuffer, TimeSource, TimeWindow}
+import com.os.util.{TimeWindowListBuffer, TimeSource, TimeWindow}
 
 
 /**
