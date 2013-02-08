@@ -14,7 +14,7 @@ import scala.concurrent.duration._
  */
 class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_system) with WordSpec with MustMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest{
 
-	def this() = this(ActorSystem("test", ConfigFactory.load().getConfig("test")))
+	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
 	override def afterAll() {
 		system.shutdown()

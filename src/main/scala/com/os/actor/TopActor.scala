@@ -16,7 +16,15 @@ import akka.actor.OneForOneStrategy
  * @author Vadim Bobrov
  */
 case object GetWebService
-class TopActor  extends FinalCountDown with LastMohican with SettingsUse {
+class TopActor(   // props of top-level actors to start
+				  val timeWindowProps: Props,
+				  val readMasterProps: Props,
+				  val writeMasterProps: Props,
+				  val messageListenerProps: Props,
+				  val webServiceProps: Props,
+				  val deadLetterListenerProps: Props
+				  )
+	extends FinalCountDown with LastMohican with SettingsUse {
 
 	import context._
 
@@ -30,12 +38,12 @@ class TopActor  extends FinalCountDown with LastMohican with SettingsUse {
 
 	override def preStart() {
 		// start top level actors
-		timeWindow = actorOf(Props(new TimeWindowActor(settings.ExpiredTimeWindow)), name = "timeWindow")
-		readMaster = actorOf(Props[ReadMasterActor], name = "readMaster")
-		writeMaster = actorOf(Props[WriteMasterActor], name = "writeMaster")
-		messageListener = actorOf(Props(new MessageListenerActor(settings.ActiveMQHost, settings.ActiveMQPort, settings.ActiveMQQueue)), name = "jmsListener")
-		webService = actorOf(Props[WebServiceActor], name = "webService")
-		deadLetterListener = actorOf(Props[DeadLetterListener], name = "deadLetterListener")
+		timeWindow = actorOf(timeWindowProps, name = "timeWindow")
+		readMaster = actorOf(readMasterProps, name = "readMaster")
+		writeMaster = actorOf(writeMasterProps, name = "writeMaster")
+		messageListener = actorOf(messageListenerProps, name = "jmsListener")
+		webService = actorOf(webServiceProps, name = "webService")
+		deadLetterListener = actorOf(deadLetterListenerProps, name = "deadLetterListener")
 
 		system.eventStream.subscribe(deadLetterListener, classOf[DeadLetter])
 	}

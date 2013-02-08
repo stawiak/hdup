@@ -26,7 +26,7 @@ class DataFillerTest extends FunSuite with Timing{
 		val start = System.currentTimeMillis
 
 		val config = ConfigFactory.load()
-		val system = ActorSystem("test", config.getConfig("test"))
+		val system = ActorSystem("chaos", config.getConfig("chaos"))
 		val masterWriter = system.actorOf(Props[WriteMasterActor], name = "writeMaster")
 
 
@@ -41,7 +41,7 @@ class DataFillerTest extends FunSuite with Timing{
 	}
 
 	test("even fill parallel simple") {
-		val system = ActorSystem("test")
+		val system = ActorSystem("chaos")
 
 		val master = system.actorOf(Props(new WriteMasterActor()), name = "writeMaster")
 		for (i <- 0 until 1000)

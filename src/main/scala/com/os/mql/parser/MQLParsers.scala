@@ -17,6 +17,7 @@ class MQLParsers extends JavaTokenParsers with DateParsers with MathParsers {
 
 	implicit def pimpString(str: String): MyRichString = new MyRichString(str)
 
+	//TODO customer, location, wireid filters, wireid - if not rollup
 	//TODO date parsing
 
 	//TODO order by

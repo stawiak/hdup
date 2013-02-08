@@ -14,7 +14,7 @@ import com.os.actor.util.{LastMohican, GracefulStop, FinalCountDown}
  */
 class FinalCountDownTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
 
-	def this() = this(ActorSystem("test", ConfigFactory.load().getConfig("test")))
+	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
 	"FinalCountDown actor" should "wait for the children routers to shutdown before shutting down" in {
 		val actorUnderTest = TestActorRef(new TestFinalCountDownActor(true))
