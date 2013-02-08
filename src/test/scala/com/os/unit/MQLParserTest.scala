@@ -9,6 +9,7 @@ import com.os.mql.model.MQLQuery
 import com.os.mql.model.MQLColumnTimestamp
 import com.os.mql.model.MQLColumnValue
 import scala.Some
+import org.joda.time.DateTime
 
 
 /**
@@ -52,13 +53,27 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 			case parser.Success(MQLQuery(
 				MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
 				MQLFrom(MQLTableEnergy()),
-				Some(MQLWhere(MQLComparisonCondition(MQLColumnTimestamp(), ">", _)))
+				Some(MQLWhere(MQLComparisonNumberCondition(MQLColumnTimestamp(), ">", _)))
 			), _) =>
 			case x => fail(x.toString)
 		}
 	}
 
-	it should "parse between and condition" in {
+	it should "parse equal condition" in {
+		val mql: String = "select timestamp, value from energy where customer = \"lopuh\""
+		val res = parser.parseAll(parser.query, mql)
+		println(res)
+		res match {
+			case parser.Success(MQLQuery(
+			MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
+			MQLFrom(MQLTableEnergy()),
+			Some(MQLWhere(MQLComparisonStringCondition(MQLColumnCustomer(), "=", _)))
+			), _) =>
+			case x => fail(x.toString)
+		}
+	}
+
+	it should "parse between and number condition" in {
 		val mql: String = "select timestamp, value from energy where timestamp between 1 and 3.5"
 		val res = parser.parseAll(parser.query, mql)
 		println(res)
@@ -67,6 +82,20 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 			MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
 			MQLFrom(MQLTableEnergy()),
 			Some(MQLWhere(MQLBetweenCondition(MQLColumnTimestamp(), 1, 3.5)))
+			), _) =>
+			case x => fail(x.toString)
+		}
+	}
+
+	it should "parse between and time condition" in {
+		val mql: String = "select timestamp, value from energy where timestamp between '2010-04-20' and '2011-11-14 13:22:45'"
+		val res = parser.parseAll(parser.query, mql)
+		println(res)
+		res match {
+			case parser.Success(MQLQuery(
+			MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
+			MQLFrom(MQLTableEnergy()),
+			Some(MQLWhere(MQLBetweenCondition(MQLColumnTimestamp(), 1271736000000.0, 1321294965000.0)))
 			), _) =>
 			case x => fail(x.toString)
 		}
@@ -87,7 +116,7 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 			case parser.Success(MQLQuery(
 			MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
 			MQLFrom(MQLTableEnergy()),
-			Some(MQLWhere(MQLComparisonCondition(MQLColumnTimestamp(), ">", _)))
+			Some(MQLWhere(MQLComparisonNumberCondition(MQLColumnTimestamp(), ">", _)))
 			), _) =>
 			case x => fail(x.toString)
 		}
@@ -102,7 +131,7 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 				List(MQLQuery(
 					MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
 					MQLFrom(MQLTableRollup()),
-					Some(MQLWhere(MQLComparisonCondition(MQLColumnTimestamp(), "=", _)))
+					Some(MQLWhere(MQLComparisonNumberCondition(MQLColumnTimestamp(), "=", _)))
 				), _)
 			),_) =>
 			case x => fail(x.toString)

@@ -9,6 +9,10 @@ import org.joda.time.format.DateTimeFormat
  */
 trait DateParsers extends RegexParsers {
 
+	def timeValue: Parser[DateTime] = ("'"~toSeconds~"'" | "'"~toDay~"'") ^^ {
+		case "'"~dt~"'" => dt
+	}
+
 	def toSeconds: Parser[DateTime] = dateTime("yyyy-MM-dd HH:mm:ss")
 	def toDay: Parser[DateTime] = dateTime("yyyy-MM-dd")
 
