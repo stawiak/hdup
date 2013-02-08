@@ -3,6 +3,7 @@ package com.os.mql
 import util.parsing.combinator._
 import org.joda.time.{DateTime, MutableDateTime}
 import org.joda.time.format.{ISODateTimeFormat, DateTimeFormat}
+import spray.http.parser
 
 /**
   * @author Vadim Bobrov
@@ -66,11 +67,15 @@ trait ArithmeticParsers extends JavaTokenParsers {
 }
 
 trait DateParsers extends RegexParsers {
+
+	def toSeconds: Parser[DateTime] = dateTime("yyyy-MM-dd HH:mm:ss")
+	def toDay: Parser[DateTime] = dateTime("yyyy-MM-dd")
+
 	def dateTime(pattern: String): Parser[DateTime] = new Parser[DateTime] {
 		val dateFormat = DateTimeFormat.forPattern(pattern)
 
 		def jodaParse(text: CharSequence, offset: Int) = {
-			val mutableDateTime = new MutableDateTime
+			val mutableDateTime = new MutableDateTime(0, 1, 1, 0, 0, 0, 0)
 			val upper = offset + dateFormat.getParser.estimateParsedLength
 			val maxInput = text.subSequence(offset, if(upper > text.length) text.length() else upper).toString
 			val newPos = dateFormat.parseInto(mutableDateTime, maxInput, 0)
