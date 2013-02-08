@@ -17,6 +17,7 @@ import akka.actor.OneForOneStrategy
  */
 case object GetWebService
 class TopActor(   // props of top-level actors to start
+				  val mqlHandlerProps: Props,
 				  val timeWindowProps: Props,
 				  val readMasterProps: Props,
 				  val writeMasterProps: Props,
@@ -28,6 +29,7 @@ class TopActor(   // props of top-level actors to start
 
 	import context._
 
+	var mqlHandler: ActorRef = _
 	var timeWindow: ActorRef = _
 	var readMaster: ActorRef = _
 	var writeMaster: ActorRef = _
@@ -38,6 +40,7 @@ class TopActor(   // props of top-level actors to start
 
 	override def preStart() {
 		// start top level actors
+		mqlHandler = actorOf(mqlHandlerProps, name = "mqlHandler")
 		timeWindow = actorOf(timeWindowProps, name = "timeWindow")
 		readMaster = actorOf(readMasterProps, name = "readMaster")
 		writeMaster = actorOf(writeMasterProps, name = "writeMaster")

@@ -18,7 +18,7 @@ class DataFillerTest extends FunSuite with Timing{
 
 
 	test("even fill") {
-		time(DataFiller.fillEven(new DateTime("2012-06-01"), new DateTime("2012-06-05"), 66))
+		time {DataFiller.fillEven(new DateTime("2012-06-01"), new DateTime("2012-06-05"), 66)}
 	}
 
 

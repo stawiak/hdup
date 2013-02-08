@@ -2,7 +2,7 @@ package com.os.actor
 
 import akka.actor.{ActorLogging, PoisonPill, Actor}
 import akka.pattern.ask
-import read.{ReadMasterAware, RollupReadRequest, MeasurementReadRequest}
+import read.{MQLHandlerAware, ReadMasterAware, RollupReadRequest, MeasurementReadRequest}
 import service.TimeWindowAware
 import spray.routing._
 import spray.http.MediaTypes._
@@ -40,7 +40,7 @@ class WebServiceActor extends Actor with ActorLogging with SettingsUse with WebS
 
 
 // this trait defines our service behavior independently from the service actor
-trait WebService extends HttpService with ReadMasterAware with TimeWindowAware with TopAware {
+trait WebService extends HttpService with ReadMasterAware with TimeWindowAware with TopAware with MQLHandlerAware {
 	this: Actor with ActorLogging with SettingsUse =>
 
 	implicit val timeout: Timeout = 60 seconds
@@ -71,6 +71,43 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 									</p>
 								</body>
 							</html>
+					}
+				}
+			} ~
+			path("query") {
+				respondWithMediaType(`text/html`) {
+					complete {
+							<html>
+								<body>
+									<form name="mql" action="run" method="get">
+										<textarea name="mql" rows="20" cols="80">enter your query here...</textarea>
+										<br/>
+										<input type="submit" value="Submit"/>
+									</form>
+								</body>
+							</html>
+					}
+				}
+			} ~
+			path("run") {
+				parameters("mql".as[String]) { mql: String =>
+					respondWithMediaType(`text/html`) {
+						complete {
+							try {
+								//Await.result((mqlHandler ? mql).mapTo[Iterable[TimedValue]], timeout.duration)
+								mqlHandler ! mql
+							} catch {
+								case e: Exception =>
+									log.error(e, e.getMessage)
+							}
+
+							<html>
+								<body>
+									<p>For query:</p>
+									<p>{mql}</p>
+								</body>
+							</html>
+						}
 					}
 				}
 			}

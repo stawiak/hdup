@@ -2,7 +2,7 @@ package com.os.actor
 
 import akka.actor.{Props, ActorRef, ActorSystem}
 import akka.pattern.ask
-import read.ReadMasterActor
+import read.{MQLHandlerActor, ReadMasterActor}
 import service.TimeWindowActor
 import spray.can.server.SprayCanHttpServerApp
 import com.os.Settings
@@ -22,6 +22,7 @@ object Main extends App with SprayCanHttpServerApp {
 	override lazy val system = ActorSystem("chaos", ConfigFactory.load().getConfig("chaos"))
 	val settings = Settings(system.settings.config)
 	val top = system.actorOf(Props(new TopActor(
+			Props[MQLHandlerActor],
 			Props(new TimeWindowActor(settings.ExpiredTimeWindow)),
 			Props[ReadMasterActor],
 			Props[WriteMasterActor],

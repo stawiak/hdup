@@ -9,7 +9,7 @@ import com.typesafe.config.ConfigFactory
 import com.os.actor.{WebServiceActor, MessageListenerActor, TopActor}
 import com.os.actor.util.{DeadLetterListener, GracefulStop}
 import com.os.Settings
-import com.os.actor.read.ReadMasterActor
+import com.os.actor.read.{MQLHandlerActor, ReadMasterActor}
 import com.os.actor.write.WriteMasterActor
 import akka.pattern._
 import akka.util.Timeout
@@ -26,6 +26,7 @@ class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) w
 
 	val settings = Settings(system.settings.config)
 	val top = system.actorOf(Props(new TopActor(
+		Props[MQLHandlerActor],
 		Props(new TestTimeWindowActor()),
 		Props[ReadMasterActor],
 		Props[WriteMasterActor],
