@@ -12,6 +12,7 @@ import concurrent.duration._
 import concurrent.Future
 import akka.util.Timeout
 import com.os.actor.util.{SettingsUse, GracefulStop, FinalCountDown}
+import com.os.Settings
 
 
 /**
@@ -43,7 +44,7 @@ class ReadMasterActor extends FinalCountDown with SettingsUse {
 	private def getRouter(request : AnyRef) : ActorRef = {
 
 		val tableName = request match  {
-			case RollupReadRequest => settings.RollupTableName
+			case RollupReadRequest => Settings.RollupTableName
 			case request: MeasurementReadRequest => request.tableName
 		}
 

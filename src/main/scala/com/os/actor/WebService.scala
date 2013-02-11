@@ -15,6 +15,7 @@ import akka.util.Timeout
 import concurrent.duration._
 import scala.Predef._
 import util.{SettingsUse, GracefulStop}
+import com.os.Settings
 
 /**
  * @author Vadim Bobrov
@@ -145,7 +146,7 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 	private def readRequest(customer: String, location: String, fromTime: Long, toTime: Long, wireid: Option[String] = None): String = {
 		val readRequest =
 			if (wireid.isDefined)
-				new MeasurementReadRequest(settings.TableName, customer, location, wireid.get, Array[Interval](new Interval(fromTime, toTime)))
+				new MeasurementReadRequest(Settings.TableName, customer, location, wireid.get, Array[Interval](new Interval(fromTime, toTime)))
 			else
 				new RollupReadRequest(customer, location, Array[Interval](new Interval(fromTime, toTime)))
 

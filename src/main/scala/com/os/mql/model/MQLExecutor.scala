@@ -1,6 +1,7 @@
 package com.os.mql.model
 
 import com.os.actor.read.{MeasurementReadRequest, ReadRequest}
+import com.os.Settings
 
 /**
  * @author Vadim Bobrov
@@ -15,13 +16,17 @@ class MQLExecutor(val mql: MQLUnion) {
 	def generateQuery(query: MQLQuery): Traversable[ReadRequest] = {
 		val output = List.empty[ReadRequest]
 
-/*
+
 		var request: ReadRequest = null
+
+/*
+		if (query.where.isDefined) {
+			query.where.get.
+		}
 
 		query.from.table match {
 			case MQLTableEnergy =>
-				null
-				//request = new MeasurementReadRequest()
+				request = new MeasurementReadRequest(Settings.TableName,)
 		}
 */
 

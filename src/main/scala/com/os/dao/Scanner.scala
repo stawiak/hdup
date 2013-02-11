@@ -75,7 +75,7 @@ object Scanner {
 
 			val scan = new Scan(startRowKey, endRowKey)
 
-			scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.ValueQualifierName))
+			scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.ValueQualifierName))
 			//scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.CurrentQualifierName))
 			//scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.VampireQualifierName))
 
@@ -89,7 +89,7 @@ object Scanner {
 			val iterator = Iterator.continually(results.next()) takeWhile (_ != null)
 
 			iterator foreach (res => {
-				val energy = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.ValueQualifierName))
+				val energy = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.ValueQualifierName))
 				//val current = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.CurrentQualifierName))
 				//val vampire = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.VampireQualifierName))
 

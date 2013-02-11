@@ -8,6 +8,18 @@ import com.typesafe.config.Config
  * @author Vadim Bobrov
  */
 object Settings {
+	// non-configurable items
+	val TableName = "msmt"              								// table for actual energy measurements
+	val MinuteInterpolatedTableName = "ismt" 					 		// table for minute interpolation
+	val RollupTableName = "rsmt"			    						// table for minute rollup by location
+
+	val CurrentTableName = "curr"              							// table for actual current measurements
+	val VampsTableName = "vamps"              							// table for actual vamps measurements
+
+
+	val ColumnFamilyName = "d"      									// stands for data
+	val ValueQualifierName = "v"   										// stands for value
+
 
 	var instance: Option[Settings] = None
 
@@ -49,27 +61,16 @@ final class Settings(config: Config) {
 	val ScanCacheSize = hBaseConfig.getInt("scanCacheSize")    									// how many rows are retrieved with every RPC call
 
 
-	val TableName = hBaseConfig.getString("tableName")              							// table for actual energy measurements
-	val MinuteInterpolatedTableName = hBaseConfig.getString("minuteInterpolatedTableName")  	// table for minute interpolation
-	val RollupTableName = hBaseConfig.getString("rollupTableName")			    				// table for minute rollup by location
-
-  val CurrentTableName = hBaseConfig.getString("currentTableName")              							// table for actual current measurements
-  val VampsTableName = hBaseConfig.getString("vampsTableName")              							// table for actual vamps measurements
-
-
-	val ColumnFamilyName = hBaseConfig.getString("columnFamilyName")      						// stands for data
-	val ValueQualifierName = hBaseConfig.getString("valueQualifierName")   					// stands for value
-
 	val BatchSize = hBaseConfig.getInt("batchSize")            									// default writer batch size - can be lost
 	val DerivedDataBatchSize = hBaseConfig.getInt("interpolatedBatchSize")						// writer batch size for minute interpolations- can be lost
 
 	val TablePoolSize = hBaseConfig.getInt("tablePoolSize")
 
 	val ExpiredTimeWindow = Duration(config.getMilliseconds("expiredTimeWindow"), MILLISECONDS) // time to incoming measurement expiration in milliseconds
-																								// measurements older than that are not interpolated
+	// measurements older than that are not interpolated
 
 	val TimeWindowProcessInterval = FiniteDuration(config.getMilliseconds("timeWindowProcessInterval"), MILLISECONDS)
-																								// time between time window processing
+	// time between time window processing
 
-  val Interpolation = config.getBoolean("interpolation")
+	val Interpolation = config.getBoolean("interpolation")
 }

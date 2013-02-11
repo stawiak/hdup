@@ -54,14 +54,14 @@ object Writer {
 
 		def write(msmt: Measurement) {
 
-			val rowkey = 	if(tableName == settings.RollupTableName)
+			val rowkey = 	if(tableName == Settings.RollupTableName)
 								RowKeyUtils.createRollupRowKey(msmt.customer, msmt.location, msmt.timestamp)
 							else
 								RowKeyUtils.createRowKey(msmt.customer, msmt.location, msmt.wireid, msmt.timestamp)
 
 			val p = new Put(rowkey)
 
-			p.add(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.ValueQualifierName),Bytes.toBytes(msmt.value))
+			p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.ValueQualifierName),Bytes.toBytes(msmt.value))
 			//p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.CurrentQualifierName),Bytes.toBytes(msmt.current))
 			//p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName),Bytes.toBytes(msmt.vampire))
 			// alternatively use
