@@ -47,21 +47,35 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 	}
 
 	it should "reject if no customer condition is specified" in {
-		val mql: String = "select timestamp, value from energy where location = \"a\" and timestamp > 3.5"
+		val mql: String = "select timestamp, value from energy where location = \"a\" and value > 3.5"
 		evaluating {
 			val res = parser.parseAll(parser.query, mql)
 		} should produce [InvalidMQLException]
 	}
 
 	it should "reject if no location condition is specified" in {
-		val mql: String = "select timestamp, value from energy where customer = \"a\" and timestamp > 3.5"
+		val mql: String = "select timestamp, value from energy where customer = \"a\" and value > 3.5"
+		evaluating {
+			val res = parser.parseAll(parser.query, mql)
+		} should produce [InvalidMQLException]
+	}
+
+	it should "reject if unsupported condition is specified" in {
+		val mql: String = "select timestamp, value from energy where customer = \"a\" and location = \"a\" and timestamp > 3.5"
+		evaluating {
+			val res = parser.parseAll(parser.query, mql)
+		} should produce [UnsupportedConditionException]
+	}
+
+	it should "reject if no wireid is specified while not querying rollup" in {
+		val mql: String = "select timestamp, value from current where customer = \"a\" and location = \"a\" and value > 3.5"
 		evaluating {
 			val res = parser.parseAll(parser.query, mql)
 		} should produce [InvalidMQLException]
 	}
 
 	it should "parse comparison condition" in {
-		val mql: String = "select timestamp, value from energy where customer = \"a\" and location = \"a\" and timestamp > 3.5"
+		val mql: String = "select timestamp, value from energy where customer = \"a\" and location = \"a\" and wireid = \"a\" and value > 3.5"
 		val res = parser.parseAll(parser.query, mql)
 		println(res)
 		res match {
@@ -69,33 +83,17 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 				MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
 				MQLFrom(MQLTableEnergy()),
 				Some(MQLWhere(List(
-					MQLComparisonStringCondition(MQLColumnCustomer(), "=", _),
-					MQLComparisonStringCondition(MQLColumnLocation(), "=", _),
-					MQLComparisonNumberCondition(MQLColumnTimestamp(), ">", _))))
-			), _) =>
-			case x => fail(x.toString)
-		}
-	}
-
-	it should "parse between and number condition" in {
-		val mql: String = "select timestamp, value from energy where customer = \"a\" and location = \"a\" and timestamp between 1 and 3.5"
-		val res = parser.parseAll(parser.query, mql)
-		println(res)
-		res match {
-			case parser.Success(MQLQuery(
-			MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
-			MQLFrom(MQLTableEnergy()),
-			Some(MQLWhere(List(
-				MQLComparisonStringCondition(MQLColumnCustomer(), "=", _),
-				MQLComparisonStringCondition(MQLColumnLocation(), "=", _),
-				MQLBetweenCondition(MQLColumnTimestamp(), 1, 3.5))))
+					MQLCustomerCondition(_),
+					MQLLocationCondition(_),
+					MQLWireIdCondition(_),
+					MQLValueCondition(">", _))))
 			), _) =>
 			case x => fail(x.toString)
 		}
 	}
 
 	it should "parse between and time condition" in {
-		val mql: String = "select timestamp, value from energy where customer = \"a\" and location = \"a\" and timestamp between '2010-04-20' and '2011-11-14 13:22:45'"
+		val mql: String = "select timestamp, value from energy where customer = \"a\" and location = \"a\" and wireid = \"a\" and timestamp between '2010-04-20' and '2011-11-14 13:22:45'"
 		val res = parser.parseAll(parser.query, mql)
 		println(res)
 		res match {
@@ -103,9 +101,10 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 			MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
 			MQLFrom(MQLTableEnergy()),
 			Some(MQLWhere(List(
-				MQLComparisonStringCondition(MQLColumnCustomer(), "=", _),
-				MQLComparisonStringCondition(MQLColumnLocation(), "=", _),
-				MQLBetweenCondition(MQLColumnTimestamp(), 1271736000000.0, 1321294965000.0))))
+				MQLCustomerCondition(_),
+				MQLLocationCondition(_),
+				MQLWireIdCondition(_),
+				MQLTimeRangeCondition(1271736000000.0, 1321294965000.0))))
 			), _) =>
 			case x => fail(x.toString)
 		}
@@ -119,7 +118,7 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 	}
 
 	it should "be case-insensitive" in {
-		val mql: String = "Select Timestamp, Value From Energy Where customer = \"a\" and location = \"a\" and Timestamp > 3.5"
+		val mql: String = "Select Timestamp, Value From Energy Where customer = \"a\" and location = \"a\" and wireid = \"a\" and value > 3.5"
 		val res = parser.parseAll(parser.query, mql)
 		println(res)
 		res match {
@@ -127,16 +126,17 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 			MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
 			MQLFrom(MQLTableEnergy()),
 			Some(MQLWhere(List(
-				MQLComparisonStringCondition(MQLColumnCustomer(), "=", _),
-				MQLComparisonStringCondition(MQLColumnLocation(), "=", _),
-				MQLComparisonNumberCondition(MQLColumnTimestamp(), ">", _))))
+				MQLCustomerCondition(_),
+				MQLLocationCondition(_),
+				MQLWireIdCondition(_),
+				MQLValueCondition(">", _))))
 			), _) =>
 			case x => fail(x.toString)
 		}
 	}
 
 	"MQL parser" should "parse union" in {
-		val mql: String = "select timestamp, value from rollup where customer = \"a\" and location = \"a\" and timestamp = 3.5 union select value from energy where customer = \"a\" and location = \"a\""
+		val mql: String = "select timestamp, value from rollup where customer = \"a\" and location = \"a\" and value = 3.5 union select value from energy where customer = \"a\" and location = \"a\" and wireid = \"a\""
 		val res = parser.parseAll(parser.mql, mql)
 		println(res)
 		res match {
@@ -145,9 +145,9 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 					MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
 					MQLFrom(MQLTableRollup()),
 					Some(MQLWhere(List(
-						MQLComparisonStringCondition(MQLColumnCustomer(), "=", _),
-						MQLComparisonStringCondition(MQLColumnLocation(), "=", _),
-						MQLComparisonNumberCondition(MQLColumnTimestamp(), "=", _))))
+						MQLCustomerCondition(_),
+						MQLLocationCondition( _),
+						MQLValueCondition("=", _))))
 				), _)
 			),_) =>
 			case x => fail(x.toString)

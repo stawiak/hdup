@@ -54,15 +54,14 @@ class MQLParsers extends JavaTokenParsers with DateParsers with MathParsers {
 
 	// Conditions
 	def conditions: Parser[List[MQLCondition]] = repsep(condition, "and".ignoreCase)
-
 	def condition: Parser[MQLCondition] = (comparisonCondition | betweenCondition | equalCondition)
 
 	def equalCondition: Parser[MQLCondition] = ((columnCustomer | columnLocation | columnWireId)~"="~stringLiteral) ^^ {
-		case cn~cmp~s => new MQLComparisonStringCondition(cn, cmp, s)
+		case cn~cmp~s => MQLCondition(cn, cmp, s)
 	}
 
 	def comparisonCondition: Parser[MQLCondition] = ((columnTimestamp | columnValue)~("=" | ">" | "<")~floatingPointNumber) ^^ {
-		case cn~cmp~fpn => new MQLComparisonNumberCondition(cn, cmp, fpn.toDouble)
+		case cn~cmp~fpn => MQLCondition(cn, cmp, fpn.toDouble)
 	}
 
 	def betweenCondition: Parser[MQLCondition] = (betweenNumberCondition | betweenTimeCondition)
@@ -70,13 +69,13 @@ class MQLParsers extends JavaTokenParsers with DateParsers with MathParsers {
 	def betweenNumberCondition: Parser[MQLCondition] = ((columnValue | columnTimestamp)~"between"~floatingPointNumber~"and"~floatingPointNumber) ^^ {
 		case cn~between~fps~and~fpe =>
 			assert(fps.toDouble <= fpe.toDouble, "lower BETWEEN AND value less than upper value")
-			new MQLBetweenCondition(cn, fps.toDouble, fpe.toDouble)
+			MQLCondition(cn, fps.toDouble, fpe.toDouble)
 	}
 
 	def betweenTimeCondition: Parser[MQLCondition] = (columnTimestamp~"between"~timeValue~"and"~timeValue) ^^ {
 		case cn~between~ts~and~te =>
 			assert(ts.getMillis <= te.getMillis, "lower BETWEEN AND value less than upper value")
-			new MQLBetweenCondition(cn, ts.getMillis, te.getMillis)
+			MQLCondition(cn, ts.getMillis, te.getMillis)
 	}
 
 }
