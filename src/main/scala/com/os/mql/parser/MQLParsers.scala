@@ -34,7 +34,7 @@ class MQLParsers extends JavaTokenParsers with DateParsers with MathParsers {
 	// Clauses
 	def select: Parser[MQLSelect] = ("select".ignoreCase~>repsep(selectColumnItem, ",")) ^^ { new MQLSelect(_)	}
 	def from: Parser[MQLFrom] = ("from".ignoreCase~>tableName) ^^ {	new MQLFrom(_) }
-	def where: Parser[MQLWhere] = "where".ignoreCase~>condition ^^ { new MQLWhere(_) }
+	def where: Parser[MQLWhere] = "where".ignoreCase~>conditions ^^ { new MQLWhere(_) }
 
 	// Columns
 	def selectColumnItem: Parser[MQLColumn] = (columnValue | columnTimestamp | columnCustomer | columnLocation | columnWireId | stringLiteral) ^^ {
@@ -53,6 +53,8 @@ class MQLParsers extends JavaTokenParsers with DateParsers with MathParsers {
 	def tableName: Parser[MQLTable] = ("energy".ignoreCase | "current".ignoreCase | "vamps".ignoreCase | "interpolated".ignoreCase | "rollup".ignoreCase) ^^ {s => MQLTable(s.toLowerCase)}
 
 	// Conditions
+	def conditions: Parser[List[MQLCondition]] = repsep(condition, "and".ignoreCase)
+
 	def condition: Parser[MQLCondition] = (comparisonCondition | betweenCondition | equalCondition)
 
 	def equalCondition: Parser[MQLCondition] = ((columnCustomer | columnLocation | columnWireId)~"="~stringLiteral) ^^ {
