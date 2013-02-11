@@ -12,6 +12,8 @@ class MQLParsers extends JavaTokenParsers with DateParsers with MathParsers {
 
 	class MyRichString(str: String) {
 		def ignoreCase: Parser[String] = ("""(?i)\Q""" + str + """\E""").r
+
+		def stripQuotes: String = { str.substring(1, str.length - 1) }
 	}
 
 	implicit def pimpString(str: String): MyRichString = new MyRichString(str)
@@ -57,7 +59,7 @@ class MQLParsers extends JavaTokenParsers with DateParsers with MathParsers {
 	def condition: Parser[MQLCondition] = (comparisonCondition | betweenCondition | equalCondition)
 
 	def equalCondition: Parser[MQLCondition] = ((columnCustomer | columnLocation | columnWireId)~"="~stringLiteral) ^^ {
-		case cn~cmp~s => MQLCondition(cn, cmp, s)
+		case cn~cmp~s => MQLCondition(cn, cmp, s.stripQuotes)
 	}
 
 	def comparisonCondition: Parser[MQLCondition] = ((columnTimestamp | columnValue)~("=" | ">" | "<")~floatingPointNumber) ^^ {
@@ -77,6 +79,7 @@ class MQLParsers extends JavaTokenParsers with DateParsers with MathParsers {
 			assert(ts.getMillis <= te.getMillis, "lower BETWEEN AND value less than upper value")
 			MQLCondition(cn, ts.getMillis, te.getMillis)
 	}
+
 
 }
 
