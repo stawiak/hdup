@@ -4,12 +4,11 @@ import akka.actor.{PoisonPill, ActorLogging, Actor}
 import com.os.mql.parser.MQLParsers
 import com.os.actor.util.GracefulStop
 import com.os.mql.model.MQLExecutor
-import com.os.rest.exchange.TimeSeriesData
-import concurrent.Await
+import concurrent.{Future}
 import com.os.measurement.TimedValue
-import java.sql.Timestamp
 import akka.util.Timeout
 import akka.pattern.ask
+import akka.pattern.pipe
 import concurrent.duration._
 
 /**
@@ -17,6 +16,7 @@ import concurrent.duration._
   */
 class MQLHandlerActor extends Actor with ActorLogging with ReadMasterAware {
 
+	import context._
 	implicit val timeout: Timeout = 60 seconds
 	//TODO: singleton or multiple?
 	val parser = new MQLParsers()
@@ -32,18 +32,8 @@ class MQLHandlerActor extends Actor with ActorLogging with ReadMasterAware {
 			val query = parser.parseAll(parser.mql, mql)
 			val executor = new MQLExecutor(query.get)
 
-			val tsd = new TimeSeriesData()
+			Future.traverse(executor.generate)(req => (readMaster ? req).mapTo[Iterable[TimedValue]]).map(_.flatten) pipeTo sender
 
-			executor.generate foreach (readRequest => {
-				try {
-					Await.result((readMaster ? readRequest).mapTo[Iterable[TimedValue]], timeout.duration) foreach (mv => tsd.put(new Timestamp(mv.timestamp), mv.value))
-				} catch {
-					case e: Exception =>
-						log.error(e, e.getMessage)
-				}
-			})
-
-			sender ! tsd.toJSONString
 
 
 		case GracefulStop =>

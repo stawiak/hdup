@@ -92,22 +92,9 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 			} ~
 			path("run") {
 				parameters("mql".as[String]) { mql: String =>
-					respondWithMediaType(`text/html`) {
+					respondWithMediaType(`application/json`) { // XML is marshalled to `text/xml` by default, so we simply override here
 						complete {
-							try {
-								//Await.result((mqlHandler ? mql).mapTo[Iterable[TimedValue]], timeout.duration)
-								mqlHandler ! mql
-							} catch {
-								case e: Exception =>
-									log.error(e, e.getMessage)
-							}
-
-							<html>
-								<body>
-									<p>For query:</p>
-									<p>{mql}</p>
-								</body>
-							</html>
+							mqlRequest(mql)
 						}
 					}
 				}
@@ -140,6 +127,21 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 			}
 
 		}
+	}
+
+	private def mqlRequest(mql: String): String = {
+		val tsd = new TimeSeriesData()
+
+
+		try {
+			Await.result((mqlHandler ? mql).mapTo[Iterable[TimedValue]], timeout.duration) foreach (mv => tsd.put(new Timestamp(mv.timestamp), mv.value))
+		} catch {
+			case e: Exception =>
+				log.error(e, e.getMessage)
+		}
+
+
+		tsd.toJSONString
 	}
 
 
