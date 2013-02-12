@@ -3,13 +3,13 @@ package com.os.actor.read
 import akka.actor.{PoisonPill, ActorLogging, Actor}
 import com.os.mql.parser.MQLParsers
 import com.os.actor.util.GracefulStop
-import com.os.mql.model.MQLExecutor
 import concurrent.{Future}
 import com.os.measurement.TimedValue
 import akka.util.Timeout
 import akka.pattern.ask
 import akka.pattern.pipe
 import concurrent.duration._
+import com.os.mql.executor.MQLExecutor
 
 /**
   * @author Vadim Bobrov
@@ -32,7 +32,7 @@ class MQLHandlerActor extends Actor with ActorLogging with ReadMasterAware {
 			val query = parser.parseAll(parser.mql, mql)
 			val executor = new MQLExecutor(query.get)
 
-			Future.traverse(executor.generate)(req => (readMaster ? req).mapTo[Iterable[TimedValue]]).map(_.flatten) pipeTo sender
+			Future.traverse(executor.generateExecutePlan)(proc => (readMaster ? proc.readRequest).mapTo[Iterable[TimedValue]]).map(_.flatten) pipeTo sender
 
 
 

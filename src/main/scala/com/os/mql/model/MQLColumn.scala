@@ -26,4 +26,4 @@ case class MQLColumnCustomer() extends MQLColumn  { override def toString: Strin
 case class MQLColumnLocation() extends MQLColumn  { override def toString: String = "location" }
 case class MQLColumnWireId() extends MQLColumn  { override def toString: String = "wireid" }
 
-case class MQLColumnStringLiteral(s: String) extends MQLColumn  { override def toString: String = s }
+case class MQLColumnStringLiteral(value: String) extends MQLColumn  { override def toString: String = value }
