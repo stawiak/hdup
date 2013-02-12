@@ -16,6 +16,7 @@ import concurrent.duration._
 import scala.Predef._
 import util.{SettingsUse, GracefulStop}
 import com.os.Settings
+import spray.http.MediaType
 
 /**
  * @author Vadim Bobrov
@@ -92,11 +93,24 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 			} ~
 			path("run") {
 				parameters("mql".as[String]) { mql: String =>
-					respondWithMediaType(`text/csv`) { // XML is marshalled to `text/xml` by default, so we simply override here
-						complete {
-							mqlRequest(mql)
+					val jsonAccepted = extract(_.request.isMediaTypeAccepted(`application/json`))
+					val csvAccepted = extract(_.request.isMediaTypeAccepted(`text/csv`))
+					csvAccepted {  csv =>
+						respondWithMediaType(`text/csv`) {
+							complete {
+								mqlRequest(mql, `text/csv`)
+							}
 						}
 					}
+					//TODO: implement json
+					/*
+					jsonAccepted {  json =>
+						respondWithMediaType(`application/json`) {
+							complete {
+								mqlRequest(mql, `application/json`)
+							}
+						}
+					} */
 				}
 			}
 		} ~
@@ -129,11 +143,16 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 		}
 	}
 
-	private def mqlRequest(mql: String): String = {
+	private def mqlRequest(mql: String, mediaType: MediaType): String = {
 		val sb = new StringBuilder
 
 		try {
-			Await.result((mqlHandler ? mql).mapTo[Iterable[Map[String, Any]]], timeout.duration) foreach (mv => sb.append(mv.values.mkString("", ",", "\n")))
+			if (mediaType == `text/csv`)
+				Await.result((mqlHandler ? mql).mapTo[Iterable[Map[String, Any]]], timeout.duration) foreach (mv => sb.append(mv.values.mkString("", ",", "\n")))
+			if (mediaType == `application/json`)
+				//TODO: implement JSON
+				Await.result((mqlHandler ? mql).mapTo[Iterable[Map[String, Any]]], timeout.duration) foreach (mv => sb.append(mv.values.mkString("", ",", "\n")))
+
 		} catch {
 			case e: Exception =>
 				log.error(e, e.getMessage)

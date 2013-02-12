@@ -26,7 +26,7 @@ class MQLHandlerActor extends Actor with ActorLogging with ReadMasterAware {
 
 		case mql: String =>
 			//TODO: error handling
-			log.debug("mql received {}", mql)
+			log.debug("mql received\n{}", mql)
 			val query = parser.parseAll(parser.mql, mql)
 			val commands = new MQLExecutor(query.get).generateExecutePlan
 
