@@ -158,6 +158,8 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 				log.error(e, e.getMessage)
 		}
 
+		if (sb.length == 0)
+			sb.append("empty")
 		sb.result()
 	}
 

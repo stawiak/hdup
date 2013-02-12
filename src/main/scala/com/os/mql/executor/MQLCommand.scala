@@ -2,7 +2,7 @@ package com.os.mql.executor
 
 import com.os.actor.read.ReadRequest
 import com.os.measurement.TimedValue
-import collection.{immutable, mutable}
+import collection.{mutable, immutable}
 import com.os.mql.model.MQLColumnStringLiteral
 
 
@@ -31,7 +31,7 @@ class MQLCommand(val readRequest: ReadRequest, val filters: Traversable[TimedVal
 	def enrich(tvs: Traversable[TimedValue]): Traversable[immutable.Map[String, Any]] = {
 
 		def enrichValue(tv: TimedValue): immutable.Map[String, Any] = {
-			val map: mutable.Map[String, Any] = mutable.HashMap.empty[String, Any]
+			val map: mutable.Map[String, Any] = mutable.ListMap.empty[String, Any]
 			map += ("timestamp" -> tv.timestamp)
 			map += ("value" -> tv.value)
 
