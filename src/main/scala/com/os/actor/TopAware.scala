@@ -9,7 +9,6 @@ import akka.actor.Actor
 trait TopAware {
 
 	this: Actor =>
-	// made settable for testability
-	var top = context.system.actorFor("/user/top")
+	lazy val top = context.system.actorFor("/user/top")
 
 }

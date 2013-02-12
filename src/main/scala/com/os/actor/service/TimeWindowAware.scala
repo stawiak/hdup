@@ -9,7 +9,6 @@ import akka.actor.Actor
 trait TimeWindowAware {
 
 	this: Actor =>
-	// made settable for testability
-	var timeWindow = context.system.actorFor("/user/top/timeWindow")
+	lazy val timeWindow = context.system.actorFor("/user/top/timeWindow")
 
 }

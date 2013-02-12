@@ -9,7 +9,6 @@ import akka.actor.Actor
 trait MQLHandlerAware {
 
 	this: Actor =>
-	// made settable for testability
-	var mqlHandler = context.system.actorFor("/user/top/mqlHandler")
+	lazy val mqlHandler = context.system.actorFor("/user/top/mqlHandler")
 
 }

@@ -9,7 +9,6 @@ import akka.actor.Actor
 trait ReadMasterAware {
 
 	this: Actor =>
-	// made settable for testability
-	var readMaster = context.system.actorFor("/user/top/readMaster")
+	lazy val readMaster = context.system.actorFor("/user/top/readMaster")
 
 }
