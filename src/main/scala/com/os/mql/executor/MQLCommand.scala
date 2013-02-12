@@ -12,32 +12,37 @@ import com.os.mql.model.MQLColumnStringLiteral
 class MQLCommand(val readRequest: ReadRequest, val filters: Traversable[TimedValue => Boolean], val literals: Traversable[MQLColumnStringLiteral]) {
 
 	/**
-	 * apply all filters to a TimedValue
-	 * @param tv value to apply filters
+	 * apply all filters to results of readRequest
+	 * @param tvs collection to filter
 	 * @return boolean to be used in filter operations
 	 */
-	def include(tv: TimedValue): Boolean = {
+	def include(tvs: Traversable[TimedValue]): Traversable[TimedValue] = {
 		if (filters.isEmpty)
-			true
+			tvs
 		else
-			filters reduce ((a, b) => { (x: TimedValue) => a.apply(x) && b.apply(x) }) apply(tv)
+			tvs filter (filters reduce ((a, b) => { (x: TimedValue) => a.apply(x) && b.apply(x) }))
 	}
 
 	/**
-	 * add all string and value literals to a retrieved value
-	 * @param tv value to add literals to
+	 * add all string and value literals to retrieved values
+	 * @param tvs values to add literals to
 	 * @return map of properties to values
 	 */
-	def transform(tv: TimedValue): immutable.Map[String, Any] = {
-		val map: mutable.Map[String, Any] = mutable.HashMap.empty[String, Any]
-		map += ("timestamp" -> tv.timestamp)
-		map += ("value" -> tv.value)
+	def enrich(tvs: Traversable[TimedValue]): Traversable[immutable.Map[String, Any]] = {
 
-		literals foreach (l => l match {
-			case s: MQLColumnStringLiteral =>
-				map += (s.value -> s.value)
-		})
+		def enrichValue(tv: TimedValue): immutable.Map[String, Any] = {
+			val map: mutable.Map[String, Any] = mutable.HashMap.empty[String, Any]
+			map += ("timestamp" -> tv.timestamp)
+			map += ("value" -> tv.value)
 
-		map.toMap
+			literals foreach (l => l match {
+				case s: MQLColumnStringLiteral =>
+					map += (s.value -> s.value)
+			})
+
+			map.toMap
+		}
+
+		tvs map (enrichValue(_))
 	}
 }

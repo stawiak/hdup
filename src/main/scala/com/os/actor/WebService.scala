@@ -92,7 +92,7 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 			} ~
 			path("run") {
 				parameters("mql".as[String]) { mql: String =>
-					respondWithMediaType(`application/json`) { // XML is marshalled to `text/xml` by default, so we simply override here
+					respondWithMediaType(`text/csv`) { // XML is marshalled to `text/xml` by default, so we simply override here
 						complete {
 							mqlRequest(mql)
 						}
@@ -130,20 +130,17 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 	}
 
 	private def mqlRequest(mql: String): String = {
-		val tsd = new TimeSeriesData()
-
+		val sb = new StringBuilder
 
 		try {
-			Await.result((mqlHandler ? mql).mapTo[Iterable[TimedValue]], timeout.duration) foreach (mv => tsd.put(new Timestamp(mv.timestamp), mv.value))
+			Await.result((mqlHandler ? mql).mapTo[Iterable[Map[String, Any]]], timeout.duration) foreach (mv => sb.append(mv.values.mkString("", ",", "\n")))
 		} catch {
 			case e: Exception =>
 				log.error(e, e.getMessage)
 		}
 
-
-		tsd.toJSONString
+		sb.result()
 	}
-
 
 	private def readRequest(customer: String, location: String, fromTime: Long, toTime: Long, wireid: Option[String] = None): String = {
 		val readRequest =
