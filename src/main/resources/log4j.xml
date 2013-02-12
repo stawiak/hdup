@@ -25,6 +25,12 @@
     </logger>
 
     <!-- 3rdparty Loggers -->
+
+    <!--this one is important - hadoop throws exception just for fun!-->
+    <logger name="org.apache.hadoop.conf">
+        <level value="info" />
+    </logger>
+
     <logger name="org.apache.hadoop.ipc">
         <level value="info" />
     </logger>
