@@ -9,8 +9,6 @@ import com.os.mql.model.MQLQuery
 import com.os.mql.model.MQLColumnTimestamp
 import com.os.mql.model.MQLColumnValue
 import scala.Some
-import org.joda.time.DateTime
-import com.os.mql.model
 
 
 /**

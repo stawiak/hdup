@@ -1,6 +1,6 @@
 package com.os.mql.executor
 
-import com.os.actor.read.{ReadRequest}
+import com.os.actor.read.ReadRequest
 import com.os.Settings
 import org.joda.time.Interval
 import com.os.mql.model._

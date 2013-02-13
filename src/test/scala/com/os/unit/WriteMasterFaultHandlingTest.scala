@@ -2,8 +2,8 @@ package com.os.unit
 
 import akka.testkit.{TestActorRef, TestKit, ImplicitSender}
 import akka.actor._
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.{BeforeAndAfterAll, WordSpec}
+import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import com.os.actor.write._
 import com.typesafe.config.ConfigFactory
 import com.os.measurement.{EnergyMeasurement, Measurement}
@@ -14,7 +14,7 @@ import com.os.actor.util.{LoggingActor, GracefulStop}
 /**
  * @author Vadim Bobrov
 */
-class WriteMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) with WordSpec with MustMatchers with ImplicitSender with BeforeAndAfterAll {
+class WriteMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
@@ -22,22 +22,19 @@ class WriteMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system
 		system.shutdown()
 	}
 
-	var masterWriter = TestActorRef(new WriteMasterActor(), name = "writeMaster")
-	masterWriter.underlyingActor.routerFactory = {(actorContext : ActorContext, tableName : String, batchSize : Int) =>
+	var writeMaster = TestActorRef(new WriteMasterActor(), name = "writeMaster")
+	writeMaster.underlyingActor.routerFactory = {(actorContext : ActorContext, tableName : String, batchSize : Int) =>
 		actorContext.actorOf(Props(new LoggingActor(new TestWriterActor())), name = "workerRouter")
 	}
 
-	"A write master" must {
-
-		"apply the chosen strategy for its child writers in case of intermittent failure" in {
+	"A write master" should "apply the chosen strategy for its child writers in case of intermittent failure" in {
 
 			for (i <- 1 to 3)
-				masterWriter ! new EnergyMeasurement("", "", "", i, i)
+				writeMaster ! new EnergyMeasurement("", "", "", i, i)
 
-			masterWriter ! GracefulStop
-			// it is not testKit it is masterWriter that receives this message
+			writeMaster ! GracefulStop
+			// it is not testKit it is writeMaster that receives this message
 			//expectMsg(5 seconds, List(new Measurement("", "", "", 1, 1, 1, 1), new Measurement("", "", "", 2, 2, 2, 2), new Measurement("", "", "", 3, 3, 3, 3)))
-		}
 	}
 
 	private class TestException extends Exception

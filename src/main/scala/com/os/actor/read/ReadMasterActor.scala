@@ -21,7 +21,7 @@ import com.os.Settings
 class ReadMasterActor extends FinalCountDown with SettingsUse {
 
 	import context._
-	implicit val timeout: Timeout = 10 seconds
+	implicit val timeout: Timeout = settings.ReadTimeout
 
 
 	// Since a restart does not clear out the mailbox, it often is best to terminate

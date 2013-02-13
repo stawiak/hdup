@@ -1,7 +1,6 @@
 package com.os.actor.read
 
 import org.joda.time.Interval
-import com.os.Settings
 
 /**
  * @author Vadim Bobrov

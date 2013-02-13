@@ -73,4 +73,5 @@ final class Settings(config: Config) {
 	// time between time window processing
 
 	val Interpolation = config.getBoolean("interpolation")
+	val ReadTimeout = FiniteDuration(config.getMilliseconds("readTimeout"), MILLISECONDS)
 }

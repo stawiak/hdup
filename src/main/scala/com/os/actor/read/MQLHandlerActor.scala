@@ -3,7 +3,7 @@ package com.os.actor.read
 import akka.actor.{PoisonPill, ActorLogging, Actor}
 import com.os.mql.parser.MQLParsers
 import com.os.actor.util.GracefulStop
-import concurrent.{Future}
+import concurrent.Future
 import com.os.measurement.TimedValue
 import akka.util.Timeout
 import akka.pattern.ask

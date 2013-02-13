@@ -1,10 +1,7 @@
 package com.os.actor
 
 import akka.actor.{ActorRef, Props}
-import read.ReadMasterActor
-import service.TimeWindowActor
 import util._
-import write.WriteMasterActor
 import concurrent.duration.Duration
 import akka.actor.SupervisorStrategy.{Escalate, Resume}
 import akka.actor.DeadLetter

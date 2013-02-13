@@ -3,13 +3,7 @@ package com.os.unit
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import com.os.mql.parser.MQLParsers
-import com.os.mql.model._
-import com.os.mql.model.MQLSelect
-import com.os.mql.model.MQLQuery
-import com.os.mql.model.MQLColumnTimestamp
-import com.os.mql.model.MQLColumnValue
-import scala.Some
-import com.os.actor.read.{ReadRequest, RollupReadRequest, MeasurementReadRequest}
+import com.os.actor.read.{RollupReadRequest, MeasurementReadRequest}
 import org.joda.time.Interval
 import com.os.mql.executor.MQLExecutor
 
