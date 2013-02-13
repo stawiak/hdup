@@ -112,34 +112,40 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 						}
 					} */
 				}
-			}
-		} ~
-		get {
-			pathPrefix(PathElement) { customer: String =>
-				pathPrefix(PathElement) { location: String =>
-
-					pathPrefix(PathElement) { wireid: String =>
+			} ~
+			pathPrefix("energy") { restRequest(Settings.TableName) } ~
+			pathPrefix("current") { restRequest(Settings.CurrentTableName) } ~
+			pathPrefix("vamps") { restRequest(Settings.VampsTableName) } ~
+			pathPrefix("interpolated") { restRequest(Settings.MinuteInterpolatedTableName) } ~
+			pathPrefix("energy") {
+				pathPrefix(PathElement) { customer: String =>
+					pathPrefix(PathElement) { location: String =>
 						parameters("from".as[Long] ? 0L, "to".as[Long] ? Long.MaxValue) { (fromTime: Long, toTime: Long) =>
-							respondWithMediaType(`application/json`) { // XML is marshalled to `text/xml` by default, so we simply override here
+							respondWithMediaType(`application/json`) {
 								complete {
-									readRequest(customer, location, fromTime, toTime, Option(wireid))
+									readRequest(Settings.RollupTableName, customer, location, fromTime, toTime)
 								}
 							}
 						}
-					} ~
+					}
+				}
+			}
+		}
+	}
+
+	private def restRequest(tableName: String) = {
+		pathPrefix(PathElement) { customer: String =>
+			pathPrefix(PathElement) { location: String =>
+				pathPrefix(PathElement) { wireid: String =>
 					parameters("from".as[Long] ? 0L, "to".as[Long] ? Long.MaxValue) { (fromTime: Long, toTime: Long) =>
 						respondWithMediaType(`application/json`) { // XML is marshalled to `text/xml` by default, so we simply override here
 							complete {
-								readRequest(customer, location, fromTime, toTime)
+								readRequest(tableName, customer, location, fromTime, toTime, Option(wireid))
 							}
 						}
 					}
-
-
-
 				}
 			}
-
 		}
 	}
 
@@ -163,10 +169,10 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 		sb.result()
 	}
 
-	private def readRequest(customer: String, location: String, fromTime: Long, toTime: Long, wireid: Option[String] = None): String = {
+	private def readRequest(tableName: String, customer: String, location: String, fromTime: Long, toTime: Long, wireid: Option[String] = None): String = {
 		val readRequest =
 			if (wireid.isDefined)
-				new MeasurementReadRequest(Settings.TableName, customer, location, wireid.get, Array[Interval](new Interval(fromTime, toTime)))
+				new MeasurementReadRequest(tableName, customer, location, wireid.get, Array[Interval](new Interval(fromTime, toTime)))
 			else
 				new RollupReadRequest(customer, location, Array[Interval](new Interval(fromTime, toTime)))
 

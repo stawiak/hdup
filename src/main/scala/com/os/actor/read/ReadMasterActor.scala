@@ -44,7 +44,7 @@ class ReadMasterActor extends FinalCountDown with SettingsUse {
 	private def getRouter(request : AnyRef) : ActorRef = {
 
 		val tableName = request match  {
-			case RollupReadRequest => Settings.RollupTableName
+			case request: RollupReadRequest => Settings.RollupTableName
 			case request: MeasurementReadRequest => request.tableName
 		}
 
