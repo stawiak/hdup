@@ -1,4 +1,4 @@
-package com.os.rest.exchange;
+package com.os.exchange;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

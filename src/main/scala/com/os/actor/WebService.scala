@@ -9,7 +9,6 @@ import spray.http.MediaTypes._
 import org.joda.time.Interval
 import com.os.measurement.TimedValue
 import concurrent.Await
-import com.os.rest.exchange.TimeSeriesData
 import java.sql.Timestamp
 import akka.util.Timeout
 import concurrent.duration._
@@ -17,6 +16,7 @@ import scala.Predef._
 import util.{SettingsUse, GracefulStop}
 import com.os.Settings
 import spray.http.MediaType
+import com.os.exchange.TimeSeriesData
 
 /**
  * @author Vadim Bobrov

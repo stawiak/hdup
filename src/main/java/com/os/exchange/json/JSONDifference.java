@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2009 Meding Software Technik -- All Rights Reserved.
  */
-package com.os.rest.exchange.json;
+package com.os.exchange.json;
 
 import java.util.ArrayList;
 

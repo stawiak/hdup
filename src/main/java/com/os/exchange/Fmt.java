@@ -1,4 +1,4 @@
-package com.os.rest.exchange;
+package com.os.exchange;
 
 /**
  *  Some simple single-arg sprintf-like routines. <P>

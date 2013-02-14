@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010 OutSmart Power Systems, Ic -- All Rights Reserved.
  */
-package com.os.rest.exchange.json;
+package com.os.exchange.json;
 
 import java.util.HashMap;
 import java.util.Set;

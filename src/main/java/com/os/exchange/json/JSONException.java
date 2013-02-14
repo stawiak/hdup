@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package com.os.rest.exchange.json;
+package com.os.exchange.json;
 
 
 

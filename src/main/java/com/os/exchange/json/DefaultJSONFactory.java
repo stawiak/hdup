@@ -1,10 +1,11 @@
-package com.os.rest.exchange.json;
+package com.os.exchange.json;
 
 /*
  * Copyright (c) 2011 OutSmart Power Systems, Inc. -- All Rights Reserved.
  */
 
-import com.os.rest.exchange.ByteHelper;
+import com.os.exchange.ByteHelper;
+
 import java.io.IOException;
 
 /**

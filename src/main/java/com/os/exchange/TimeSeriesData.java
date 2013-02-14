@@ -1,12 +1,12 @@
-package com.os.rest.exchange;
+package com.os.exchange;
 
 /*
  * Copyright (c) 2010 OutSmart Power Systems, Inc. -- All Rights Reserved.
  */
 
-import com.os.rest.exchange.json.JSONArray;
-import com.os.rest.exchange.json.JSONObject;
-import com.os.rest.exchange.json.JSONObjectSerializable;
+import com.os.exchange.json.JSONArray;
+import com.os.exchange.json.JSONObject;
+import com.os.exchange.json.JSONObjectSerializable;
 
 import java.sql.Timestamp;
 import java.util.HashSet;

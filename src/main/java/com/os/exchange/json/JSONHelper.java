@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2011 OutSmart Power Systems, Inc. -- All Rights Reserved.
  */
-package com.os.rest.exchange.json;
+package com.os.exchange.json;
 
 /**
  * JSON helper functions.

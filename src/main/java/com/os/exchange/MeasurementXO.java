@@ -1,9 +1,9 @@
-package com.os.rest.exchange;
+package com.os.exchange;
 
-import com.os.rest.exchange.json.DefaultJSONFactory;
-import com.os.rest.exchange.json.JSONException;
-import com.os.rest.exchange.json.JSONObject;
-import com.os.rest.exchange.json.JSONObjectSerializable;
+import com.os.exchange.json.DefaultJSONFactory;
+import com.os.exchange.json.JSONException;
+import com.os.exchange.json.JSONObject;
+import com.os.exchange.json.JSONObjectSerializable;
 
 import java.sql.Timestamp;
 

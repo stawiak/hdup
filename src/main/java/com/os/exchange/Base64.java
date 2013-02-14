@@ -1,4 +1,4 @@
-package com.os.rest.exchange;
+package com.os.exchange;
 
 /**
  * This class provides methods for encoding and decoding data in MIME base64

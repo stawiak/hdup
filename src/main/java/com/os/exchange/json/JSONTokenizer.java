@@ -1,4 +1,4 @@
-package com.os.rest.exchange.json;
+package com.os.exchange.json;
 
 import java.io.BufferedReader;
 import java.io.IOException;

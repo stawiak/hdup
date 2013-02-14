@@ -1,4 +1,4 @@
-package com.os.rest.exchange;
+package com.os.exchange;
 
 /**
  * Static methods for converting to and from hexadecimal strings.

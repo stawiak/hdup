@@ -2,11 +2,10 @@ package com.os.actor
 
 import com.os.measurement.{VampsMeasurement, CurrentMeasurement, EnergyMeasurement, Measurement}
 import javax.jms._
-import com.os.measurement.MeasurementConverter._
 import akka.actor.PoisonPill
 import util.{GracefulStop, ActiveMQActor}
-import com.os.rest.exchange.json.{JSONObject, JSONArray, DefaultJSONFactory}
-import com.os.rest.exchange.MeasurementXO
+import com.os.exchange.MeasurementXO
+import com.os.exchange.json.{JSONObject, DefaultJSONFactory}
 
 /**
  * @author Vadim Bobrov
