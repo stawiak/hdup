@@ -28,8 +28,8 @@ object Main extends App with SprayCanHttpServerApp {
 			Props[ReadMasterActor],
 			Props(new WriteMasterActor),
 			Props(new MessageListenerActor(settings.ActiveMQHost, settings.ActiveMQPort, settings.ActiveMQQueue)),
-			//Props[WebServiceActor],
-			Props[HttpServiceActor],
+			Props[WebServiceActor],
+			//Props[HttpServiceActor],
 			Props[DeadLetterListener]
 		)), name = "top")
 
