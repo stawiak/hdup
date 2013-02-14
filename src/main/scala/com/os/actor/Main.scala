@@ -12,6 +12,7 @@ import scala.util.{Failure, Success}
 import com.typesafe.config.ConfigFactory
 import util.DeadLetterListener
 import write.WriteMasterActor
+import com.os.mql.parser.MQLParser
 
 /**
  * @author Vadim Bobrov
@@ -22,7 +23,7 @@ object Main extends App with SprayCanHttpServerApp {
 	override lazy val system = ActorSystem("chaos", ConfigFactory.load().getConfig("chaos"))
 	val settings = Settings(system.settings.config)
 	val top = system.actorOf(Props(new TopActor(
-			Props[MQLHandlerActor],
+			Props(new MQLHandlerActor(MQLParser.apply)),
 			Props(new TimeWindowActor(settings.ExpiredTimeWindow)),
 			Props[ReadMasterActor],
 			Props[WriteMasterActor],

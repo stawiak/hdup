@@ -12,6 +12,7 @@ import com.os.actor.{WebServiceActor, MessageListenerActor, TopActor}
 import com.os.actor.read.{ReadMasterActor, MQLHandlerActor}
 import com.os.actor.service.TimeWindowActor
 import com.os.actor.write.WriteMasterActor
+import com.os.mql.parser.MQLParser
 
 /**
  * @author Vadim Bobrov
@@ -21,7 +22,7 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 	val settings = Settings(system.settings.config)
 	val top = system.actorOf(Props(new TopActor(
-		Props[MQLHandlerActor],
+		Props(new MQLHandlerActor(MQLParser.apply)),
 		Props(new TimeWindowActor(settings.ExpiredTimeWindow)),
 		Props[ReadMasterActor],
 		Props[WriteMasterActor],

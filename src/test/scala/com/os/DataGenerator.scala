@@ -59,7 +59,7 @@ object DataGenerator extends Loggable{
 		val start = System.currentTimeMillis()// - Settings.ExpiredTimeWindow + 60 * 1000 - (1000 * 60 * minutes)
 		var curTime = start
 		var curCustomer, curLocation, curWireId = 0
-
+		var counter = 0
 
 		def hasNext: Boolean = curTime < start + 1000 * 60 * minutes
 
@@ -90,7 +90,8 @@ object DataGenerator extends Loggable{
 				random.nextDouble()
 			)
 
-			//debug(msmt)
+			counter += 1
+			//debug(counter)
 			msmt
 		}
 	}

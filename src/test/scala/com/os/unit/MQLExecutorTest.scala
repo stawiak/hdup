@@ -2,10 +2,10 @@ package com.os.unit
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import com.os.mql.parser.MQLParsers
 import com.os.actor.read.{RollupReadRequest, MeasurementReadRequest}
 import org.joda.time.Interval
 import com.os.mql.executor.MQLExecutor
+import com.os.mql.parser.MQLParser.MQLParsersImpl
 
 
 /**
@@ -13,7 +13,7 @@ import com.os.mql.executor.MQLExecutor
  */
 class MQLExecutorTest extends FlatSpec with ShouldMatchers {
 
-	val parser = new MQLParsers()
+	val parser = new MQLParsersImpl()
 
 	"MQL executor" should "generate single request" in {
 		val mql: String = "select timestamp, value from energy where customer = \"a\" and location = \"a\" and wireid = \"a\" and value > 3.5"

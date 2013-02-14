@@ -2,13 +2,13 @@ package com.os.unit
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import com.os.mql.parser.MQLParsers
 import com.os.mql.model._
 import com.os.mql.model.MQLSelect
 import com.os.mql.model.MQLQuery
 import com.os.mql.model.MQLColumnTimestamp
 import com.os.mql.model.MQLColumnValue
 import scala.Some
+import com.os.mql.parser.MQLParser.MQLParsersImpl
 
 
 /**
@@ -16,7 +16,7 @@ import scala.Some
  */
 class MQLParserTest extends FlatSpec with ShouldMatchers {
 
-	val parser = new MQLParsers()
+	val parser = new MQLParsersImpl()
 
 	"query parser" should "parse column list in select" in {
 		val mql: String = "select timestamp, value from energy"

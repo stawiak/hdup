@@ -1,16 +1,13 @@
 package com.os.unit
 
-import akka.testkit.{TestProbe, TestActorRef, TestKit, ImplicitSender}
+import akka.testkit.{TestKit, ImplicitSender}
 import akka.actor._
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import com.os.actor.write._
 import com.typesafe.config.ConfigFactory
 import com.os.measurement.{EnergyMeasurement, Measurement}
-import com.os.actor.util.LoggingActor
-import com.os.{ActorRefFactoryStub, Settings}
 import concurrent.duration._
-import akka.actor.SupervisorStrategy.{Escalate, Resume}
 
 /**
  * @author Vadim Bobrov

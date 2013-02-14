@@ -1,37 +1,27 @@
 package com.os.actor.read
 
-import akka.actor.{PoisonPill, ActorLogging, Actor}
-import com.os.mql.parser.MQLParsers
+import akka.actor.{Props, PoisonPill, ActorLogging, Actor}
+import com.os.mql.parser.MQLParser
 import com.os.actor.util.GracefulStop
-import concurrent.Future
-import com.os.measurement.TimedValue
 import akka.util.Timeout
 import akka.pattern.ask
 import akka.pattern.pipe
 import concurrent.duration._
-import com.os.mql.executor.MQLExecutor
+import akka.routing.RoundRobinRouter
 
 /**
   * @author Vadim Bobrov
   */
-class MQLHandlerActor extends Actor with ActorLogging with ReadMasterAware {
+class MQLHandlerActor(val parserFactory: () => MQLParser) extends Actor with ActorLogging with ReadMasterAware {
 
 	import context._
 	implicit val timeout: Timeout = 60 seconds
-	//TODO: singleton or multiple?
-	val parser = new MQLParsers()
-
+	val router = actorOf(Props(new MQLWorkerActor(parserFactory())).withRouter(new RoundRobinRouter(3)))
 
 	override def receive: Receive = {
 
 		case mql: String =>
-			//TODO: error handling
-			//TODO: move parsing to a child/future?
-			log.debug("mql received\n{}", mql)
-			val query = parser.parseAll(parser.mql, mql)
-			val commands = new MQLExecutor(query.get).generateExecutePlan
-
-			Future.traverse(commands)(command => (readMaster ? command.readRequest).mapTo[Iterable[TimedValue]]  map(command.include(_)) map (command.enrich(_)) ).map(_.flatten) pipeTo sender
+			(router ? mql).mapTo[Iterable[Map[String, Any]]] pipeTo sender
 
 		case GracefulStop =>
 			log.debug("mqlHandler received graceful stop")

@@ -15,6 +15,7 @@ import akka.pattern._
 import akka.util.Timeout
 import concurrent.duration._
 import concurrent.Await
+import com.os.mql.parser.MQLParser
 
 /**
  * @author Vadim Bobrov
@@ -26,7 +27,7 @@ class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) w
 
 	val settings = Settings(system.settings.config)
 	val top = system.actorOf(Props(new TopActor(
-		Props[MQLHandlerActor],
+		Props(new MQLHandlerActor(MQLParser.apply)),
 		Props(new TestTimeWindowActor()),
 		Props[ReadMasterActor],
 		Props[WriteMasterActor],
