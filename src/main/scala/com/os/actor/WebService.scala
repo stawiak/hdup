@@ -172,9 +172,9 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 	private def readRequest(tableName: String, customer: String, location: String, fromTime: Long, toTime: Long, wireid: Option[String] = None): String = {
 		val readRequest =
 			if (wireid.isDefined)
-				new MeasurementReadRequest(tableName, customer, location, wireid.get, Array[Interval](new Interval(fromTime, toTime)))
+				new MeasurementReadRequest(tableName, customer, location, wireid.get, new Interval(fromTime, toTime))
 			else
-				new RollupReadRequest(customer, location, Array[Interval](new Interval(fromTime, toTime)))
+				new RollupReadRequest(customer, location, new Interval(fromTime, toTime))
 
 
 		val tsd = new TimeSeriesData()

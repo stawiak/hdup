@@ -30,8 +30,9 @@ class MQLExecutor(val mql: MQLUnion) {
 
 		//TODO: what to do if where is not defined
 		val request: Option[ReadRequest] =	if (query.where.isDefined) {
+				//TODO: enforce single period
 				val timeRanges = query.where.get.conds collect { case x: MQLTimeRangeCondition => x }
-				val intervals = timeRanges map (x => { new Interval(x.startValue.toLong, x.endValue.toLong) })
+				val interval = timeRanges map (x => { new Interval(x.startValue.toLong, x.endValue.toLong) }) head //TODO: remove head
 
 			    Some(
 					query.from.table match {
@@ -41,34 +42,34 @@ class MQLExecutor(val mql: MQLUnion) {
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,
 								query.where.get.wireidCondition.get.value,
-								intervals)
+								interval)
 
 						case MQLTableCurrent() =>
 							new MeasurementReadRequest(Settings.CurrentTableName,
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,
 								query.where.get.wireidCondition.get.value,
-								intervals)
+								interval)
 
 						case MQLTableVamps() =>
 							new MeasurementReadRequest(Settings.VampsTableName,
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,
 								query.where.get.wireidCondition.get.value,
-								intervals)
+								interval)
 
 						case MQLTableInterpolated() =>
 							new MeasurementReadRequest(Settings.MinuteInterpolatedTableName,
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,
 								query.where.get.wireidCondition.get.value,
-								intervals)
+								interval)
 
 						case MQLTableRollup() =>
 							new RollupReadRequest(
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,
-								intervals)
+								interval)
 				})
 			} else
 				None

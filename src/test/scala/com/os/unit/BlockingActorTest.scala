@@ -28,7 +28,7 @@ class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with Flat
 	var blockingActor = TestActorRef(new BlockingActor())
 
 	"A blocking actor" should "block on its child worker" in {
-		blockingActor ! MeasurementReadRequest("", "", "", "", List[Interval](new Interval(0,1)))
+		blockingActor ! MeasurementReadRequest("", "", "", "", new Interval(0,1))
 		blockingActor ! Ping
 		expectNoMsg(1 second)
 	}

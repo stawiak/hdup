@@ -13,11 +13,16 @@ import concurrent.Future
 import akka.util.Timeout
 import com.os.actor.util.{SettingsUse, GracefulStop, FinalCountDown}
 import com.os.Settings
+import org.joda.time.Interval
 
 
 /**
  * @author Vadim Bobrov
  */
+abstract class ReadRequest
+case class MeasurementReadRequest(tableName: String, customer: String, location: String, wireid: String, period: Interval) extends ReadRequest
+case class RollupReadRequest(customer: String, location: String, period: Interval) extends ReadRequest
+
 class ReadMasterActor extends FinalCountDown with SettingsUse {
 
 	import context._
@@ -60,17 +65,15 @@ class ReadMasterActor extends FinalCountDown with SettingsUse {
 
 		case request : MeasurementReadRequest => {
 			log.debug("received measurement read request {}", request)
-			Future.traverse(request.scanRequests)(req => (getRouter(request) ? req).mapTo[Iterable[TimedValue]]).map(_.flatten) pipeTo sender
+			getRouter(request) forward request
 		}
 
 		case request : RollupReadRequest => {
 
 			//val f: Future[List[List[MeasuredValue]]] = Future.sequence(request.scanRequests.map(getRouter(request) ? _).map(_.mapTo[List[MeasuredValue]]))
 			//f.map(_.flatMap(identity)) pipeTo sender
-
 			log.debug("received rollup read request {}", request)
-			Future.traverse(request.scanRequests)(req => (getRouter(request) ? req).mapTo[Iterable[TimedValue]]).map(_.flatten) pipeTo sender
-
+			getRouter(request) forward request
 		}
 
 		case GracefulStop =>

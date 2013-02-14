@@ -29,7 +29,7 @@ class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system)
 	}
 
 	"A read master" should	"not block on its child worker" in {
-		readMaster ! MeasurementReadRequest("", "", "", "", List[Interval](new Interval(0,1)))
+		readMaster ! MeasurementReadRequest("", "", "", "", new Interval(0,1))
 		readMaster ! Ping
 		expectMsg(1 second, Pong)
 	}
