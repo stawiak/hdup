@@ -25,7 +25,7 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 		Props(new MQLHandlerActor(MQLParser.apply)),
 		Props(new TimeWindowActor(settings.ExpiredTimeWindow)),
 		Props[ReadMasterActor],
-		Props[WriteMasterActor],
+		Props(new WriteMasterActor),
 		Props(new MessageListenerActor(settings.ActiveMQHost, settings.ActiveMQPort, settings.ActiveMQQueue)),
 		Props[WebServiceActor],
 		Props[DeadLetterListener]

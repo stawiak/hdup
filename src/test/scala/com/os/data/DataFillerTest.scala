@@ -27,7 +27,7 @@ class DataFillerTest extends FunSuite with Timing{
 
 		val config = ConfigFactory.load()
 		val system = ActorSystem("chaos", config.getConfig("chaos"))
-		val masterWriter = system.actorOf(Props[WriteMasterActor], name = "writeMaster")
+		val masterWriter = system.actorOf(Props(new WriteMasterActor), name = "writeMaster")
 
 
 

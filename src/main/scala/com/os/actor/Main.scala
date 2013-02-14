@@ -26,7 +26,7 @@ object Main extends App with SprayCanHttpServerApp {
 			Props(new MQLHandlerActor(MQLParser.apply)),
 			Props(new TimeWindowActor(settings.ExpiredTimeWindow)),
 			Props[ReadMasterActor],
-			Props[WriteMasterActor],
+			Props(new WriteMasterActor),
 			Props(new MessageListenerActor(settings.ActiveMQHost, settings.ActiveMQPort, settings.ActiveMQQueue)),
 			Props[WebServiceActor],
 			Props[DeadLetterListener]
