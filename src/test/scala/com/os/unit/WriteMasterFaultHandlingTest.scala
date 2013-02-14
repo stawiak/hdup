@@ -1,15 +1,16 @@
 package com.os.unit
 
-import akka.testkit.{TestActorRef, TestKit, ImplicitSender}
+import akka.testkit.{TestProbe, TestActorRef, TestKit, ImplicitSender}
 import akka.actor._
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import com.os.actor.write._
 import com.typesafe.config.ConfigFactory
 import com.os.measurement.{EnergyMeasurement, Measurement}
-import scala._
-import scala.Predef._
-import com.os.actor.util.{LoggingActor, GracefulStop}
+import com.os.actor.util.LoggingActor
+import com.os.{ActorRefFactoryStub, Settings}
+import concurrent.duration._
+import akka.actor.SupervisorStrategy.{Escalate, Resume}
 
 /**
  * @author Vadim Bobrov
@@ -22,49 +23,43 @@ class WriteMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system
 		system.shutdown()
 	}
 
-	var writeMaster = TestActorRef(new WriteMasterActor(), name = "writeMaster")
-	writeMaster.underlyingActor.routerFactory = {(actorContext : ActorContext, tableName : String, batchSize : Int) =>
-		actorContext.actorOf(Props(new LoggingActor(new TestWriterActor())), name = "workerRouter")
+
+	val testRouterFactory = {(actorContext : ActorContext, tableName : String, batchSize : Int) =>
+		actorContext.actorOf(Props(new TestWriterActor()))
 	}
 
+	var writeMaster = system.actorOf(Props(new WriteMasterActor(Some(testRouterFactory))))
+
+
 	"A write master" should "apply the chosen strategy for its child writers in case of intermittent failure" in {
+		writeMaster ! new EnergyMeasurement("", "", "", 1, 1)
+		writeMaster ! new EnergyMeasurement("boom", "", "", 2, 2)
+		writeMaster ! new EnergyMeasurement("", "", "", 3, 3)
 
-			for (i <- 1 to 3)
-				writeMaster ! new EnergyMeasurement("", "", "", i, i)
-
-			writeMaster ! GracefulStop
-			// it is not testKit it is writeMaster that receives this message
-			//expectMsg(5 seconds, List(new Measurement("", "", "", 1, 1, 1, 1), new Measurement("", "", "", 2, 2, 2, 2), new Measurement("", "", "", 3, 3, 3, 3)))
+		expectMsg(3 seconds, 1)
+		expectMsg(3 seconds, 2)
+		expectMsg(3 seconds, 3)
 	}
 
 	private class TestException extends Exception
 	private class TestWriterActor extends Actor with ActorLogging {
 
-		var counter : Int = 0
 		var received = List.empty[Measurement]
+
+		override def preRestart(reason: Throwable, message: Option[Any]) {
+			log.debug("this should not be called!!!!!")
+			testActor ! received.size
+		}
 
 		override def receive: Receive = {
 
-			case msmt: Measurement => {
-				counter += 1
+			case msmt: Measurement =>
+				received = msmt :: received
 
-				// fail every other measurement
-				if (counter % 2 == 0) {
-					//log.info("throwing exception instance hashcode # {}",	this.hashCode())
+				testActor ! received.size
+				if (msmt.customer == "boom")
 					throw new TestException
-				} else {
-					log.info("receiving " + msmt)
-					received = msmt :: received
-				}
 
-
-
-			}
-
-			case GracefulStop => {
-				//log.info("flush received")
-				sender ! received
-			}
 		}
 
 	}
