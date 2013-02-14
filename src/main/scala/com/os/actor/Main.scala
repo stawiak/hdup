@@ -28,7 +28,8 @@ object Main extends App with SprayCanHttpServerApp {
 			Props[ReadMasterActor],
 			Props(new WriteMasterActor),
 			Props(new MessageListenerActor(settings.ActiveMQHost, settings.ActiveMQPort, settings.ActiveMQQueue)),
-			Props[WebServiceActor],
+			//Props[WebServiceActor],
+			Props[HttpServiceActor],
 			Props[DeadLetterListener]
 		)), name = "top")
 
@@ -41,6 +42,5 @@ object Main extends App with SprayCanHttpServerApp {
 		case Success(result) => newHttpServer(result) ! Bind(interface = settings.HttpHost, port = settings.HttpPort)
 		case Failure(failure) => system.shutdown()
 	}
-
 
 }

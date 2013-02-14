@@ -47,6 +47,13 @@
         </dependency>
 
         <dependency>
+            <groupId>io.spray</groupId>
+            <artifactId>spray-testkit</artifactId>
+            <version>${spray-version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
             <version>1.0.4</version>
