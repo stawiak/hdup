@@ -42,6 +42,8 @@ object MQLParser {
 		//TODO where - multiple conditions OR-ed or AND-ed
 		//TODO number literals in select
 		//TODO expr in select and where
+
+		//TODO For a better performance I suggest to use private lazy val instead of private def when defining parsers. Otherwise whenever a parser is references it is created again.
 		def parse(queryString: String): Traversable[MQLCommand] = {
 			val query = parseAll(mql, queryString)
 			new MQLExecutor(query.get).generateExecutePlan
