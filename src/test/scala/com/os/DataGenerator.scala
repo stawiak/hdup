@@ -9,19 +9,19 @@ import util.Loggable
  */
 object DataGenerator extends Loggable{
 
-	private val CustomerNumber = 20
-	private val LocationNumber = 2
-	private val WireNumber = 300
+	private val CustomerNumber = 3//20
+	private val LocationNumber = 2//2
+	private val WireNumber = 3//300
 
 	private val CUSTOMERS =  new Array[String](CustomerNumber)
-	private val LOCATIONS =  Array[String]("location0", "location1")
+	private val LOCATIONS =  Array[String]("11 Mercer", "11 Mercer") //        ("location0", "location1")
 	private val WIREIDS =  new Array[String](WireNumber)
 
 	for (i <- 0 until CustomerNumber)
-		CUSTOMERS(i) = "customer" + i
+		CUSTOMERS(i) = "OutSmart Power Systems" //customer" + i
 
 	for (i <- 0 until WireNumber)
-		WIREIDS(i) = "wireid" + i
+		WIREIDS(i) = "Master"//"wireid" + i
 
 	private val random : Random = new Random()
 
@@ -54,17 +54,16 @@ object DataGenerator extends Loggable{
 	 * @param minutes  for how long to generate
 	 * @param realTime use real time or every 5 minutes (warning!! if false time will be in future)
 	 */
-	class DailyDataIterator(val minutes: Int = 20, val realTime: Boolean = false) extends Iterator[Measurement] {
+	class DailyDataIterator(val minutes: Long = 20, val realTime: Boolean = false) extends Iterator[Measurement] {
 
 		val start = System.currentTimeMillis()// - Settings.ExpiredTimeWindow + 60 * 1000 - (1000 * 60 * minutes)
 		var curTime = start
 		var curCustomer, curLocation, curWireId = 0
-		var counter = 0
+		var counter: Long = 0L
 
-		def hasNext: Boolean = curTime < start + 1000 * 60 * minutes
+		def hasNext: Boolean = curTime < start + 1000L * 60L * minutes
 
 		def next(): Measurement = {
-
 			if (curCustomer == CustomerNumber - 1 && curLocation == LocationNumber - 1 && curWireId == WireNumber - 1) {
 				if (realTime)
 					curTime = System.currentTimeMillis()
@@ -96,6 +95,6 @@ object DataGenerator extends Loggable{
 		}
 	}
 
-	def dailyDataIterator(minutes: Int, realTime: Boolean): Iterator[Measurement] = new DailyDataIterator(minutes, realTime)
+	def dailyDataIterator(minutes: Long, realTime: Boolean): Iterator[Measurement] = new DailyDataIterator(minutes, realTime)
 
 }

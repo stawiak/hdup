@@ -13,10 +13,10 @@ import com.os.Settings
  * @author Vadim Bobrov
  */
 
-class WriteMasterActor(var routerFactory: Option[(ActorContext, String, Int) => ActorRef] = None) extends FinalCountDown with SettingsUse {
+class WriteMasterActor(var mockFactory: Option[(ActorContext, String, Int) => ActorRef] = None) extends FinalCountDown with SettingsUse {
 
 	import context._
-	if (routerFactory.isEmpty) routerFactory = Some(defaultRouterFactory)
+
 	// Since a restart does not clear out the mailbox, it often is best to terminate
 	// the children upon failure and re-create them explicitly from the supervisor
 
@@ -26,6 +26,8 @@ class WriteMasterActor(var routerFactory: Option[(ActorContext, String, Int) => 
 	val defaultRouterFactory = {(_ : ActorContext, tableName : String, batchSize : Int) =>
 		actorOf(Props(new WriteWorkerActor(tableName, batchSize)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher"))
 	}
+
+	val routerFactory = if (mockFactory.isEmpty) defaultRouterFactory else mockFactory.get
 
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
@@ -45,7 +47,7 @@ class WriteMasterActor(var routerFactory: Option[(ActorContext, String, Int) => 
 		}
 
 		if (!routers.contains(tableName)) {
-			val newRouter = routerFactory.get(context, tableName, batchSize)
+			val newRouter = routerFactory(context, tableName, batchSize)
 			routers += (tableName -> newRouter)
 		}
 
