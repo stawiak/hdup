@@ -4,16 +4,15 @@ import com.os.actor.read.ReadRequest
 import com.os.Settings
 import org.joda.time.Interval
 import com.os.mql.model._
-import com.os.mql.model.MQLTimeRangeCondition
+import com.os.measurement.TimedValue
 import com.os.actor.read.MeasurementReadRequest
 import com.os.mql.model.MQLQuery
-import com.os.mql.model.MQLTableCurrent
-import com.os.mql.model.MQLTableEnergy
-import com.os.mql.model.MQLTableInterpolated
-import com.os.mql.model.MQLTableVamps
+import com.os.mql.model.MQLColumnStringLiteral
+import com.os.mql.model.MQLValueCondition
 import com.os.actor.read.RollupReadRequest
+import com.os.mql.model.MQLTimeRangeCondition
+import scala.Some
 import com.os.mql.model.MQLUnion
-import com.os.measurement.TimedValue
 
 /**
  * @author Vadim Bobrov
@@ -37,35 +36,35 @@ class MQLExecutor(val mql: MQLUnion) {
 			    Some(
 					query.from.table match {
 
-						case MQLTableEnergy() =>
+						case MQLTableEnergy =>
 							new MeasurementReadRequest(Settings.TableName,
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,
 								query.where.get.wireidCondition.get.value,
 								interval)
 
-						case MQLTableCurrent() =>
+						case MQLTableCurrent =>
 							new MeasurementReadRequest(Settings.CurrentTableName,
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,
 								query.where.get.wireidCondition.get.value,
 								interval)
 
-						case MQLTableVamps() =>
+						case MQLTableVamps =>
 							new MeasurementReadRequest(Settings.VampsTableName,
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,
 								query.where.get.wireidCondition.get.value,
 								interval)
 
-						case MQLTableInterpolated() =>
+						case MQLTableInterpolated =>
 							new MeasurementReadRequest(Settings.MinuteInterpolatedTableName,
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,
 								query.where.get.wireidCondition.get.value,
 								interval)
 
-						case MQLTableRollup() =>
+						case MQLTableRollup =>
 							new RollupReadRequest(
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,

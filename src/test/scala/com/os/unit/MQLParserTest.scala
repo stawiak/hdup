@@ -3,12 +3,21 @@ package com.os.unit
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import com.os.mql.model._
+import com.os.mql.parser.MQLParser.MQLParsersImpl
 import com.os.mql.model.MQLSelect
 import com.os.mql.model.MQLQuery
-import com.os.mql.model.MQLColumnTimestamp
-import com.os.mql.model.MQLColumnValue
+import com.os.mql.model.MQLColumnStringLiteral
+import com.os.mql.model.UnsupportedConditionException
+import com.os.mql.model.MQLValueCondition
+import com.os.mql.model.MQLLocationCondition
+import com.os.mql.model.MQLCustomerCondition
+import com.os.mql.model.MQLFrom
+import com.os.mql.model.MQLTimeRangeCondition
+import com.os.mql.model.InvalidMQLException
+import com.os.mql.model.MQLWireIdCondition
+import com.os.mql.model.MQLWhere
 import scala.Some
-import com.os.mql.parser.MQLParser.MQLParsersImpl
+import com.os.mql.model.MQLUnion
 
 
 /**
@@ -24,8 +33,8 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 		println(res)
 		res match {
 			case parser.Success(MQLQuery(
-				MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
-				MQLFrom(MQLTableEnergy()), _
+				MQLSelect(List(MQLColumnTimestamp, MQLColumnValue)),
+				MQLFrom(MQLTableEnergy), _
 			), _) =>
 			case x => fail(x.toString)
 		}
@@ -37,8 +46,8 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 		println(res)
 		res match {
 			case parser.Success(MQLQuery(
-			MQLSelect(List(MQLColumnStringLiteral(_), MQLColumnValue())),
-			MQLFrom(MQLTableEnergy()), _
+			MQLSelect(List(MQLColumnStringLiteral(_), MQLColumnValue)),
+			MQLFrom(MQLTableEnergy), _
 			), _) =>
 			case x => fail(x.toString)
 		}
@@ -78,8 +87,8 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 		println(res)
 		res match {
 			case parser.Success(MQLQuery(
-				MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
-				MQLFrom(MQLTableEnergy()),
+				MQLSelect(List(MQLColumnTimestamp, MQLColumnValue)),
+				MQLFrom(MQLTableEnergy),
 				Some(MQLWhere(List(
 					MQLCustomerCondition(_),
 					MQLLocationCondition(_),
@@ -96,8 +105,8 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 		println(res)
 		res match {
 			case parser.Success(MQLQuery(
-			MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
-			MQLFrom(MQLTableEnergy()),
+			MQLSelect(List(MQLColumnTimestamp, MQLColumnValue)),
+			MQLFrom(MQLTableEnergy),
 			Some(MQLWhere(List(
 				MQLCustomerCondition(_),
 				MQLLocationCondition(_),
@@ -121,8 +130,8 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 		println(res)
 		res match {
 			case parser.Success(MQLQuery(
-			MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
-			MQLFrom(MQLTableEnergy()),
+			MQLSelect(List(MQLColumnTimestamp, MQLColumnValue)),
+			MQLFrom(MQLTableEnergy),
 			Some(MQLWhere(List(
 				MQLCustomerCondition(_),
 				MQLLocationCondition(_),
@@ -140,8 +149,8 @@ class MQLParserTest extends FlatSpec with ShouldMatchers {
 		res match {
 			case parser.Success(MQLUnion(
 				List(MQLQuery(
-					MQLSelect(List(MQLColumnTimestamp(), MQLColumnValue())),
-					MQLFrom(MQLTableRollup()),
+					MQLSelect(List(MQLColumnTimestamp, MQLColumnValue)),
+					MQLFrom(MQLTableRollup),
 					Some(MQLWhere(List(
 						MQLCustomerCondition(_),
 						MQLLocationCondition( _),

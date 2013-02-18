@@ -34,8 +34,8 @@ class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system)
 		expectMsg(1 second, Pong)
 	}
 
-	private case class Ping()
-	private case class Pong()
+	private case object Ping
+	private case object Pong
 
 	class TestReadMasterActor extends ReadMasterActor {
 		private final def pingPong: Receive = {	case Ping => sender ! Pong }

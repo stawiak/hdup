@@ -8,22 +8,22 @@ object MQLColumn {
 	def apply(name: String): MQLColumn = {
 		name match {
 			case "*" =>
-				MQLColumnAll()
+				MQLColumnAll
 			case "timestamp" =>
-				MQLColumnTimestamp()
+				MQLColumnTimestamp
 			case "value" =>
-				MQLColumnValue()
+				MQLColumnValue
 
 		}
 	}
 }
 sealed abstract class MQLColumn
-case class MQLColumnAll() extends MQLColumn  { override def toString: String = "*" }
-case class MQLColumnTimestamp() extends MQLColumn  { override def toString: String = "timestamp" }
-case class MQLColumnValue() extends MQLColumn  { override def toString: String = "value" }
+case object MQLColumnAll extends MQLColumn  { override def toString: String = "*" }
+case object MQLColumnTimestamp extends MQLColumn  { override def toString: String = "timestamp" }
+case object MQLColumnValue extends MQLColumn  { override def toString: String = "value" }
 
-case class MQLColumnCustomer() extends MQLColumn  { override def toString: String = "customer" }
-case class MQLColumnLocation() extends MQLColumn  { override def toString: String = "location" }
-case class MQLColumnWireId() extends MQLColumn  { override def toString: String = "wireid" }
+case object MQLColumnCustomer extends MQLColumn  { override def toString: String = "customer" }
+case object MQLColumnLocation extends MQLColumn  { override def toString: String = "location" }
+case object MQLColumnWireId extends MQLColumn  { override def toString: String = "wireid" }
 
 case class MQLColumnStringLiteral(value: String) extends MQLColumn  { override def toString: String = value }

@@ -31,8 +31,8 @@ class MQLHandlerTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 		expectMsg(1 second, Pong)
 	}
 
-	private case class Ping()
-	private case class Pong()
+	private case object Ping
+	private case object Pong
 
 	class TestMQLHandlerActor extends MQLHandlerActor(TestMQLParser.apply) {
 		private final def pingPong: Receive = {	case Ping => sender ! Pong }

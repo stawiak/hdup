@@ -33,8 +33,8 @@ class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with Flat
 		expectNoMsg(1 second)
 	}
 
-	private case class Ping()
-	private case class Pong()
+	private case object Ping
+	private case object Pong
 
 	class BlockingActor extends Actor {
 		implicit val timeout: Timeout = 3 seconds

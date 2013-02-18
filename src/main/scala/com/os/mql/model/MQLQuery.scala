@@ -18,10 +18,10 @@ case class MQLFrom(table: MQLTable) {
 case class MQLQuery(select: MQLSelect, from: MQLFrom, where: Option[MQLWhere]) {
 
 	if (where.isDefined) {
-		if (!from.table.isInstanceOf[MQLTableRollup] && where.get.wireidCondition.isEmpty)
+		if (from.table != MQLTableRollup && where.get.wireidCondition.isEmpty)
 			throw new InvalidMQLException("Wire id must be specified if not querying rollups")
 
-		if (from.table.isInstanceOf[MQLTableRollup] && where.get.wireidCondition.isDefined)
+		if (from.table == MQLTableRollup && where.get.wireidCondition.isDefined)
 			throw new InvalidMQLException("Wire id may not be specified if querying rollups")
 	}
 

@@ -55,8 +55,8 @@ class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) w
 		Await.result((testTimeWindow ? Report).mapTo[Int], timeout.duration) should be (4)
 	}
 
-	private case class Crash()
-	private case class Report()
+	private case object Crash
+	private case object Report
 	private class TestException extends Exception
 	private class TestTimeWindowActor extends Actor with ActorLogging {
 

@@ -68,11 +68,11 @@ object MQLParser {
 			case s: String => MQLColumnStringLiteral(s)
 		}
 
-		def columnValue: Parser[MQLColumn] = "value".ignoreCase ^^ { s => MQLColumnValue() }
-		def columnTimestamp: Parser[MQLColumn] = "timestamp".ignoreCase ^^ { s => MQLColumnTimestamp() }
-		def columnCustomer: Parser[MQLColumn] = "customer".ignoreCase ^^ { s => MQLColumnCustomer() }
-		def columnLocation: Parser[MQLColumn] = "location".ignoreCase ^^ { s => MQLColumnLocation() }
-		def columnWireId: Parser[MQLColumn] = "wireid".ignoreCase ^^ { s => MQLColumnWireId() }
+		def columnValue: Parser[MQLColumn] = "value".ignoreCase ^^ { s => MQLColumnValue }
+		def columnTimestamp: Parser[MQLColumn] = "timestamp".ignoreCase ^^ { s => MQLColumnTimestamp }
+		def columnCustomer: Parser[MQLColumn] = "customer".ignoreCase ^^ { s => MQLColumnCustomer }
+		def columnLocation: Parser[MQLColumn] = "location".ignoreCase ^^ { s => MQLColumnLocation }
+		def columnWireId: Parser[MQLColumn] = "wireid".ignoreCase ^^ { s => MQLColumnWireId }
 
 
 		// Tables
