@@ -2,8 +2,42 @@ package com.os.mql.parser
 
 import util.parsing.combinator._
 
-case class URLModel(pathElements: Seq[String], parameters: Map[String, String])
-case class URLParameter(val name: String, val value: String)
+case class InvalidHttpRequestException(msg: String) extends Exception(msg)
+case class RequestModel(httpRequestModel: URLModel) {
+
+	if (!httpRequestModel.parameters.contains("from"))
+		throw InvalidHttpRequestException("from parameter not defined")
+	if (!httpRequestModel.parameters.contains("to"))
+		throw InvalidHttpRequestException("to parameter not defined")
+
+
+	val fromTime:Long = httpRequestModel.parameters("from") match {
+		case x: Long => x
+		case x: Int => x
+		case _ => throw InvalidHttpRequestException("from must be long integer")
+	}
+
+	val toTime:Long = httpRequestModel.parameters("to") match {
+		case x: Long => x
+		case x: Int => x
+		case _ => throw InvalidHttpRequestException("to must be long integer")
+	}
+
+
+	if (httpRequestModel.pathElements.size < 3 || httpRequestModel.pathElements.size > 4)
+		throw InvalidHttpRequestException("incorrect URL")
+
+	val kind = httpRequestModel.pathElements(0)
+	val customer = httpRequestModel.pathElements(1)
+	val location = httpRequestModel.pathElements(2)
+
+	val isRollup = httpRequestModel.pathElements.size == 3
+	val wireid = if (isRollup) "" else httpRequestModel.pathElements(3)
+
+}
+
+case class URLModel(pathElements: Seq[String], parameters: Map[String, Any])
+case class URLParameter(name: String, value: String)
 trait URLParser {
 	def parse(url: String): URLModel
 }
@@ -30,7 +64,7 @@ object URLParser {
 		}
 
 		def pathElements: Parser[List[String]] = repsep(pathElement, "/")
-		def pathElement: Parser[String] = stringLiteral
+		def pathElement: Parser[String] = ident
 
 	}
 }
