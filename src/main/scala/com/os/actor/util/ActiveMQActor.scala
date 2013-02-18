@@ -34,6 +34,7 @@ abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Act
 
 			consumer.setMessageListener(this)
 			connection.start()
+			log.debug("connected to ActiveMQ")
 	}
 
 	override def preStart() {
