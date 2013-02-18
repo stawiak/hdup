@@ -3,7 +3,7 @@ package com.os.actor
 import com.os.measurement.{VampsMeasurement, CurrentMeasurement, EnergyMeasurement, Measurement}
 import javax.jms._
 import akka.actor._
-import util.{GracefulStop, ActiveMQActor}
+import util.{FinalCountDown, GracefulStop, ActiveMQActor}
 import com.os.exchange.MeasurementXO
 import com.os.exchange.json.{JSONObject, DefaultJSONFactory}
 import concurrent.duration._
@@ -18,7 +18,7 @@ import akka.actor.OneForOneStrategy
 /**
  * This is a simple parent just for supervisor strategy
  */
-class MessageListenerActor(host: String, port: Int, queue: String) extends Actor {
+class MessageListenerActor(host: String, port: Int, queue: String) extends FinalCountDown {
 
 	import context._
 
@@ -31,6 +31,10 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Actor
 
 		case RestartMessageProcessor =>
 			watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue))))
+
+		case GracefulStop =>
+			waitAndDie()
+			children foreach  (_ ! GracefulStop)
 	}
 
 	override val supervisorStrategy =
