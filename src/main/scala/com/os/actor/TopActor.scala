@@ -1,11 +1,11 @@
 package com.os.actor
 
-import akka.actor.{ActorRef, Props}
+import akka.actor._
 import util._
-import concurrent.duration.Duration
 import akka.actor.SupervisorStrategy.{Escalate, Resume}
 import akka.actor.DeadLetter
 import akka.actor.OneForOneStrategy
+import concurrent.duration._
 
 /**
  * Top actor
@@ -47,7 +47,6 @@ class TopActor(   // props of top-level actors to start
 
 		system.eventStream.subscribe(deadLetterListener, classOf[DeadLetter])
 	}
-
 
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {

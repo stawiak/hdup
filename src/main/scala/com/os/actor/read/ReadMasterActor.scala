@@ -1,15 +1,11 @@
 package com.os.actor.read
 
 import akka.actor._
-import com.os.measurement.TimedValue
 import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import akka.actor.OneForOneStrategy
 import akka.routing.Broadcast
-import akka.pattern.ask
-import akka.pattern.pipe
 import concurrent.duration._
-import concurrent.Future
 import akka.util.Timeout
 import com.os.actor.util.{SettingsUse, GracefulStop, FinalCountDown}
 import com.os.Settings

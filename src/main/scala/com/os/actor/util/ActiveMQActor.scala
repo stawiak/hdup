@@ -3,14 +3,15 @@ package com.os.actor.util
 import akka.actor.{ActorLogging, Actor}
 import org.apache.activemq.ActiveMQConnectionFactory
 import javax.jms._
-import concurrent.duration.Duration
+import concurrent.duration._
 
 /**
  * @author Vadim Bobrov
  */
-case class Connect()
+case object Connect
 abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Actor with ActorLogging with MessageListener {
 
+	import context._
 	var connection: Connection = _
 	var session: Session = _
 	var consumer: MessageConsumer = _
@@ -22,6 +23,7 @@ abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Act
 	override def receive: Receive = {
 		// connect in receive because supervisor won't restart after failure in preStart
 		case Connect =>
+			log.debug("attempting connection to ActiveMQ")
 			val connectionFactory = new ActiveMQConnectionFactory("tcp://" + host + ":" + port)
 			connection = connectionFactory.createConnection()
 			//connection.setExceptionListener(this);
@@ -35,13 +37,19 @@ abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Act
 	}
 
 	override def preStart() {
-		context.system.scheduler.scheduleOnce(Duration.Zero, self, Connect)
+		log.debug("ActiveMQ listener starting")
+		system.scheduler.scheduleOnce(1 second, self, Connect)
 	}
 
 	override def postStop() {
-		consumer.close()
-		session.close()
-		connection.close()
+		try {
+			consumer.close()
+			session.close()
+			connection.close()
+		} catch {
+			// ignore errors on close
+			case _: Throwable =>
+		}
 	}
 
 
