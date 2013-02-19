@@ -70,8 +70,13 @@ class URLParserTest extends FlatSpec with ShouldMatchers {
 		res match {
 			case parser.Success(urlModel @ URLModel(_, _), _) =>
 				val requestModel = new RequestModel(urlModel)
-				requestModel.fromTime should be (0)
+				requestModel.fromTime should be (0L)
 				requestModel.toTime should be (1460693438444L)
+				requestModel.kind should be ("vamps")
+				requestModel.customer should be ("customer0")
+				requestModel.location should be ("location0")
+				requestModel.wireid should be ("wireid2")
+				requestModel.isRollup should be (false)
 
 			case x => fail(x.toString)
 		}

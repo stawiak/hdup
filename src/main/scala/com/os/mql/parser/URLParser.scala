@@ -12,18 +12,15 @@ case class RequestModel(httpRequestModel: URLModel) {
 		throw InvalidHttpRequestException("to parameter not defined")
 
 
-	val fromTime:Long = httpRequestModel.parameters("from") match {
-		case x: Long => x
-		case x: Int => x
-		case _ => throw InvalidHttpRequestException("from must be long integer")
+	var fromTime:Long = 0
+	var toTime:Long = 0
+	try {
+		fromTime = httpRequestModel.parameters("from").toLong
+		toTime = httpRequestModel.parameters("to").toLong
+	} catch {
+		case _: Throwable =>
+			throw InvalidHttpRequestException("to and from must be long integer")
 	}
-
-	val toTime:Long = httpRequestModel.parameters("to") match {
-		case x: Long => x
-		case x: Int => x
-		case _ => throw InvalidHttpRequestException("to must be long integer")
-	}
-
 
 	if (httpRequestModel.pathElements.size < 3 || httpRequestModel.pathElements.size > 4)
 		throw InvalidHttpRequestException("incorrect URL")
@@ -37,7 +34,7 @@ case class RequestModel(httpRequestModel: URLModel) {
 
 }
 
-case class URLModel(pathElements: Seq[String], parameters: Map[String, Any])
+case class URLModel(pathElements: Seq[String], parameters: Map[String, String])
 case class URLParameter(name: String, value: String)
 trait URLParser {
 	def parse(url: String): URLModel
