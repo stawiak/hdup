@@ -18,6 +18,7 @@ import com.os.Settings
 import spray.http.MediaType
 import com.os.exchange.TimeSeriesData
 import java.net.URLDecoder.decode
+import parallel.Future
 
 /**
  * @author Vadim Bobrov
@@ -96,13 +97,15 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 				parameters("mql".as[String]) { mql: String =>
 					val jsonAccepted = extract(_.request.isMediaTypeAccepted(`application/json`))
 					val csvAccepted = extract(_.request.isMediaTypeAccepted(`text/csv`))
-					csvAccepted {  csv =>
-						respondWithMediaType(`text/csv`) {
-							complete {
-								mqlRequest(mql, `text/csv`)
-							}
-						}
+
+					val res = mqlRequest(mql, `text/csv`)
+					res match {
+						case Right(s) =>
+							csvAccepted {  csv: Boolean => respondWithMediaType(`text/csv`) { complete {s} } }
+						case Left(e) =>
+							{ complete {e.getMessage()} }
 					}
+
 					//TODO: implement json
 					/*
 					jsonAccepted {  json =>
@@ -150,24 +153,22 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 		}
 	}
 
-	private def mqlRequest(mql: String, mediaType: MediaType): String = {
-		val sb = new StringBuilder
+	private def mqlRequest(mql: String, mediaType: MediaType): Either[Throwable, String] = {
 
-		try {
-			if (mediaType == `text/csv`)
-				Await.result((mqlHandler ? mql).mapTo[Iterable[Map[String, Any]]], timeout.duration) foreach (mv => sb.append(mv.values.mkString("", ",", "\n")))
-			if (mediaType == `application/json`)
+		val res = Await.result((mqlHandler ? mql), timeout.duration)
+		res match {
+			case values: Iterable[Map[String, Any]] =>
+				val sb = new StringBuilder
 				//TODO: implement JSON
-				Await.result((mqlHandler ? mql).mapTo[Iterable[Map[String, Any]]], timeout.duration) foreach (mv => sb.append(mv.values.mkString("", ",", "\n")))
-
-		} catch {
-			case e: Exception =>
-				log.error(e, e.getMessage)
+				if (mediaType == `text/csv`)
+					values foreach (mv => sb.append(mv.values.mkString("", ",", "\n")))
+				if (sb.length == 0)
+					sb.append("empty")
+				Right(sb.result())
+			case t: Throwable =>
+				log.error(t, t.getMessage)
+				Left(t)
 		}
-
-		if (sb.length == 0)
-			sb.append("empty")
-		sb.result()
 	}
 
 	private def readRequest(tableName: String, customer: String, location: String, fromTime: Long, toTime: Long, wireid: Option[String] = None): String = {

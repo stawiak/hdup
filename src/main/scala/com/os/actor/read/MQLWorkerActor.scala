@@ -8,6 +8,7 @@ import akka.pattern.ask
 import akka.pattern.pipe
 import akka.util.Timeout
 import concurrent.duration._
+import com.os.mql.executor.MQLCommand
 
 /**
  * @author Vadim Bobrov
@@ -18,12 +19,20 @@ class MQLWorkerActor(val parser: MQLParser) extends Actor with ReadMasterAware w
 
 	override def receive: Receive = {
 		case mql: String =>
-			//TODO: error handling
 			log.debug("mql received\n{}", mql)
-			//TODO: singleton or multiple?
 
-			val commands = parser.parse(mql)
-			Future.traverse(commands)(command => (readMaster ? command.readRequest).mapTo[Iterable[TimedValue]]  map(command.include(_)) map (command.enrich(_)) ).map(_.flatten) pipeTo sender
+			val res: Either[Throwable, Traversable[MQLCommand]] = try {
+				Right(parser.parse(mql))
+			} catch {
+				case t: Throwable => Left(t)
+			}
+
+			res match {
+				case Right(commands) =>
+					Future.traverse(commands)(command => (readMaster ? command.readRequest).mapTo[Iterable[TimedValue]]  map(command.include(_)) map (command.enrich(_)) ).map(_.flatten) pipeTo sender
+				case Left(t) =>
+					sender ! t
+			}
 
 	}
 
