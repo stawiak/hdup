@@ -15,6 +15,7 @@ import com.os.mql.model.MQLUnion
 import util.parsing.combinator._
 import com.os.mql.executor.{MQLExecutor, MQLCommand}
 import com.os.parser.{MathParsers, DateParsers}
+import util.Try
 
 /**
  * @author Vadim Bobrov
@@ -36,18 +37,19 @@ object MQLParser {
 
 		implicit def pimpString(str: String): MyRichString = new MyRichString(str)
 
-		//TODO customer, location, wireid filters, wireid - if not rollup
-		//TODO date parsing
-
 		//TODO order by
-		//TODO where - multiple conditions OR-ed or AND-ed
-		//TODO number literals in select
-		//TODO expr in select and where
-
 		//TODO For a better performance I suggest to use private lazy val instead of private def when defining parsers. Otherwise whenever a parser is references it is created again.
+
 		def parse(queryString: String): Traversable[MQLCommand] = {
 			val query = parseAll(mql, queryString)
-			new MQLExecutor(query.get).generateExecutePlan
+
+			query match {
+				case this.Success(res, _) =>
+					new MQLExecutor(res).generateExecutePlan
+				case this.NoSuccess(err, in) =>
+					throw new InvalidMQLException(err)//TODO: add caret position + " at " + in.source)
+			}
+
 		}
 
 		def mql: Parser[MQLUnion] = repsep(query, "union") ^^ {
@@ -67,7 +69,7 @@ object MQLParser {
 		def selectColumnItem: Parser[MQLColumn] = (columnValue | columnTimestamp | columnCustomer | columnLocation | columnWireId | stringLiteral) ^^ {
 			case col: MQLColumn => col
 			case s: String => MQLColumnStringLiteral(s)
-		}
+		} withFailureMessage "incorrect SELECT clause"
 
 		def columnValue: Parser[MQLColumn] = "value".ignoreCase ^^ { s => MQLColumnValue }
 		def columnTimestamp: Parser[MQLColumn] = "timestamp".ignoreCase ^^ { s => MQLColumnTimestamp }
@@ -77,10 +79,10 @@ object MQLParser {
 
 
 		// Tables
-		def tableName: Parser[MQLTable] = ("energy".ignoreCase | "current".ignoreCase | "vamps".ignoreCase | "interpolated".ignoreCase | "rollup".ignoreCase) ^^ {s => MQLTable(s.toLowerCase)}
+		def tableName: Parser[MQLTable] = ("energy".ignoreCase | "current".ignoreCase | "vamps".ignoreCase | "interpolated".ignoreCase | "rollup".ignoreCase) ^^ {s => MQLTable(s.toLowerCase)} withFailureMessage "incorrect FROM clause"
 
 		// Conditions
-		def conditions: Parser[List[MQLCondition]] = repsep(condition, "and".ignoreCase)
+		def conditions: Parser[List[MQLCondition]] = repsep(condition, "and".ignoreCase) withFailureMessage "incorrect WHERE conditions"
 		def condition: Parser[MQLCondition] = (comparisonCondition | betweenCondition | equalCondition)
 
 		def equalCondition: Parser[MQLCondition] = ((columnCustomer | columnLocation | columnWireId)~"="~stringLiteral) ^^ {

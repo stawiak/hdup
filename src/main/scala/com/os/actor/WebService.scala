@@ -19,6 +19,7 @@ import spray.http.MediaType
 import com.os.exchange.TimeSeriesData
 import java.net.URLDecoder.decode
 import parallel.Future
+import scala.util.{Failure, Try, Success}
 
 /**
  * @author Vadim Bobrov
@@ -100,9 +101,9 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 
 					val res = mqlRequest(mql, `text/csv`)
 					res match {
-						case Right(s) =>
+						case Success(s) =>
 							csvAccepted {  csv: Boolean => respondWithMediaType(`text/csv`) { complete {s} } }
-						case Left(e) =>
+						case Failure(e) =>
 							{ complete {e.getMessage()} }
 					}
 
@@ -153,8 +154,8 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 		}
 	}
 
-	private def mqlRequest(mql: String, mediaType: MediaType): Either[Throwable, String] = {
-
+	private def mqlRequest(mql: String, mediaType: MediaType): Try[String] = {
+		Success
 		val res = Await.result((mqlHandler ? mql), timeout.duration)
 		res match {
 			case values: Iterable[Map[String, Any]] =>
@@ -164,10 +165,10 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 					values foreach (mv => sb.append(mv.values.mkString("", ",", "\n")))
 				if (sb.length == 0)
 					sb.append("empty")
-				Right(sb.result())
+				Success(sb.result())
 			case t: Throwable =>
 				log.error(t, t.getMessage)
-				Left(t)
+				Failure(t)
 		}
 	}
 

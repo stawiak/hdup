@@ -9,6 +9,7 @@ import akka.pattern.pipe
 import akka.util.Timeout
 import concurrent.duration._
 import com.os.mql.executor.MQLCommand
+import util.{Failure, Success, Try}
 
 /**
  * @author Vadim Bobrov
@@ -21,16 +22,12 @@ class MQLWorkerActor(val parser: MQLParser) extends Actor with ReadMasterAware w
 		case mql: String =>
 			log.debug("mql received\n{}", mql)
 
-			val res: Either[Throwable, Traversable[MQLCommand]] = try {
-				Right(parser.parse(mql))
-			} catch {
-				case t: Throwable => Left(t)
-			}
+			val res = Try[Traversable[MQLCommand]](parser.parse(mql))
 
 			res match {
-				case Right(commands) =>
+				case Success(commands) =>
 					Future.traverse(commands)(command => (readMaster ? command.readRequest).mapTo[Iterable[TimedValue]]  map(command.include(_)) map (command.enrich(_)) ).map(_.flatten) pipeTo sender
-				case Left(t) =>
+				case Failure(t) =>
 					sender ! t
 			}
 
