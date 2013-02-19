@@ -2,9 +2,8 @@ package com.os.unit
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import com.os.mql.parser.URLParser.URLParsersImpl
-import com.os.mql.parser.{RequestModel, URLParameter, URLModel}
-
+import com.os.parser._
+import URLParser.URLParsersImpl
 
 
 /**

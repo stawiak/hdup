@@ -1,4 +1,4 @@
-package com.os.mql.parser
+package com.os.parser
 
 import util.parsing.combinator.JavaTokenParsers
 

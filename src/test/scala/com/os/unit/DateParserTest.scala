@@ -2,7 +2,7 @@ package com.os.unit
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import com.os.mql.parser.DateParsers
+import com.os.parser.DateParsers
 
 
 /**
