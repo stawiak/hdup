@@ -1,6 +1,7 @@
 package com.os.mql.parser
 
 import util.parsing.combinator._
+import java.net.URLDecoder.decode
 
 case class InvalidHttpRequestException(msg: String) extends Exception(msg)
 case class RequestModel(httpRequestModel: URLModel) {
@@ -28,11 +29,11 @@ case class RequestModel(httpRequestModel: URLModel) {
 		throw InvalidHttpRequestException("incorrect URL")
 
 	val kind = httpRequestModel.pathElements(0)
-	val customer = httpRequestModel.pathElements(1)
-	val location = httpRequestModel.pathElements(2)
+	val customer = decode(httpRequestModel.pathElements(1), "UTF-8")
+	val location = decode(httpRequestModel.pathElements(2), "UTF-8")
 
 	val isRollup = httpRequestModel.pathElements.size == 3
-	val wireid = if (isRollup) "" else httpRequestModel.pathElements(3)
+	val wireid = if (isRollup) "" else decode(httpRequestModel.pathElements(3), "UTF-8")
 
 }
 
@@ -64,6 +65,7 @@ object URLParser {
 		}
 
 		def pathElements: Parser[List[String]] = repsep(pathElement, "/")
+		//TODO: replace ident with any alphanumeric
 		def pathElement: Parser[String] = ident
 
 	}
