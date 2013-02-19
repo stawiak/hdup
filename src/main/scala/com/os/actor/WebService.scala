@@ -17,6 +17,7 @@ import util.{SettingsUse, GracefulStop}
 import com.os.Settings
 import spray.http.MediaType
 import com.os.exchange.TimeSeriesData
+import java.net.URLDecoder.decode
 
 /**
  * @author Vadim Bobrov
@@ -123,7 +124,7 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 						parameters("from".as[Long] ? 0L, "to".as[Long] ? Long.MaxValue) { (fromTime: Long, toTime: Long) =>
 							respondWithMediaType(`application/json`) {
 								complete {
-									readRequest(Settings.RollupTableName, customer, location, fromTime, toTime)
+									readRequest(Settings.RollupTableName, decode(customer, "UTF-8"), decode(location, "UTF-8"), fromTime, toTime)
 								}
 							}
 						}
@@ -140,7 +141,7 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 					parameters("from".as[Long] ? 0L, "to".as[Long] ? Long.MaxValue) { (fromTime: Long, toTime: Long) =>
 						respondWithMediaType(`application/json`) { // XML is marshalled to `text/xml` by default, so we simply override here
 							complete {
-								readRequest(tableName, customer, location, fromTime, toTime, Option(wireid))
+								readRequest(tableName, decode(customer, "UTF-8"), decode(location, "UTF-8"), fromTime, toTime, Option(decode(wireid, "UTF-8")))
 							}
 						}
 					}
