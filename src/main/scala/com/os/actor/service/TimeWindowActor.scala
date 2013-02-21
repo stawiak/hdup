@@ -6,13 +6,13 @@ import com.os.actor._
 import util._
 import write.WriterMasterAware
 import concurrent.duration.Duration
-import com.os.util.{CachingActorFactory, TimeWindowListBuffer, TimeSource, TimeWindow}
+import com.os.util._
 
 
 /**
   * @author Vadim Bobrov
   */
-class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[(ActorContext, (String, String)) => ActorRef] = None) extends FinalCountDown with WriterMasterAware with TimedActor with SettingsUse {
+class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with TimedActor with SettingsUse {
 
 	import context._
 
@@ -21,8 +21,8 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 
 	var measurements:TimeWindow[Measurement] = new TimeWindowListBuffer[Measurement]()
 
-	val defaultFactory = new CachingActorFactory[(String, String)]((customerLocation: (String, String)) => new AggregatorActor(customerLocation._1, customerLocation._2, timeWindow = expiredTimeWindow))
-	val aggregatorFactory: (ActorContext, (String, String)) => ActorRef = if (mockFactory.isEmpty) defaultFactory.get else mockFactory.get
+	val defaultFactory = CachingActorFactory[(String, String)]((customerLocation: (String, String)) => new AggregatorActor(customerLocation._1, customerLocation._2, timeWindow = expiredTimeWindow))
+	val aggregators: ActorCache[(String, String)] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
 
 	override def receive: Receive = {
 
@@ -47,7 +47,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			log.debug("time window received graceful stop")
 			// send out remaining measurements
 			for (tv <- measurements.sortWith(_ < _))
-				aggregatorFactory(context, (tv.customer, tv.location)) ! tv
+				aggregators(context, (tv.customer, tv.location)) ! tv
 
 			children foreach ( _ ! GracefulStop)
 			waitAndDie()
@@ -69,7 +69,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			//log.debug("new " + newmsmt.size)
 
 			for (tv <- oldmsmt.sortWith(_ < _))
-				aggregatorFactory(context, (tv.customer, tv.location)) ! tv
+				aggregators(context, (tv.customer, tv.location)) ! tv
 
 			// discard old values
 			measurements = newmsmt

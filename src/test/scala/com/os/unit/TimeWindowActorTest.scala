@@ -8,7 +8,7 @@ import akka.testkit.{TestProbe, ImplicitSender, TestKit, TestActorRef}
 import com.os.actor.service.TimeWindowActor
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
-import com.os.util.TimeSource
+import com.os.util.{ActorCache, TimeSource}
 import com.os.TestActors
 
 /**
@@ -22,8 +22,10 @@ class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with Te
 		system.shutdown()
 	}
 
-	val testAggregatorFactory = {(actorContext : ActorContext, customerLocation: (String, String)) =>
-		actorContext.actorOf(Props(new TestActorForwarder))
+	val testAggregatorFactory: ActorCache[(String, String)] = new ActorCache[(String, String)] {
+		def getAll: Traversable[ActorRef] = Nil
+
+		def apply(actorContext: ActorContext, t: (String, String)): ActorRef = actorContext.actorOf(Props(new TestActorForwarder))
 	}
 
 	val writeProbe  = TestProbe()

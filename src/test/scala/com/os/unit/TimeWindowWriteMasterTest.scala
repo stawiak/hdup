@@ -8,7 +8,7 @@ import akka.testkit._
 import com.os.actor.service.TimeWindowActor
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
-import com.os.util.TimeSource
+import com.os.util.{ActorCache, TimeSource}
 import com.os.actor.TopActor
 import com.os.actor.util.DeadLetterListener
 import scala.Some
@@ -21,8 +21,10 @@ class TimeWindowWriteMasterTest(_system: ActorSystem) extends TestKit(_system) w
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
-	val testAggregatorFactory = {(actorContext : ActorContext, customerLocation: (String, String)) =>
-		actorContext.actorOf(Props(new NoGoodnik))
+	val testAggregatorFactory: ActorCache[(String, String)] = new ActorCache[(String, String)] {
+		def getAll: Traversable[ActorRef] = Nil
+
+		def apply(actorContext: ActorContext, t: (String, String)): ActorRef = actorContext.actorOf(Props(new NoGoodnik))
 	}
 
 	system.actorOf(Props(new TopActor(
