@@ -1,23 +1,6 @@
 package com.os.unit
 
-import org.scalatest.{OneInstancePerTest, FlatSpec, BeforeAndAfterAll}
-import org.scalatest.matchers.ShouldMatchers
-import akka.actor._
-import com.os.measurement.{Measurement, EnergyMeasurement}
-import akka.testkit.{ImplicitSender, TestKit}
-import com.typesafe.config.ConfigFactory
-import com.os.actor._
-import com.os.actor.util.{DeadLetterListener, GracefulStop}
-import com.os.Settings
-import com.os.actor.read.{MQLHandlerActor, ReadMasterActor}
-import com.os.actor.write.WriteMasterActor
-import akka.pattern._
-import akka.util.Timeout
-import concurrent.duration._
-import concurrent.Await
-import com.os.mql.parser.MQLParser
-import com.os.actor.service.TimeWindowActor
-import spray.testkit.ScalatestRouteTest
+
 
 /**
  * @author Vadim Bobrov

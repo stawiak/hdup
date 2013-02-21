@@ -10,14 +10,15 @@ import com.os.actor.read.MeasurementReadRequest
 import concurrent.Await
 import org.joda.time.Interval
 import concurrent.duration._
-import com.os.SlowActor
 import akka.pattern.ask
 import akka.util.Timeout
+import com.os.util.{Pong, Ping}
+import com.os.TestActors
 
 /**
  * @author Vadim Bobrov
 */
-class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
+class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
@@ -32,9 +33,6 @@ class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with Flat
 		blockingActor ! Ping
 		expectNoMsg(1 second)
 	}
-
-	private case object Ping
-	private case object Pong
 
 	class BlockingActor extends Actor {
 		implicit val timeout: Timeout = 3 seconds

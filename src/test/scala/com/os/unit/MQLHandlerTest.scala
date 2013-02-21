@@ -11,6 +11,7 @@ import com.os.actor.read.MQLHandlerActor
 import concurrent.duration._
 import com.os.mql.parser.MQLParser
 import com.os.mql.executor.MQLCommand
+import com.os.util.{Ping, Pong}
 
 /**
  * @author Vadim Bobrov
@@ -30,9 +31,6 @@ class MQLHandlerTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 		mqlHandler ! Ping
 		expectMsg(1 second, Pong)
 	}
-
-	private case object Ping
-	private case object Pong
 
 	class TestMQLHandlerActor extends MQLHandlerActor(TestMQLParser.apply) {
 		private final def pingPong: Receive = {	case Ping => sender ! Pong }

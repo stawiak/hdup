@@ -18,7 +18,6 @@ import com.os.Settings
 import spray.http.MediaType
 import com.os.exchange.TimeSeriesData
 import java.net.URLDecoder.decode
-import parallel.Future
 import scala.util.{Failure, Try, Success}
 
 /**

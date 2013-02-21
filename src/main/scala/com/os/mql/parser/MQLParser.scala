@@ -15,7 +15,6 @@ import com.os.mql.model.MQLUnion
 import util.parsing.combinator._
 import com.os.mql.executor.{MQLExecutor, MQLCommand}
 import com.os.parser.{MathParsers, DateParsers}
-import util.Try
 
 /**
  * @author Vadim Bobrov

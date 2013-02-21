@@ -4,25 +4,37 @@ import org.scalatest.{OneInstancePerTest, BeforeAndAfterAll, WordSpec}
 import org.scalatest.matchers.MustMatchers
 import akka.actor._
 import com.os.measurement.EnergyMeasurement
-import akka.testkit.{TestProbe, ImplicitSender, TestKit, TestActorRef}
+import akka.testkit.{ImplicitSender, TestKit, TestActorRef}
 import com.os.actor.service.AggregatorActor
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
+import com.os.TestActors
+import com.os.actor.TopActor
+import com.os.actor.util.DeadLetterListener
 
 /**
  * @author Vadim Bobrov
  */
-class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_system) with WordSpec with MustMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest{
+class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_system) with TestActors with WordSpec with MustMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest{
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
+	system.actorOf(Props(new TopActor(
+		Props(new NoGoodnik),
+		Props(new NoGoodnik),
+		Props(new NoGoodnik),
+		Props(new TestActorForwarder),
+		Props(new NoGoodnik),
+		Props(new NoGoodnik),
+		Props[DeadLetterListener]
+	)), name = "top")
+	// allow some time to bring up actors
+	Thread.sleep(1000)
 
 	override def afterAll() {
 		system.shutdown()
 	}
 
-	val writeProbe  = TestProbe()
 	val underTest = TestActorRef(new AggregatorActor("", "", timeWindow = 10 seconds))
-	underTest.underlyingActor.writeMaster = writeProbe.ref
 
 	"write muster" must {
 		"receive one value from interpolator and one from aggregator when sent 4 expired messages to aggregator" in {
@@ -31,7 +43,7 @@ class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_sys
 			underTest !  new EnergyMeasurement("", "", "", 120001,5)
 			underTest !  new EnergyMeasurement("", "", "", 120002,6)
 
-			writeProbe.expectMsgAllOf(new EnergyMeasurement("", "", "", 120000,4), new EnergyMeasurement("", "", "", 120000,4))
+			expectMsgAllOf(new EnergyMeasurement("", "", "", 120000,4), new EnergyMeasurement("", "", "", 120000,4))
 		}
 
 		"receive 2 values from interpolator and 2 from aggregator when sent 4 expired messages to aggregator" in {
@@ -40,7 +52,7 @@ class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_sys
 			underTest !  new EnergyMeasurement("", "", "", 240001,60005)
 			underTest !  new EnergyMeasurement("", "", "", 240002,60006)
 
-			writeProbe.expectMsgAllOf(
+			expectMsgAllOf(
 				new EnergyMeasurement("", "", "", 180000,4),
 				new EnergyMeasurement("", "", "", 240000,60004),
 				new EnergyMeasurement("", "", "", 180000,4),
@@ -59,7 +71,7 @@ class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_sys
 			underTest !  new EnergyMeasurement("", "", "2", 120001,5)
 			underTest !  new EnergyMeasurement("", "", "2", 120002,6)
 
-			writeProbe.expectMsgAllOf(new EnergyMeasurement("", "", "1", 120000,4), new EnergyMeasurement("", "", "2", 120000,4), new EnergyMeasurement("", "", "", 120000,8))
+			expectMsgAllOf(new EnergyMeasurement("", "", "1", 120000,4), new EnergyMeasurement("", "", "2", 120000,4), new EnergyMeasurement("", "", "", 120000,8))
 		}
 
 	}

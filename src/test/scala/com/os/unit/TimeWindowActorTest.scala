@@ -9,11 +9,12 @@ import com.os.actor.service.TimeWindowActor
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
 import com.os.util.TimeSource
+import com.os.TestActors
 
 /**
  * @author Vadim Bobrov
  */
-class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest {
+class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
@@ -21,10 +22,12 @@ class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with Fl
 		system.shutdown()
 	}
 
+	val testAggregatorFactory = {(actorContext : ActorContext, customerLocation: (String, String)) =>
+		actorContext.actorOf(Props(new TestActorForwarder))
+	}
+
 	val writeProbe  = TestProbe()
-	val testTimeWindow = TestActorRef(new TimeWindowActor(10 seconds, TestTimeSource))
-	testTimeWindow.underlyingActor.aggregatorFactory =  TestAggregationFactory.get
-	testTimeWindow.underlyingActor.writeMaster = writeProbe.ref
+	val testTimeWindow = TestActorRef(new TimeWindowActor(10 seconds, TestTimeSource, Some(testAggregatorFactory)))
 
 	"time window" should "send 4 expired messages to interpolator" in {
 		testTimeWindow !  new EnergyMeasurement("", "", "", 119995,5)
@@ -32,16 +35,7 @@ class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with Fl
 		testTimeWindow !  new EnergyMeasurement("", "", "", 120001,5)
 		testTimeWindow !  new EnergyMeasurement("", "", "", 120002,6)
 
-		TestAggregationFactory.aggregator.receiveN(4, 10 seconds)
-	}
-
-
-	object TestAggregationFactory {
-		val aggregator = TestProbe()
-
-		def get(customer : String, location : String) : ActorRef = {
-			aggregator.ref
-		}
+		receiveN(4, 10 seconds)
 	}
 
 	object TestTimeSource extends TimeSource {

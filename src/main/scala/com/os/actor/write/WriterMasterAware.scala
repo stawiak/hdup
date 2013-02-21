@@ -9,7 +9,6 @@ import akka.actor.Actor
 trait WriterMasterAware {
 
 	this: Actor =>
-	// made settable for testability
-	var writeMaster = context.system.actorFor("/user/top/writeMaster")
+	lazy val writeMaster = context.system.actorFor("/user/top/writeMaster")
 
 }

@@ -13,7 +13,7 @@ import com.os.Settings
  * @author Vadim Bobrov
  */
 
-class WriteMasterActor(var mockFactory: Option[(ActorContext, String, Int) => ActorRef] = None) extends FinalCountDown with SettingsUse {
+class WriteMasterActor(mockFactory: Option[(ActorContext, String, Int) => ActorRef] = None) extends FinalCountDown with SettingsUse {
 
 	import context._
 

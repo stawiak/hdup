@@ -52,6 +52,7 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 
 			case msg : MapMessage => {
 
+				log.debug("picking up a batch from ActiveMQ")
 				val customer = msg.getString("customer")
 				val location = msg.getString("location")
 
@@ -79,7 +80,7 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 					}
 
 					if (msmt.isDefined)
-						timeWindow ! msmt.get
+						{timeWindow ! msmt.get; log.debug("sending to TW " + msmt.get)}
 				}
 
 			}

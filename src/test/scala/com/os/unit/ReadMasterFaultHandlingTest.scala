@@ -10,12 +10,13 @@ import scala.Predef._
 import com.os.actor.read.{MeasurementReadRequest, ReadMasterActor}
 import org.joda.time.Interval
 import concurrent.duration._
-import com.os.SlowActor
+import com.os.util.{Ping, Pong}
+import com.os.TestActors
 
 /**
  * @author Vadim Bobrov
 */
-class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
+class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
@@ -33,9 +34,6 @@ class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system)
 		readMaster ! Ping
 		expectMsg(1 second, Pong)
 	}
-
-	private case object Ping
-	private case object Pong
 
 	class TestReadMasterActor extends ReadMasterActor {
 		private final def pingPong: Receive = {	case Ping => sender ! Pong }
