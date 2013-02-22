@@ -22,19 +22,25 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 
 	import context._
 
-	watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue))))
+	var worker = watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue)), name = "messageProcessor"))
+
 	case object RestartMessageProcessor
+
+	var counterMsmt:Long = 0
+	var counterBatch:Long = 0
 
 	override def receive: Receive = {
 		case Terminated(ref) =>
 			system.scheduler.scheduleOnce(30 seconds, self, RestartMessageProcessor)
 
 		case RestartMessageProcessor =>
-			watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue))))
+			worker = watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue)), name = "messageProcessor"))
 
 		case GracefulStop =>
 			waitAndDie()
 			children foreach  (_ ! GracefulStop)
+
+		case m => worker forward m
 	}
 
 	override val supervisorStrategy =
@@ -53,6 +59,7 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 			case msg : MapMessage => {
 
 				log.debug("picking up a batch from ActiveMQ")
+				counterBatch += 1
 				val customer = msg.getString("customer")
 				val location = msg.getString("location")
 
@@ -79,21 +86,24 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 						case _ => None
 					}
 
-					if (msmt.isDefined)
+					if (msmt.isDefined) {
 						timeWindow ! msmt.get
+						counterMsmt += 1
+					}
 				}
 
 			}
 
-			case msg : TextMessage => {
+			case msg : TextMessage =>
 				log.debug("received text message {}", msg.getText)
 				if (msg.getText.equalsIgnoreCase("stop"))
 					top ! GracefulStop
-			}
 
-			case msg : Message => {
+			case msg : Message =>
 				log.debug("ignored message {}", msg)
-			}
+
+			case Monitor =>
+				sender ! Map("msmt" -> counterMsmt, "batch" -> counterBatch)
 
 			case GracefulStop =>
 				self ! PoisonPill

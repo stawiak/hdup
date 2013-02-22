@@ -67,6 +67,7 @@ class TopActor(   // props of top-level actors to start
 
 		case Monitor =>
 			timeWindow forward Monitor
+			messageListener forward Monitor
 			writeMaster forward Monitor
 
 		case GetWebService =>
