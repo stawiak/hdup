@@ -19,7 +19,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 	override val interval = settings.TimeWindowProcessInterval
   	val interpolation = settings.Interpolation
 
-	var measurements:TimeWindow[Measurement] = new TimeWindowListBuffer[Measurement]()
+	var measurements:TimeWindow[Measurement] = new TimeWindowSortedSetBuffer[Measurement]()
 
 	val defaultFactory = CachingActorFactory[(String, String)]((customerLocation: (String, String)) => new AggregatorActor(customerLocation._1, customerLocation._2, timeWindow = expiredTimeWindow))
 	val aggregators: ActorCache[(String, String)] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
@@ -41,7 +41,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 
 		case Monitor =>
 			log.info("time window length: {}", measurements.size)
-			sender ! Map("length" -> measurements.size)
+			sender ! Map("length" -> measurements.size, "aggregators" -> aggregators.getAll.size)
 
 		case GracefulStop =>
 			log.debug("time window received graceful stop")
@@ -64,9 +64,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			val current = timeSource.now()
 			// if any of the existing measurements are more than 9.5 minutes old
 			// sort by time, interpolate, save to storage and discard
-			val(oldmsmt, newmsmt) = measurements span (current - _.timestamp > expiredTimeWindow.toMillis)
-			//log.debug("old " + oldmsmt.size)
-			//log.debug("new " + newmsmt.size)
+			val(oldmsmt, newmsmt) = measurements span (_.timestamp < (current - expiredTimeWindow.toMillis))
 
 			for (tv <- oldmsmt.sortWith(_ < _))
 				aggregators(context, (tv.customer, tv.location)) ! tv
@@ -76,7 +74,6 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 		} catch {
 			case e: Exception =>
 				log.error(e, e.getMessage)
-				//log.debug(measurements.mkString("\n"))
 		}
 
 	}

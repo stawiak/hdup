@@ -42,13 +42,8 @@ class TimeWindowSortedMap[A <% Ordered[A], B] extends TimeWindowMap[A, B] {
 	 * @return    elems that satisfy/not satisfy predicate
 	 */
 	def span(p: ((A,B)) => Boolean): (TimeWindowMap[A, B], TimeWindowMap[A, B]) = {
-
-		val splitElem = map.find(x => !p(x))
-
-		if (splitElem.isDefined)
-			(new TimeWindowSortedMap[A, B](map until splitElem.get._1), new TimeWindowSortedMap[A, B](map from splitElem.get._1))
-		else
-			(this, new TimeWindowSortedMap[A, B])
+		val(left, right) = map span p
+		(new TimeWindowSortedMap[A, B](left), new TimeWindowSortedMap[A, B](right))
 	}
 
 	//TODO refactor common functions into a subclass

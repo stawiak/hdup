@@ -48,11 +48,14 @@ sealed abstract class Measurement(val customer: String, val location: String, va
 }
 
 class EnergyMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value) {
-  override def canEqual(other: Any) = other.isInstanceOf[EnergyMeasurement]
+  	override def canEqual(other: Any) = other.isInstanceOf[EnergyMeasurement]
+	override def toString = "energy " + customer + "/" + location + "/" + wireid + "/" + timestamp + "/" + value
 }
 class CurrentMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value) {
-  override def canEqual(other: Any) = other.isInstanceOf[CurrentMeasurement]
+  	override def canEqual(other: Any) = other.isInstanceOf[CurrentMeasurement]
+	override def toString = "current " + customer + "/" + location + "/" + wireid + "/" + timestamp + "/" + value
 }
 class VampsMeasurement(override val customer: String, override val location: String, override val wireid: String, override val timestamp: Long, override val value: Double) extends Measurement(customer, location, wireid, timestamp, value) {
-  override def canEqual(other: Any) = other.isInstanceOf[VampsMeasurement]
+  	override def canEqual(other: Any) = other.isInstanceOf[VampsMeasurement]
+	override def toString = "vamps " + customer + "/" + location + "/" + wireid + "/" + timestamp + "/" + value
 }

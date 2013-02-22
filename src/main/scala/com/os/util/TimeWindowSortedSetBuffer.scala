@@ -39,13 +39,8 @@ class TimeWindowSortedSetBuffer[A <% Ordered[A]] extends TimeWindow[A] {
 	 * @return    elems that satisfy/not satisfy predicate
 	 */
 	def span(p: A => Boolean): (TimeWindow[A], TimeWindow[A]) = {
-
-		val splitElem = set.find(x => !p(x))
-
-		if (splitElem.isDefined)
-			(new TimeWindowSortedSetBuffer[A](set until splitElem.get), new TimeWindowSortedSetBuffer[A](set from splitElem.get))
-		else
-			(this, new TimeWindowSortedSetBuffer[A])
+		val(left, right) = set span p
+		(new TimeWindowSortedSetBuffer[A](left), new TimeWindowSortedSetBuffer[A](right))
 	}
 
 

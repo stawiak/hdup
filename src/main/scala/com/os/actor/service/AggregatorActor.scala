@@ -6,7 +6,7 @@ import com.os.actor.write.WriterMasterAware
 import com.os.actor._
 import concurrent.duration.Duration
 import util._
-import com.os.util.{TimeWindowHashMap, TimeWindowMap, TimeSource}
+import com.os.util.{TimeWindowSortedMap, TimeWindowHashMap, TimeWindowMap, TimeSource}
 import com.os.measurement.EnergyMeasurement
 
 /**
@@ -18,10 +18,11 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 
 	import context._
 	var interpolatorFactory  : String => ActorRef = DefaultInterpolatorFactory.get
-	var rollups: TimeWindowMap[Long, Double] = new TimeWindowHashMap[Long, Double]()
+	var rollups: TimeWindowMap[Long, Double] = new TimeWindowSortedMap[Long, Double]()
 
 
 	override val lastWill: () => Unit = () => {
+		log.debug("saving remaining rollups")
 		// save remaining rollups
 		for( tv <- rollups)
 			writeMaster !  new EnergyMeasurement(customer, location, "", tv._1, tv._2) with Rollup

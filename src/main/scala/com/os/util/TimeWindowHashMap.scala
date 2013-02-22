@@ -32,8 +32,7 @@ class TimeWindowHashMap[A, B] extends TimeWindowMap[A, B] {
 	}
 
 	def span(p: ((A,B)) => Boolean): (TimeWindowMap[A, B], TimeWindowMap[A, B]) = {
-		val (left, right) = map.span(p)
-		(new TimeWindowHashMap(left), new TimeWindowHashMap(right))
+		throw new NotImplementedError("Map must be sorted as span will stop at first element the condition returns true")
 	}
 
 	/** Retrieves the value which is associated with the given key. This

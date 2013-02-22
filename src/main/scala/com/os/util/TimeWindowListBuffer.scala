@@ -34,8 +34,7 @@ class TimeWindowListBuffer[A] extends TimeWindow[A] {
 	}
 
 	def span(p: A => Boolean): (TimeWindow[A], TimeWindow[A]) = {
-		val (left, right) = list span  p
-		(new TimeWindowListBuffer(left), new TimeWindowListBuffer(right))
+		throw new NotImplementedError("list must be sorted as span will stop at first element the condition returns true")
 	}
 
 
