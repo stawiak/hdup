@@ -6,6 +6,9 @@ import akka.actor.SupervisorStrategy.{Escalate, Resume}
 import akka.actor.DeadLetter
 import akka.actor.OneForOneStrategy
 import concurrent.duration._
+import akka.pattern.ask
+import akka.pattern.pipe
+import akka.util.Timeout
 
 /**
  * Top actor
@@ -25,6 +28,7 @@ class TopActor(   // props of top-level actors to start
 	extends FinalCountDown with LastMohican with SettingsUse {
 
 	import context._
+	implicit val timeout: Timeout = 10 seconds
 
 	var mqlHandler: ActorRef = _
 	var timeWindow: ActorRef = _
@@ -33,6 +37,8 @@ class TopActor(   // props of top-level actors to start
 	var messageListener: ActorRef = _
 	var webService: ActorRef = _
 	var deadLetterListener: ActorRef = _
+
+	var monitor: ActorRef = _
 
 
 	override def preStart() {
@@ -45,6 +51,8 @@ class TopActor(   // props of top-level actors to start
 		webService = actorOf(webServiceProps, name = "webService")
 		deadLetterListener = actorOf(deadLetterListenerProps, name = "deadLetterListener")
 
+		monitor = actorOf(Props[MonitorActor], name = "monitor")
+
 		system.eventStream.subscribe(deadLetterListener, classOf[DeadLetter])
 	}
 
@@ -56,6 +64,10 @@ class TopActor(   // props of top-level actors to start
 
 
 	override def receive: Receive = {
+
+		case Monitor =>
+			timeWindow forward Monitor
+			writeMaster forward Monitor
 
 		case GetWebService =>
 			sender ! webService

@@ -34,7 +34,7 @@ class WriteWorkerActor(val tableName : String, val batchSize: Int) extends Actor
 
 
 	def submitJob() {
-		log.debug("submitting write job to " + tableName)
+		//log.debug("submitting write job to " + tableName)
 		using(writer) {
 			// this can fail anytime and should be retried
 			measurements foreach writer.write

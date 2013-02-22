@@ -3,7 +3,6 @@ package com.os.actor
 import akka.actor.{ActorLogging, PoisonPill, Actor}
 import akka.pattern.ask
 import read.{MQLHandlerAware, ReadMasterAware, RollupReadRequest, MeasurementReadRequest}
-import service.TimeWindowAware
 import spray.routing._
 import spray.http.MediaTypes._
 import org.joda.time.Interval
@@ -24,7 +23,6 @@ import scala.util.{Failure, Try, Success}
  * @author Vadim Bobrov
  */
 
-case object Monitor
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
 class WebServiceActor extends Actor with ActorLogging with SettingsUse with WebService {
@@ -44,7 +42,7 @@ class WebServiceActor extends Actor with ActorLogging with SettingsUse with WebS
 
 
 // this trait defines our service behavior independently from the service actor
-trait WebService extends HttpService with ReadMasterAware with TimeWindowAware with TopAware with MQLHandlerAware {
+trait WebService extends HttpService with ReadMasterAware with TopAware with MQLHandlerAware {
 	this: Actor with ActorLogging with SettingsUse =>
 
 	implicit val timeout: Timeout = 60 seconds
@@ -55,27 +53,6 @@ trait WebService extends HttpService with ReadMasterAware with TimeWindowAware w
 				complete {
 					top ! GracefulStop
 					"shutting down"
-				}
-			} ~
-			path("stats") {
-				respondWithMediaType(`text/html`) {
-					complete {
-						val timeWindowStats = try {
-								Await.result((timeWindow ? Monitor).mapTo[Map[String, Int]], timeout.duration)
-							} catch {
-								case e: Exception =>
-									Map("length" -> "n/a")
-							}
-
-							<html>
-								<body>
-									<h1>Stats</h1>
-									<p>
-										window length: <b>{timeWindowStats("length")}</b>
-									</p>
-								</body>
-							</html>
-					}
 				}
 			} ~
 			path("query") {

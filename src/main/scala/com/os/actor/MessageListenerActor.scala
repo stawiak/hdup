@@ -80,7 +80,7 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 					}
 
 					if (msmt.isDefined)
-						{timeWindow ! msmt.get; log.debug("sending to TW " + msmt.get)}
+						timeWindow ! msmt.get
 				}
 
 			}
