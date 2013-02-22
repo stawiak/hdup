@@ -8,6 +8,7 @@ import com.os.actor.write._
 import com.typesafe.config.ConfigFactory
 import com.os.measurement.{EnergyMeasurement, Measurement}
 import concurrent.duration._
+import com.os.util.ActorCache
 
 /**
  * @author Vadim Bobrov
@@ -21,8 +22,9 @@ class WriteMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system
 	}
 
 
-	val testRouterFactory = {(actorContext : ActorContext, tableName : String, batchSize : Int) =>
-		actorContext.actorOf(Props(new TestWriterActor()))
+	val testRouterFactory = new ActorCache[(String, Int)] {
+		def getAll: Traversable[ActorRef] = Nil
+		def apply(tb: (String, Int))(implicit context: ActorContext) : ActorRef = context.actorOf(Props(new TestWriterActor()))
 	}
 
 	var writeMaster = system.actorOf(Props(new WriteMasterActor(Some(testRouterFactory))))

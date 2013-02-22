@@ -31,7 +31,7 @@ class ReadMasterActor extends FinalCountDown with SettingsUse {
 	var routers = Map[String, ActorRef]()
 
 	val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
-	var routerFactory : (ActorContext, String) => ActorRef = {(actorContext : ActorContext, tableName : String) =>
+	var routerFactory : (String) => ActorRef = {(tableName : String) =>
 		actorOf(Props(new ReadWorkerActor(tableName)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher"))
 	}
 
@@ -50,7 +50,7 @@ class ReadMasterActor extends FinalCountDown with SettingsUse {
 		}
 
 		if (!routers.contains(tableName)) {
-			val newRouter = routerFactory(context, tableName)
+			val newRouter = routerFactory(tableName)
 			routers += (tableName -> newRouter)
 		}
 

@@ -18,7 +18,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 
 	import context._
 
-	val defaultFactory = CachingActorFactory[String]((String) => new InterpolatorActor())
+	val defaultFactory = CachingActorFactory[String]((String) => actorOf(Props(new InterpolatorActor())))
 	val interpolators: ActorCache[String] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
 
 	var rollups: TimeWindowMap[Long, Double] = new TimeWindowSortedMap[Long, Double]()
@@ -44,7 +44,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 			writeMaster ! ismt
 
 		// send for interpolation
-		case msmt : EnergyMeasurement => interpolators(context, msmt.wireid) ! msmt
+		case msmt : EnergyMeasurement => interpolators(msmt.wireid) ! msmt
 
 		case Monitor =>
 			sender ! Map[String, Long]("rollups" -> rollups.size, "interpolators" -> interpolators.getAll.size)

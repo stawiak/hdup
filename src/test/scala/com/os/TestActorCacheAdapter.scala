@@ -8,5 +8,5 @@ import util.ActorCache
  */
 class TestActorCacheAdapter[T](factory: (ActorContext, T) => ActorRef) extends ActorCache[T] {
 		def getAll: Traversable[ActorRef] = Nil
-		def apply(actorContext: ActorContext, t: T): ActorRef = factory(actorContext, t)
+		def apply(t: T)(implicit context: ActorContext): ActorRef = factory(context, t)
 }

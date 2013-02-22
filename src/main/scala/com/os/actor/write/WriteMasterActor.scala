@@ -7,13 +7,17 @@ import concurrent.duration._
 import com.os.actor.util.{SettingsUse, GracefulStop, FinalCountDown}
 import com.os.measurement._
 import com.os.Settings
+import com.os.util.{CachingActorFactory, ActorCache}
+import akka.routing.Broadcast
+import akka.actor.OneForOneStrategy
+import com.os.actor.service.AggregatorActor
 
 
 /**
  * @author Vadim Bobrov
  */
 
-class WriteMasterActor(mockFactory: Option[(ActorContext, String, Int) => ActorRef] = None) extends FinalCountDown with SettingsUse {
+class WriteMasterActor(mockFactory: Option[ActorCache[(String, Int)]] = None) extends FinalCountDown with SettingsUse {
 
 	import context._
 
@@ -23,11 +27,13 @@ class WriteMasterActor(mockFactory: Option[(ActorContext, String, Int) => ActorR
 	var routers = Map[String, ActorRef]()
 
 	val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
-	val defaultRouterFactory = {(_ : ActorContext, tableName : String, batchSize : Int) =>
-		actorOf(Props(new WriteWorkerActor(tableName, batchSize)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher"))
-	}
 
-	val routerFactory = if (mockFactory.isEmpty) defaultRouterFactory else mockFactory.get
+
+	val defaultFactory = CachingActorFactory[(String, Int)]((tableBatch: (String, Int)) =>
+		actorOf(Props(new WriteWorkerActor(tableBatch._1, tableBatch._2)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher")))
+	//TODO val aggregators: ActorCache[(String, Int)] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+
+	val routerFactory = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
 
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
@@ -47,7 +53,7 @@ class WriteMasterActor(mockFactory: Option[(ActorContext, String, Int) => ActorR
 		}
 
 		if (!routers.contains(tableName)) {
-			val newRouter = routerFactory(context, tableName, batchSize)
+			val newRouter = routerFactory((tableName, batchSize))
 			routers += (tableName -> newRouter)
 		}
 

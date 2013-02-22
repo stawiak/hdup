@@ -10,6 +10,8 @@ import javax.management.ObjectName
  * @author Vadim Bobrov
  */
 trait MonitorActorMBean {
+	def stop: Unit
+
 	def getTimeWindowSize:Long
 	def getAggregators:Long
 	def getSentMsmt:Long
@@ -21,7 +23,7 @@ trait MonitorActorMBean {
 case object Monitor
 
 class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware with MonitorActorMBean {
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("Dynamic:name=Data"))
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("dynamic:name=data"))
 
 	@scala.beans.BeanProperty
 	var timeWindowSize:Long = 0
@@ -36,6 +38,8 @@ class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware
 	var rollups:Long = 0
 	@scala.beans.BeanProperty
 	var interpolators:Long = 0
+
+	def stop { top ! GracefulStop }
 
 	override def receive: Receive = {
 
@@ -69,4 +73,5 @@ class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware
 		case GracefulStop =>
 			self ! PoisonPill
 	}
+
 }

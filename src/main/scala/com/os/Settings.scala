@@ -49,7 +49,7 @@ trait SettingsMBean {
 	def getReadTimeout:Long
 }
 final class Settings(config: Config) extends SettingsMBean {
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("Settings:name=Settings"))
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("settings:name=data"))
 
 	val activeMQConfig = config.getConfig("activemq")
 	val hBaseConfig = config.getConfig("hbase")

@@ -1,6 +1,6 @@
 package com.os.actor.service
 
-import akka.actor.{ActorContext, ActorRef}
+import akka.actor.{Props, ActorContext, ActorRef}
 import com.os.measurement.{EnergyMeasurement, Measurement}
 import com.os.actor._
 import util._
@@ -21,7 +21,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 
 	var measurements:TimeWindow[Measurement] = new TimeWindowSortedSetBuffer[Measurement]()
 
-	val defaultFactory = CachingActorFactory[(String, String)]((customerLocation: (String, String)) => new AggregatorActor(customerLocation._1, customerLocation._2, timeWindow = expiredTimeWindow))
+	val defaultFactory = CachingActorFactory[(String, String)]((customerLocation: (String, String)) => actorOf(Props(new AggregatorActor(customerLocation._1, customerLocation._2, timeWindow = expiredTimeWindow))))
 	val aggregators: ActorCache[(String, String)] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
 
 	override def receive: Receive = {
@@ -47,7 +47,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			log.debug("time window received graceful stop")
 			// send out remaining measurements
 			for (tv <- measurements.sortWith(_ < _))
-				aggregators(context, (tv.customer, tv.location)) ! tv
+				aggregators((tv.customer, tv.location)) ! tv
 
 			children foreach ( _ ! GracefulStop)
 			waitAndDie()
@@ -67,7 +67,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			val(oldmsmt, newmsmt) = measurements span (_.timestamp < (current - expiredTimeWindow.toMillis))
 
 			for (tv <- oldmsmt.sortWith(_ < _))
-				aggregators(context, (tv.customer, tv.location)) ! tv
+				aggregators((tv.customer, tv.location)) ! tv
 
 			// discard old values
 			measurements = newmsmt
