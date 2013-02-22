@@ -23,7 +23,8 @@ class WriteMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system
 
 
 	val testRouterFactory = new ActorCache[(String, Int)] {
-		def getAll: Traversable[ActorRef] = Nil
+		def values: Traversable[ActorRef] = Nil
+		def keys: Traversable[(String, Int)] = Nil
 		def apply(tb: (String, Int))(implicit context: ActorContext) : ActorRef = context.actorOf(Props(new TestWriterActor()))
 	}
 

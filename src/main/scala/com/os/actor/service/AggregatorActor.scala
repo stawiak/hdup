@@ -47,7 +47,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 		case msmt : EnergyMeasurement => interpolators(msmt.wireid) ! msmt
 
 		case Monitor =>
-			sender ! Map[String, Long]("rollups" -> rollups.size, "interpolators" -> interpolators.getAll.size)
+			sender ! Map[String, Long]("rollups" -> rollups.size, "interpolators" -> interpolators.keys.size)
 
 		// flush old rollups
 		case Tick => processRollups()

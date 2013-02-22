@@ -4,6 +4,7 @@ import akka.actor.{PoisonPill, ActorLogging, Actor}
 import util.{GracefulStop, Tick, TimedActor}
 import management.ManagementFactory
 import javax.management.ObjectName
+import collection.mutable.ArrayBuffer
 
 
 /**
@@ -18,6 +19,7 @@ trait MonitorActorMBean {
 	def getReceivedBatches:Long
 	def getRollups:Long
 	def getInterpolators:Long
+	def getAggregatorNames: Array[String]
 }
 
 case object Monitor
@@ -39,24 +41,29 @@ class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware
 	@scala.beans.BeanProperty
 	var interpolators:Long = 0
 
+	@scala.beans.BeanProperty
+	var aggregatorNames:Array[String] = Array.empty[String]
+
 	def stop { top ! GracefulStop }
 
 	override def receive: Receive = {
 
-		case m: Map[String, Long] =>
+
+		case m: Map[String, Any] =>
 
 			if (sender.path.parent.name == "timeWindow") {
-				rollups += m("rollups")
-				interpolators += m("interpolators")
+				rollups += m("rollups").asInstanceOf[Long]
+				interpolators += m("interpolators").asInstanceOf[Long]
 			} else
 				sender.path.name match {
 					case "timeWindow" =>
-						timeWindowSize = m("length")
-						aggregators = m("aggregators")
+						timeWindowSize = m("length").asInstanceOf[Int]
+						aggregators = m("aggregators").asInstanceOf[Int]
+						aggregatorNames = (m("aggregatorNames").asInstanceOf[Traversable[(String, String)]] map ( x => x._1 + "@//" + x._2)).toArray
 
 					case "messageProcessor" =>
-						sentMsmt = m("msmt")
-						receivedBatches = m("batch")
+						sentMsmt = m("msmt").asInstanceOf[Long]
+						receivedBatches = m("batch").asInstanceOf[Long]
 
 					case s =>
 						log.debug("monitor received from {}", s)

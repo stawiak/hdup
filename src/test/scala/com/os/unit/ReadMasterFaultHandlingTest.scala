@@ -25,8 +25,10 @@ class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system)
 	}
 
 	var readMaster = TestActorRef(new TestReadMasterActor(), name = "readMaster")
-	readMaster.underlyingActor.routerFactory = {(actorContext : ActorContext, tableName : String) =>
-		actorContext.actorOf(Props[SlowActor])
+	readMaster.underlyingActor.routerFactory = {(tableName : String) =>
+		//TODO
+		null
+		//actorContext.actorOf(Props[SlowActor])
 	}
 
 	"A read master" should	"not block on its child worker" in {

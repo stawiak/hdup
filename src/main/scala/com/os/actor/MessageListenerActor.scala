@@ -62,6 +62,8 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 				val customer = msg.getString("customer")
 				val location = msg.getString("location")
 
+				log.debug("picking up job for {}@//{}", customer, location)
+
 				val dataArray = DefaultJSONFactory.getInstance().jsonArrayFromZipped(msg.getString("blob"))
 
 				for(o <-dataArray; if o.isInstanceOf[JSONObject]) {
@@ -76,7 +78,8 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 					val value: Double = jo.optDouble("value", 0)
 
 					val msmt: Option[Measurement] = mxo.getChannelName match {
-						case "Accumulated Energy A" | "Accumulated Energy B" | "Accumulated Energy C" =>
+							//TODO: remove current active energy
+						case "Accumulated Energy A" | "Accumulated Energy B" | "Accumulated Energy C"            | "Current Active Energy A" | "Current Active Energy B" | "Current Active Energy C" =>
 							Some(new EnergyMeasurement(customer, location, wireid, mxo.getTimestamp.getTime, value))
 						case "Through RMS Current A" | "Through RMS Current B" | "Through RMS Current C" =>
 							Some(new CurrentMeasurement(customer, location, wireid, mxo.getTimestamp.getTime, value))
@@ -86,6 +89,7 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 					}
 
 					if (msmt.isDefined) {
+						//log.debug("sending {}", msmt.get)
 						timeWindow ! msmt.get
 						counterMsmt += 1
 					}

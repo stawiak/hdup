@@ -6,8 +6,10 @@ import akka.actor.{ActorRef, ActorContext}
  * @author Vadim Bobrov
  */
 trait ActorCache[T] {
-	def getAll: Traversable[ActorRef]
+	def values: Traversable[ActorRef]
+	def keys: Traversable[T]
 	def apply(t: T)(implicit context: ActorContext) : ActorRef
+	def size:Int = keys.size
 }
 
 object CachingActorFactory {
@@ -16,7 +18,8 @@ object CachingActorFactory {
 	private class CachingActorFactoryImpl[T](creator: T => ActorRef) extends ActorCache[T] {
 		var created = Map[T, ActorRef]()
 
-		def getAll: Traversable[ActorRef] = created.values
+		def values: Traversable[ActorRef] = created.values
+		def keys: Traversable[T] = created.keys
 
 		def apply(t: T)(implicit context: ActorContext) : ActorRef = {
 			if (!created.contains(t))

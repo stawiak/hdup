@@ -22,8 +22,8 @@ class TimeWindowWriteMasterTest(_system: ActorSystem) extends TestKit(_system) w
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
 	val testAggregatorFactory: ActorCache[(String, String)] = new ActorCache[(String, String)] {
-		def getAll: Traversable[ActorRef] = Nil
-
+		def values: Traversable[ActorRef] = Nil
+		def keys: Traversable[(String, String)] = Nil
 		def apply(t: (String, String))(implicit context: ActorContext): ActorRef = context.actorOf(Props(new NoGoodnik))
 	}
 

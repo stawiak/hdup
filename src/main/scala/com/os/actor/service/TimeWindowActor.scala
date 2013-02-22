@@ -40,8 +40,8 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 		case Tick => processWindow
 
 		case Monitor =>
-			sender ! Map[String, Long]("length" -> measurements.size, "aggregators" -> aggregators.getAll.size)
-			aggregators.getAll foreach (_ forward Monitor)
+			sender ! Map[String, Any]("length" -> measurements.size, "aggregators" -> aggregators.keys.size, "aggregatorNames" -> aggregators.keys)
+			aggregators.values foreach (_ forward Monitor)
 
 		case GracefulStop =>
 			log.debug("time window received graceful stop")
