@@ -57,16 +57,16 @@ object Scanner {
 		def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Iterable[TimedValue] = {
 			val startRowKey = RowKeyUtils.createRowKey(customer, location, wireid, end)
 			val endRowKey = RowKeyUtils.createRowKey(customer, location, wireid, start)
-			scan(startRowKey, endRowKey)
+			scan(startRowKey, endRowKey, RowKeyUtils.getTimestamp(_) )
 		}
 
 		def scan(customer : String, location : String, start : Long, end : Long) : Iterable[TimedValue] = {
 			val startRowKey = RowKeyUtils.createRollupRowKey(customer, location, end)
 			val endRowKey = RowKeyUtils.createRollupRowKey(customer, location, start)
-			scan(startRowKey, endRowKey)
+			scan(startRowKey, endRowKey, RowKeyUtils.getTimestampFromRollup(_))
 		}
 
-		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte]) : Iterable[TimedValue] = {
+		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte], timestampExtractor:(Array[Byte]) => Long) : Iterable[TimedValue] = {
 
 			val table = TableFactory(tableName, settings)
 
@@ -95,7 +95,7 @@ object Scanner {
 
 				val row = res.getRow
 				//output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
-				output += new TimedValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy))
+				output += new TimedValue(timestampExtractor(row), Bytes.toDouble(energy))
 			})
 
 			results.close()

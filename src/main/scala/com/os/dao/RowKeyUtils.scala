@@ -91,4 +91,14 @@ object RowKeyUtils {
     Long.MaxValue - reverseTimestamp
   }
 
+	/**
+	 * extract timestamp from rowkey bytes
+	 * @param rowkey bytes to extract from
+	 * @return
+	 */
+	def getTimestampFromRollup(rowkey : Array[Byte]) : Long = {
+		val reverseTimestamp = Bytes.toLong(rowkey, SIZEOF_STRING + SIZEOF_STRING)
+		Long.MaxValue - reverseTimestamp
+	}
+
 }
