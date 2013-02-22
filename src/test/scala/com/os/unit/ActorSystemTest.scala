@@ -5,14 +5,14 @@ import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import akka.testkit._
 import com.typesafe.config.ConfigFactory
-import com.os.Settings
+import com.os.{TestActors, Settings}
 import com.os.actor.TopActor
 import com.os.actor.util.DeadLetterListener
 
 /**
  * @author Vadim Bobrov
  */
-class ActorSystemTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
+class ActorSystemTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
@@ -24,7 +24,8 @@ class ActorSystemTest(_system: ActorSystem) extends TestKit(_system) with FlatSp
 		Props(new BasicTestActor),
 		Props(new BasicTestActor),
 		Props(new BasicTestActor),
-		Props[DeadLetterListener]
+		Props[DeadLetterListener],
+		Props(new BasicTestActor)
 	)), name = "top")
 
 	"top actors" should "load ok" in {

@@ -11,6 +11,7 @@ import scala.concurrent.duration._
 import com.os.TestActors
 import com.os.actor.TopActor
 import com.os.actor.util.DeadLetterListener
+import akka.util.Timeout
 
 /**
  * @author Vadim Bobrov
@@ -25,7 +26,8 @@ class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_sys
 		Props(new TestActorForwarder),
 		Props(new NoGoodnik),
 		Props(new NoGoodnik),
-		Props[DeadLetterListener]
+		Props[DeadLetterListener],
+		Props(new NoGoodnik)
 	)), name = "top")
 	// allow some time to bring up actors
 	Thread.sleep(1000)
@@ -43,7 +45,8 @@ class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_sys
 			underTest !  new EnergyMeasurement("", "", "", 120001,5)
 			underTest !  new EnergyMeasurement("", "", "", 120002,6)
 
-			expectMsgAllOf(new EnergyMeasurement("", "", "", 120000,4), new EnergyMeasurement("", "", "", 120000,4))
+			// 7 seconds to allow for processing time window
+			expectMsgAllOf[EnergyMeasurement](7 seconds, new EnergyMeasurement("", "", "", 120000,4), new EnergyMeasurement("", "", "", 120000,4))
 		}
 
 		"receive 2 values from interpolator and 2 from aggregator when sent 4 expired messages to aggregator" in {
@@ -52,7 +55,8 @@ class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_sys
 			underTest !  new EnergyMeasurement("", "", "", 240001,60005)
 			underTest !  new EnergyMeasurement("", "", "", 240002,60006)
 
-			expectMsgAllOf(
+			// 7 seconds to allow for processing time window
+			expectMsgAllOf[EnergyMeasurement](7 seconds,
 				new EnergyMeasurement("", "", "", 180000,4),
 				new EnergyMeasurement("", "", "", 240000,60004),
 				new EnergyMeasurement("", "", "", 180000,4),
@@ -71,7 +75,12 @@ class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_sys
 			underTest !  new EnergyMeasurement("", "", "2", 120001,5)
 			underTest !  new EnergyMeasurement("", "", "2", 120002,6)
 
-			expectMsgAllOf(new EnergyMeasurement("", "", "1", 120000,4), new EnergyMeasurement("", "", "2", 120000,4), new EnergyMeasurement("", "", "", 120000,8))
+			// 7 seconds to allow for processing time window
+			expectMsgAllOf[EnergyMeasurement](7 seconds,
+				new EnergyMeasurement("", "", "1", 120000,4),
+				new EnergyMeasurement("", "", "2", 120000,4),
+				new EnergyMeasurement("", "", "", 120000,8)
+			)
 		}
 
 	}

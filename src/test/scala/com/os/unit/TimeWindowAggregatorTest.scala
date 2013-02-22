@@ -35,7 +35,8 @@ class TimeWindowAggregatorTest(_system: ActorSystem) extends TestKit(_system) wi
 		Props(new NoGoodnik),
 		Props(new NoGoodnik),
 		Props(new NoGoodnik),
-		Props[DeadLetterListener]
+		Props[DeadLetterListener],
+		Props(new NoGoodnik)
 	)), name = "top")
 	// allow some time to bring up actors
 	Thread.sleep(1000)

@@ -4,7 +4,7 @@ import org.scalatest.{FlatSpec, OneInstancePerTest, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}
-import com.os.{Settings, DataGenerator}
+import com.os.{TestActors, Settings, DataGenerator}
 import com.os.util.Timing
 import com.os.actor.util.{DeadLetterListener, GracefulStop, Counter, Stats}
 import com.typesafe.config.ConfigFactory
@@ -17,7 +17,7 @@ import com.os.mql.parser.MQLParser
 /**
  * @author Vadim Bobrov
  */
-class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest with Timing {
+class SimulationTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest with Timing {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 	val settings = Settings(system.settings.config)
@@ -28,7 +28,8 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with FlatSpe
 		Props(new WriteMasterActor),
 		Props(new MessageListenerActor(settings.ActiveMQHost, settings.ActiveMQPort, settings.ActiveMQQueue)),
 		Props[WebServiceActor],
-		Props[DeadLetterListener]
+		Props[DeadLetterListener],
+	    Props(new NoGoodnik)
 	)), name = "top")
 
 	lazy val timeWindow = system.actorFor("/user/top/timeWindow")

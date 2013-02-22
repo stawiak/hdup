@@ -6,7 +6,7 @@ import com.os.actor.write.WriterMasterAware
 import com.os.actor._
 import concurrent.duration.Duration
 import util._
-import com.os.util.{TimeWindowSortedMap, TimeWindowHashMap, TimeWindowMap, TimeSource}
+import com.os.util._
 import com.os.measurement.EnergyMeasurement
 
 /**
@@ -14,10 +14,13 @@ import com.os.measurement.EnergyMeasurement
  *
  * @author Vadim Bobrov
  */
-class AggregatorActor(val customer: String, val location: String, var timeWindow : Duration, val timeSource: TimeSource = new TimeSource {}) extends FinalCountDown with WriterMasterAware with TimedActor with SettingsUse {
+class AggregatorActor(val customer: String, val location: String, var timeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[String]] = None) extends FinalCountDown with WriterMasterAware with TimedActor with SettingsUse {
 
 	import context._
-	var interpolatorFactory  : String => ActorRef = DefaultInterpolatorFactory.get
+
+	val defaultFactory = CachingActorFactory[String]((String) => new InterpolatorActor())
+	val interpolators: ActorCache[String] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+
 	var rollups: TimeWindowMap[Long, Double] = new TimeWindowSortedMap[Long, Double]()
 
 
@@ -41,7 +44,10 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 			writeMaster ! ismt
 
 		// send for interpolation
-		case msmt : EnergyMeasurement => interpolatorFactory(msmt.wireid) ! msmt
+		case msmt : EnergyMeasurement => interpolators(context, msmt.wireid) ! msmt
+
+		case Monitor =>
+			sender ! Map[String, Long]("rollups" -> rollups.size, "interpolators" -> interpolators.getAll.size)
 
 		// flush old rollups
 		case Tick => processRollups()
@@ -66,19 +72,5 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 		// discard old values
 		rollups = newmsmt
 	}
-
-	object DefaultInterpolatorFactory {
-		var interpolators = Map[String, ActorRef]()
-
-		def get(wireid : String) : ActorRef = {
-			if (!interpolators.contains(wireid)) {
-				log.debug("creating new interpolator for " + wireid)
-				interpolators += (wireid -> actorOf(Props(new InterpolatorActor())))
-			}
-
-			interpolators(wireid)
-		}
-	}
-
 
  }

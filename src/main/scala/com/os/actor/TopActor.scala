@@ -23,7 +23,8 @@ class TopActor(   // props of top-level actors to start
 				  val writeMasterProps: Props,
 				  val messageListenerProps: Props,
 				  val webServiceProps: Props,
-				  val deadLetterListenerProps: Props
+				  val deadLetterListenerProps: Props,
+				  val monitorProps: Props
 				  )
 	extends FinalCountDown with LastMohican with SettingsUse {
 
@@ -37,7 +38,6 @@ class TopActor(   // props of top-level actors to start
 	var messageListener: ActorRef = _
 	var webService: ActorRef = _
 	var deadLetterListener: ActorRef = _
-
 	var monitor: ActorRef = _
 
 
@@ -50,8 +50,7 @@ class TopActor(   // props of top-level actors to start
 		messageListener = actorOf(messageListenerProps, name = "jmsListener")
 		webService = actorOf(webServiceProps, name = "webService")
 		deadLetterListener = actorOf(deadLetterListenerProps, name = "deadLetterListener")
-
-		monitor = actorOf(Props[MonitorActor], name = "monitor")
+		monitor = actorOf(monitorProps, name = "monitor")
 
 		system.eventStream.subscribe(deadLetterListener, classOf[DeadLetter])
 	}

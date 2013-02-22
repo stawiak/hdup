@@ -58,7 +58,6 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 
 			case msg : MapMessage => {
 
-				log.debug("picking up a batch from ActiveMQ")
 				counterBatch += 1
 				val customer = msg.getString("customer")
 				val location = msg.getString("location")

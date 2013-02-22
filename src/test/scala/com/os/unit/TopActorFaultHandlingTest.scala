@@ -8,7 +8,7 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.typesafe.config.ConfigFactory
 import com.os.actor.{WebServiceActor, MessageListenerActor, TopActor}
 import com.os.actor.util.{DeadLetterListener, GracefulStop}
-import com.os.Settings
+import com.os.{TestActors, Settings}
 import com.os.actor.read.{MQLHandlerActor, ReadMasterActor}
 import com.os.actor.write.WriteMasterActor
 import akka.pattern._
@@ -20,7 +20,7 @@ import com.os.mql.parser.MQLParser
 /**
  * @author Vadim Bobrov
  */
-class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest {
+class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest {
 
 	implicit val timeout: Timeout = 10 seconds
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
@@ -33,7 +33,8 @@ class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) w
 		Props(new WriteMasterActor),
 		Props(new MessageListenerActor(settings.ActiveMQHost, settings.ActiveMQPort, settings.ActiveMQQueue)),
 		Props[WebServiceActor],
-		Props[DeadLetterListener]
+		Props[DeadLetterListener],
+		Props(new NoGoodnik)
 	)), name = "top")
 
 

@@ -30,7 +30,8 @@ object Main extends App with SprayCanHttpServerApp {
 			Props(new MessageListenerActor(settings.ActiveMQHost, settings.ActiveMQPort, settings.ActiveMQQueue)),
 			Props[WebServiceActor],
 			//Props[HttpServiceActor],
-			Props[DeadLetterListener]
+			Props[DeadLetterListener],
+			Props[MonitorActor]
 		)), name = "top")
 
 	implicit val timeout: Timeout = 60 seconds
