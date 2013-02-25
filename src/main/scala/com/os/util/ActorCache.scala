@@ -13,9 +13,9 @@ trait ActorCache[T] {
 }
 
 object CachingActorFactory {
-	def apply[T](creator: T => ActorRef): ActorCache[T] = new CachingActorFactoryImpl[T](creator)
+	def apply[T](creator: T => ActorRef)(implicit context: ActorContext): ActorCache[T] = new CachingActorFactoryImpl[T](creator, context)
 
-	private class CachingActorFactoryImpl[T](creator: T => ActorRef) extends ActorCache[T] {
+	private class CachingActorFactoryImpl[T](creator: T => ActorRef, val context: ActorContext) extends ActorCache[T] {
 		var created = Map[T, ActorRef]()
 
 		def values: Traversable[ActorRef] = created.values

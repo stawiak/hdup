@@ -7,11 +7,15 @@ import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import com.typesafe.config.ConfigFactory
 import scala._
 import scala.Predef._
-import com.os.actor.read.{MeasurementReadRequest, ReadMasterActor}
+import com.os.actor.read.{ReadRequest, ReadWorkerActor, MeasurementReadRequest, ReadMasterActor}
 import org.joda.time.Interval
 import concurrent.duration._
-import com.os.util.{Ping, Pong}
+import com.os.util.{ActorCache, CachingActorFactory, Ping, Pong}
 import com.os.TestActors
+import akka.routing.RoundRobinRouter
+import com.os.actor.read.MeasurementReadRequest
+import scala.Some
+import com.os.actor.write.WriteMasterActor
 
 /**
  * @author Vadim Bobrov
@@ -24,12 +28,13 @@ class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system)
 		system.shutdown()
 	}
 
-	var readMaster = TestActorRef(new TestReadMasterActor(), name = "readMaster")
-	readMaster.underlyingActor.routerFactory = {(tableName : String) =>
-		//TODO
-		null
-		//actorContext.actorOf(Props[SlowActor])
+	val testRouterFactory = new ActorCache[ReadRequest] {
+		def values: Traversable[ActorRef] = Nil
+		def keys: Traversable[ReadRequest] = Nil
+		def apply(r: ReadRequest)(implicit context: ActorContext) : ActorRef = context.actorOf(Props(new SlowActor()))
 	}
+
+	var readMaster = system.actorOf(Props(new TestReadMasterActor(Some(testRouterFactory))))
 
 	"A read master" should	"not block on its child worker" in {
 		readMaster ! MeasurementReadRequest("", "", "", "", new Interval(0,1))
@@ -37,7 +42,7 @@ class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system)
 		expectMsg(1 second, Pong)
 	}
 
-	class TestReadMasterActor extends ReadMasterActor {
+	class TestReadMasterActor(mockFactory: Option[ActorCache[ReadRequest]]) extends ReadMasterActor(mockFactory) {
 		private final def pingPong: Receive = {	case Ping => sender ! Pong }
 		override def receive = pingPong orElse super.receive
 	}
