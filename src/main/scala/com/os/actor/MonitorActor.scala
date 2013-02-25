@@ -25,6 +25,8 @@ trait MonitorActorMBean {
 case object Monitor
 
 class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware with MonitorActorMBean {
+
+	type Monitoring = Map[String, Any]
 	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("dynamic:name=data"))
 
 	@scala.beans.BeanProperty
@@ -49,7 +51,7 @@ class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware
 	override def receive: Receive = {
 
 
-		case m: Map[String, Any] =>
+		case m: Monitoring =>
 
 			if (sender.path.parent.name == "timeWindow") {
 				rollups += m("rollups").asInstanceOf[Long]

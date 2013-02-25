@@ -131,10 +131,12 @@ trait WebService extends HttpService with ReadMasterAware with TopAware with MQL
 	}
 
 	private def mqlRequest(mql: String, mediaType: MediaType): Try[String] = {
-		Success
+
+		type QueryResultSet = Iterable[Map[String, Any]]
+
 		val res = Await.result((mqlHandler ? mql), timeout.duration)
 		res match {
-			case values: Iterable[Map[String, Any]] =>
+			case values: QueryResultSet =>
 				val sb = new StringBuilder
 				//TODO: implement JSON
 				if (mediaType == `text/csv`)
