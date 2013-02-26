@@ -24,7 +24,7 @@ class SimulationTest(_system: ActorSystem) extends TestKit(_system) with TestAct
 	val top = system.actorOf(Props(new TopActor(
 		Props(new MQLHandlerActor(MQLParser.apply)),
 		Props(new TimeWindowActor(settings.ExpiredTimeWindow)),
-		Props[ReadMasterActor],
+		Props(new ReadMasterActor),
 		Props(new WriteMasterActor),
 		Props(new MessageListenerActor(settings.ActiveMQHost, settings.ActiveMQPort, settings.ActiveMQQueue)),
 		Props[WebServiceActor],
