@@ -8,6 +8,7 @@ import akka.actor.Terminated
 */
 
 case object GracefulStop
+case object SaveState
 /**
  * A marker trait to indicate that this is the last actor and
  * the entire actor system needs to be shut down when done

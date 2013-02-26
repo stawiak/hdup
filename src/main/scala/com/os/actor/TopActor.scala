@@ -73,7 +73,9 @@ class TopActor(   // props of top-level actors to start
 			sender ! webService
 
 		case GracefulStop =>
-			log.debug("top received graceful stop - stopping top level actors")
+			log.debug("top received GracefulStop - stopping top level actors")
+			children foreach (_ ! SaveState)
+
 			// time window must be flushed before stopping write master
 			killChild(timeWindow, () => killChild(writeMaster))
 			// do the rest

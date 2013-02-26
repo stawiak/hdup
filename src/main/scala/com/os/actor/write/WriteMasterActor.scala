@@ -1,39 +1,50 @@
 package com.os.actor.write
 
 import akka.actor._
-import akka.routing.{RoundRobinRouter, Broadcast, DefaultResizer}
+import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
 import com.os.actor.util.{SettingsUse, GracefulStop, FinalCountDown}
 import com.os.measurement._
 import com.os.Settings
-import com.os.util.{CachingActorFactory, ActorCache}
-import akka.routing.Broadcast
+import com.os.util.{MappableCachingActorFactory, MappableActorCache}
+import com.os.interpolation.NQueue
+import scala.Predef._
 import akka.actor.OneForOneStrategy
-import com.os.actor.service.AggregatorActor
+import akka.routing.Broadcast
+import concurrent.Future
 
 
 /**
  * @author Vadim Bobrov
  */
 
-class WriteMasterActor(mockFactory: Option[ActorCache[(String, Int)]] = None) extends FinalCountDown with SettingsUse {
+class WriteMasterActor(mockFactory: Option[MappableActorCache[Measurement, (String, Int)]] = None) extends FinalCountDown with SettingsUse {
 
 	import context._
-
+	type AggregatorState = (String, String, Future[Traversable[NQueue]])
 	// Since a restart does not clear out the mailbox, it often is best to terminate
 	// the children upon failure and re-create them explicitly from the supervisor
-
-	var routers = Map[String, ActorRef]()
 
 	val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
 
-	val defaultFactory = CachingActorFactory[(String, Int)]((tableBatch: (String, Int)) =>
-		actorOf(Props(new WriteWorkerActor(tableBatch._1, tableBatch._2)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher")))
-	//TODO val aggregators: ActorCache[(String, Int)] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+	val defaultFactory = MappableCachingActorFactory[Measurement, (String, Int)](
+		msmtToTable,
+		(tableBatch: (String, Int)) =>
+			actorOf(Props(new WriteWorkerActor(tableBatch._1, tableBatch._2)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher"))
+	)
 
-	val routerFactory = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+	private def msmtToTable(msmt : Measurement) : (String, Int) = msmt match  {
+			case msmt: Interpolated => (Settings.MinuteInterpolatedTableName, settings.DerivedDataBatchSize)
+			case msmt: Rollup => (Settings.RollupTableName, settings.DerivedDataBatchSize)
+			case msmt: EnergyMeasurement => (Settings.TableName, settings.BatchSize)
+			case msmt: CurrentMeasurement => (Settings.CurrentTableName, settings.BatchSize)
+			case msmt: VampsMeasurement => (Settings.VampsTableName, settings.BatchSize)
+	}
+
+	val routers = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+
 
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
@@ -42,29 +53,15 @@ class WriteMasterActor(mockFactory: Option[ActorCache[(String, Int)]] = None) ex
 		}
 
 
-	private def getRouter(msmt : Measurement) : ActorRef = {
-
-		val (tableName, batchSize) = msmt match  {
-			case msmt: Interpolated => (Settings.MinuteInterpolatedTableName, settings.DerivedDataBatchSize)
-			case msmt: Rollup => (Settings.RollupTableName, settings.DerivedDataBatchSize)
-			case msmt: EnergyMeasurement => (Settings.TableName, settings.BatchSize)
-			case msmt: CurrentMeasurement => (Settings.CurrentTableName, settings.BatchSize)
-			case msmt: VampsMeasurement => (Settings.VampsTableName, settings.BatchSize)
-		}
-
-		if (!routers.contains(tableName)) {
-			val newRouter = routerFactory((tableName, batchSize))
-			routers += (tableName -> newRouter)
-		}
-
-		routers(tableName)
-	}
 
 	override def receive: Receive = {
 
 		case msmt : Measurement =>
-			getRouter(msmt) ! msmt
+			routers(msmt) ! msmt
 
+
+		case as: AggregatorState =>
+			//TODO save aggregator state
 
 		case GracefulStop =>
 			log.debug("write master received graceful stop")

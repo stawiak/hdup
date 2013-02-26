@@ -8,7 +8,7 @@ import com.os.actor.write._
 import com.typesafe.config.ConfigFactory
 import com.os.measurement.{EnergyMeasurement, Measurement}
 import concurrent.duration._
-import com.os.util.ActorCache
+import com.os.util.{MappableActorCache, ActorCache}
 
 /**
  * @author Vadim Bobrov
@@ -22,10 +22,10 @@ class WriteMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system
 	}
 
 
-	val testRouterFactory = new ActorCache[(String, Int)] {
+	val testRouterFactory = new MappableActorCache[Measurement, (String, Int)] {
 		def values: Traversable[ActorRef] = Nil
 		def keys: Traversable[(String, Int)] = Nil
-		def apply(tb: (String, Int))(implicit context: ActorContext) : ActorRef = context.actorOf(Props(new TestWriterActor()))
+		def apply(msmt: Measurement)(implicit context: ActorContext) : ActorRef = context.actorOf(Props(new TestWriterActor()))
 	}
 
 	var writeMaster = system.actorOf(Props(new WriteMasterActor(Some(testRouterFactory))))

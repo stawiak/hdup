@@ -73,7 +73,6 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 					// Get the name if we don't have a valid mac address
 					val wireid: String = if (mxo.getMac == 0L) mxo.getName else "0x" + mxo.getMac.toHexString.toUpperCase
 
-
 					val jo = DefaultJSONFactory.getInstance().jsonObject(mxo.getValue)
 					val value: Double = jo.optDouble("value", 0)
 
@@ -88,7 +87,8 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 						case _ => None
 					}
 
-					if (msmt.isDefined) {
+					// yes, wireid can be null!!!
+					if (msmt.isDefined && wireid != null) {
 						//log.debug("sending {}", msmt.get)
 						timeWindow ! msmt.get
 						counterMsmt += 1

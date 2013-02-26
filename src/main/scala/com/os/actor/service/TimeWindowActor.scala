@@ -43,11 +43,16 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			sender ! Map[String, Any]("length" -> measurements.size, "aggregators" -> aggregators.keys.size, "aggregatorNames" -> aggregators.keys)
 			aggregators.values foreach (_ forward Monitor)
 
-		case GracefulStop =>
-			log.debug("time window received graceful stop")
+		case SaveState =>
+			log.debug("time window received SaveState")
 			// send out remaining measurements
 			for (tv <- measurements.sortWith(_ < _))
 				aggregators((tv.customer, tv.location)) ! tv
+
+			children foreach ( _ ! SaveState)
+
+		case GracefulStop =>
+			log.debug("time window received GracefulStop")
 
 			children foreach ( _ ! GracefulStop)
 			waitAndDie()

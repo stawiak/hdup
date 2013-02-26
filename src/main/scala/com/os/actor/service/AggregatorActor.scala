@@ -1,13 +1,17 @@
 package com.os.actor.service
 
-import akka.actor.{PoisonPill, Props, ActorRef}
+import akka.actor.{PoisonPill, Props}
 import com.os.measurement._
 import com.os.actor.write.WriterMasterAware
 import com.os.actor._
-import concurrent.duration.Duration
 import util._
 import com.os.util._
 import com.os.measurement.EnergyMeasurement
+import akka.pattern.ask
+import com.os.interpolation.NQueue
+import akka.util.Timeout
+import concurrent.duration._
+import concurrent.Future
 
 /**
  * Rollup by customer and location
@@ -52,10 +56,19 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 		// flush old rollups
 		case Tick => processRollups()
 
-		case GracefulStop =>
-			log.debug("aggregator received graceful stop")
+		case SaveState =>
+			log.debug("aggregator received SaveState")
 			//TODO dump remaining rollups - watch for new messages as depressionMode = false, beware of sortWith not implemented yet in TimeWindowMap
+			lastWill()
 
+			implicit val timeout: Timeout = 10 seconds
+
+			val state: Future[Traversable[NQueue]] = Future.traverse(children)(child => (child ? SaveState).mapTo[NQueue])
+			writeMaster ! (customer, location, state)
+
+		case GracefulStop =>
+			log.debug("aggregator received GracefulStop")
+			//TODO dump remaining rollups - watch for new messages as depressionMode = false, beware of sortWith not implemented yet in TimeWindowMap
 			waitAndDie(depressionMode = false)
 			children foreach (_ ! PoisonPill)
 	}

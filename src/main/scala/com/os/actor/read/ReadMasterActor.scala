@@ -8,7 +8,7 @@ import akka.util.Timeout
 import com.os.actor.util.{SettingsUse, GracefulStop, FinalCountDown}
 import com.os.Settings
 import org.joda.time.Interval
-import com.os.util.{CachingActorFactory, ActorCache}
+import com.os.util.{MappableActorCache, MappableCachingActorFactory, CachingActorFactory, ActorCache}
 import akka.routing.Broadcast
 import akka.actor.OneForOneStrategy
 
@@ -20,7 +20,7 @@ sealed abstract class ReadRequest
 case class MeasurementReadRequest(tableName: String, customer: String, location: String, wireid: String, period: Interval) extends ReadRequest
 case class RollupReadRequest(customer: String, location: String, period: Interval) extends ReadRequest
 
-class ReadMasterActor(mockFactory: Option[ActorCache[ReadRequest]] = None) extends FinalCountDown with SettingsUse {
+class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, String]] = None) extends FinalCountDown with SettingsUse {
 
 	import context._
 	implicit val timeout: Timeout = settings.ReadTimeout
@@ -36,14 +36,14 @@ class ReadMasterActor(mockFactory: Option[ActorCache[ReadRequest]] = None) exten
 		case r: MeasurementReadRequest => r.tableName
 	}
 
-	val defaultFactory = CachingActorFactory[ReadRequest](
-		(request: ReadRequest) =>
+	val defaultFactory = MappableCachingActorFactory[ReadRequest, String](requestToTable,
+		(tableName: String) =>
 			actorOf(
-				Props(new ReadWorkerActor(requestToTable(request))).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher")
+				Props(new ReadWorkerActor(tableName)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher")
 			)
 	)
 
-	val routers: ActorCache[ReadRequest] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+	val routers: MappableActorCache[ReadRequest, String] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
 
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
