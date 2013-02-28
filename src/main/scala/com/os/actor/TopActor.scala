@@ -73,7 +73,8 @@ class TopActor(   // props of top-level actors to start
 			sender ! webService
 
 		case StartMessageListener =>
-			messageListener = Some(actorOf(messageListenerProps, name = "jmsListener"))
+			if (!messageListener.isDefined || messageListener.get.isTerminated)
+				messageListener = Some(actorOf(messageListenerProps, name = "jmsListener"))
 
 		case StopMessageListener =>
 			if (messageListener.isDefined && !messageListener.get.isTerminated)
