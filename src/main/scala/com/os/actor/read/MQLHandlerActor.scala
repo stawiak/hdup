@@ -2,8 +2,8 @@ package com.os.actor.read
 
 import akka.actor.{Props, PoisonPill, ActorLogging, Actor}
 import com.os.mql.parser.MQLParser
-import com.os.actor.util.GracefulStop
 import akka.routing.RoundRobinRouter
+import com.os.actor.GracefulStop
 
 /**
   * @author Vadim Bobrov

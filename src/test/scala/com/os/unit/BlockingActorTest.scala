@@ -1,6 +1,6 @@
 package com.os.unit
 
-import akka.testkit.{TestProbe, TestActorRef, TestKit, ImplicitSender}
+import akka.testkit.{TestActorRef, TestKit, ImplicitSender}
 import akka.actor._
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{FlatSpec, BeforeAndAfterAll}

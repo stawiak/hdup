@@ -11,7 +11,6 @@ import concurrent.Await
 import java.sql.Timestamp
 import akka.util.Timeout
 import concurrent.duration._
-import util.{SaveState, GracefulStop}
 import com.os.Settings
 import spray.http.MediaType
 import com.os.exchange.TimeSeriesData
@@ -58,6 +57,18 @@ trait WebService extends HttpService with ReadMasterAware with TopAware with MQL
 				complete {
 					top ! SaveState
 					"saving state"
+				}
+			} ~
+			path("startmsg") {
+				complete {
+					top ! StartMessageListener
+					"starting message listener"
+				}
+			} ~
+			path("stopmsg") {
+				complete {
+					top ! StopMessageListener
+					"stopping message listener"
 				}
 			} ~
 			path("query") {

@@ -6,9 +6,9 @@ import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}
 import com.os.{TestActors, Settings, DataGenerator}
 import com.os.util.Timing
-import com.os.actor.util.{DeadLetterListener, GracefulStop, Counter, Stats}
+import com.os.actor.util.{DeadLetterListener, Counter, Stats}
 import com.typesafe.config.ConfigFactory
-import com.os.actor.{WebServiceActor, MessageListenerActor, TopActor}
+import com.os.actor.{GracefulStop, WebServiceActor, MessageListenerActor, TopActor}
 import com.os.actor.read.{ReadMasterActor, MQLHandlerActor}
 import com.os.actor.service.TimeWindowActor
 import com.os.actor.write.WriteMasterActor

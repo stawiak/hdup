@@ -6,8 +6,8 @@ import akka.actor._
 import com.os.measurement.{Measurement, EnergyMeasurement}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.typesafe.config.ConfigFactory
-import com.os.actor.{WebServiceActor, MessageListenerActor, TopActor}
-import com.os.actor.util.{DeadLetterListener, GracefulStop}
+import com.os.actor.{GracefulStop, WebServiceActor, MessageListenerActor, TopActor}
+import com.os.actor.util.DeadLetterListener
 import com.os.{TestActors, Settings}
 import com.os.actor.read.{MQLHandlerActor, ReadMasterActor}
 import com.os.actor.write.WriteMasterActor

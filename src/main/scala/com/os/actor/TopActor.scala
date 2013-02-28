@@ -33,7 +33,7 @@ class TopActor(   // props of top-level actors to start
 	var timeWindow: ActorRef = _
 	var readMaster: ActorRef = _
 	var writeMaster: ActorRef = _
-	var messageListener: ActorRef = _
+	var messageListener: Option[ActorRef] = None
 	var webService: ActorRef = _
 	var deadLetterListener: ActorRef = _
 	var monitor: ActorRef = _
@@ -45,7 +45,8 @@ class TopActor(   // props of top-level actors to start
 		timeWindow = actorOf(timeWindowProps, name = "timeWindow")
 		readMaster = actorOf(readMasterProps, name = "readMaster")
 		writeMaster = actorOf(writeMasterProps, name = "writeMaster")
-		messageListener = actorOf(messageListenerProps, name = "jmsListener")
+		// not started by default
+		//messageListener = Some(actorOf(messageListenerProps, name = "jmsListener"))
 		webService = actorOf(webServiceProps, name = "webService")
 		deadLetterListener = actorOf(deadLetterListenerProps, name = "deadLetterListener")
 		monitor = actorOf(monitorProps, name = "monitor")
@@ -64,11 +65,19 @@ class TopActor(   // props of top-level actors to start
 
 		case Monitor =>
 			timeWindow forward Monitor
-			messageListener forward Monitor
+			if (messageListener.isDefined && !messageListener.get.isTerminated)
+				messageListener.get forward Monitor
 			writeMaster forward Monitor
 
 		case GetWebService =>
 			sender ! webService
+
+		case StartMessageListener =>
+			messageListener = Some(actorOf(messageListenerProps, name = "jmsListener"))
+
+		case StopMessageListener =>
+			if (messageListener.isDefined && !messageListener.get.isTerminated)
+				messageListener.get ! GracefulStop
 
 		case SaveState =>
 			children foreach (_ ! SaveState)

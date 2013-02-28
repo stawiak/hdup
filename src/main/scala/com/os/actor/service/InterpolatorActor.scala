@@ -2,8 +2,8 @@ package com.os.actor.service
 
 import com.os.measurement._
 import akka.actor.{ActorLogging, Actor}
-import com.os.actor.util.SaveState
 import com.os.interpolation.{NQueueImpl, NQueue}
+import com.os.actor.SaveState
 
 /**
  * Actor interface to interpolation. Given a measurement send back interpolated values

@@ -4,14 +4,13 @@ import akka.actor._
 import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
-import com.os.actor.util.{GracefulStop, FinalCountDown}
+import com.os.actor.util.FinalCountDown
 import com.os.measurement._
 import com.os.util.{MappableCachingActorFactory, MappableActorCache}
 import akka.actor.OneForOneStrategy
 import akka.routing.Broadcast
 import com.os.dao.{WriterFactory, AggregatorState}
-import concurrent.Future
-import akka.pattern.pipe
+import com.os.actor.GracefulStop
 
 
 /**

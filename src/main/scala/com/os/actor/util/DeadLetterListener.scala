@@ -4,6 +4,7 @@ import akka.actor._
 import com.os.measurement.Measurement
 import akka.actor.Terminated
 import akka.actor.DeadLetter
+import com.os.actor.GracefulStop
 
 /**
  * @author Vadim Bobrov

@@ -7,7 +7,8 @@ import akka.testkit.{ImplicitSender, TestKit, TestActorRef}
 import com.typesafe.config.ConfigFactory
 import akka.routing.{Broadcast, RoundRobinRouter}
 import annotation.tailrec
-import com.os.actor.util.{LastMohican, GracefulStop, FinalCountDown}
+import com.os.actor.util.{LastMohican, FinalCountDown}
+import com.os.actor.GracefulStop
 
 /**
  * @author Vadim Bobrov

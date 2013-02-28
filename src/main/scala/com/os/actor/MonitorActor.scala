@@ -1,7 +1,7 @@
 package com.os.actor
 
 import akka.actor.{PoisonPill, ActorLogging, Actor}
-import util.{GracefulStop, Tick, TimedActor}
+import util.{Tick, TimedActor}
 import management.ManagementFactory
 import javax.management.ObjectName
 
@@ -11,6 +11,8 @@ import javax.management.ObjectName
  */
 trait MonitorActorMBean {
 	def stop: Unit
+	def startMessageListener: Unit
+	def stopMessageListener: Unit
 
 	def getTimeWindowSize:Long
 	def getAggregators:Long
@@ -22,6 +24,10 @@ trait MonitorActorMBean {
 }
 
 case object Monitor
+case object GracefulStop
+case object SaveState
+case object StartMessageListener
+case object StopMessageListener
 
 class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware with MonitorActorMBean {
 
@@ -46,6 +52,9 @@ class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware
 	var aggregatorNames:Array[String] = Array.empty[String]
 
 	def stop { top ! GracefulStop }
+
+	def startMessageListener { top ! StartMessageListener }
+	def stopMessageListener { top ! StopMessageListener }
 
 	override def receive: Receive = {
 

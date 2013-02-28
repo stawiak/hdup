@@ -9,7 +9,7 @@ import com.os.DataFiller
 import com.os.actor.write.WriteMasterActor
 import com.os.measurement.EnergyMeasurement
 import com.os.util.Timing
-import com.os.actor.util.GracefulStop
+import com.os.actor.GracefulStop
 
 /**
  * @author Vadim Bobrov

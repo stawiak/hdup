@@ -3,7 +3,7 @@ package com.os.actor
 import com.os.measurement.{VampsMeasurement, CurrentMeasurement, EnergyMeasurement, Measurement}
 import javax.jms._
 import akka.actor._
-import util.{FinalCountDown, GracefulStop, ActiveMQActor}
+import util.{FinalCountDown, ActiveMQActor}
 import com.os.exchange.MeasurementXO
 import com.os.exchange.json.{JSONObject, DefaultJSONFactory}
 import concurrent.duration._

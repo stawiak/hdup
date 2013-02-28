@@ -4,8 +4,7 @@ import akka.actor.{ActorLogging, Actor}
 import com.os.dao.{WriterFactory, AggregatorState}
 import com.os.util.Util._
 import com.os.measurement.Measurement
-import com.os.actor.util.GracefulStop
-import concurrent.Future
+import com.os.actor.GracefulStop
 
 /**
   * @author Vadim Bobrov

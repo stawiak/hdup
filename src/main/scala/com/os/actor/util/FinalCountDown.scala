@@ -2,13 +2,12 @@ package com.os.actor.util
 
 import akka.actor._
 import akka.actor.Terminated
+import com.os.actor.GracefulStop
 
 /**
  * @author Vadim Bobrov
 */
 
-case object GracefulStop
-case object SaveState
 /**
  * A marker trait to indicate that this is the last actor and
  * the entire actor system needs to be shut down when done
