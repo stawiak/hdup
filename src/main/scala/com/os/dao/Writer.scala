@@ -37,7 +37,7 @@ object WriterFactory {
 
 	abstract class AbstractMeasurementWriterFactory(val tableName: String) extends WriterFactory{
 
-		def createWriter: Writer = new AbstractWriter(Settings.InterpolatorStateTableName) {
+		def createWriter: Writer = new AbstractWriter(tableName) {
 			/**
 			(alternatively see Batch operations to group updates)
 
