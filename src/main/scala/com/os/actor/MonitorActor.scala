@@ -4,7 +4,6 @@ import akka.actor.{PoisonPill, ActorLogging, Actor}
 import util.{GracefulStop, Tick, TimedActor}
 import management.ManagementFactory
 import javax.management.ObjectName
-import collection.mutable.ArrayBuffer
 
 
 /**

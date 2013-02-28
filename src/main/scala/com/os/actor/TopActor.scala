@@ -6,8 +6,6 @@ import akka.actor.SupervisorStrategy.{Escalate, Resume}
 import akka.actor.DeadLetter
 import akka.actor.OneForOneStrategy
 import concurrent.duration._
-import akka.pattern.ask
-import akka.pattern.pipe
 import akka.util.Timeout
 
 /**
@@ -26,7 +24,7 @@ class TopActor(   // props of top-level actors to start
 				  val deadLetterListenerProps: Props,
 				  val monitorProps: Props
 				  )
-	extends FinalCountDown with LastMohican with SettingsUse {
+	extends FinalCountDown with LastMohican {
 
 	import context._
 	implicit val timeout: Timeout = 10 seconds

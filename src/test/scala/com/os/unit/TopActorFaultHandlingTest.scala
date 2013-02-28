@@ -25,7 +25,7 @@ class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) w
 	implicit val timeout: Timeout = 10 seconds
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
-	val settings = Settings(system.settings.config)
+	val settings = Settings.init(system.settings.config)
 	val top = system.actorOf(Props(new TopActor(
 		Props(new MQLHandlerActor(MQLParser.apply)),
 		Props(new TestTimeWindowActor()),

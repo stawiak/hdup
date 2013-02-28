@@ -34,31 +34,32 @@ object CachingActorFactory {
 
 /**
  * L is a client lookup type
- * K is the underlying implementation real key type
+ * K is used for creation of objects
+ * K.id is used as map keys
  * @author Vadim Bobrov
  */
-trait MappableActorCache[L, K] {
+trait MappableActorCache[L, K <: {val id: Int} ] {
 	def values: Traversable[ActorRef]
-	def keys: Traversable[K]
+	def keys: Traversable[Int]
 	def apply(lookUpKey: L)(implicit context: ActorContext) : ActorRef
 	def size:Int = keys.size
 }
 
 object MappableCachingActorFactory {
-	def apply[L, K](mapper: L => K, creator: K => ActorRef)(implicit context: ActorContext): MappableActorCache[L, K] = new MappableCachingActorFactoryImpl[L, K](mapper, creator, context)
+	def apply[L, K <: {val id: Int}](mapper: L => K, creator: K => ActorRef)(implicit context: ActorContext): MappableActorCache[L, K] = new MappableCachingActorFactoryImpl[L, K](mapper, creator, context)
 
-	private class MappableCachingActorFactoryImpl[L, K](mapper: L => K, creator: K => ActorRef, val context: ActorContext) extends MappableActorCache[L, K] {
-		var created = Map[K, ActorRef]()
+	private class MappableCachingActorFactoryImpl[L, K <: {val id: Int}](mapper: L => K, creator: K => ActorRef, val context: ActorContext) extends MappableActorCache[L, K] {
+		var created = Map[Int, ActorRef]()
 
 		def values: Traversable[ActorRef] = created.values
-		def keys: Traversable[K] = created.keys
+		def keys: Traversable[Int] = created.keys
 
 		def apply(lookUpKey: L)(implicit context: ActorContext) : ActorRef = {
 			val realKey = mapper(lookUpKey)
-			if (!created.contains(realKey))
-				created += (realKey -> creator(realKey))
+			if (!created.contains(realKey.id))
+				created += (realKey.id -> creator(realKey))
 
-			created(realKey)
+			created(realKey.id)
 		}
 
 	}

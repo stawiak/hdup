@@ -18,6 +18,7 @@ object Settings {
 	val CurrentTableName = "curr"              							// table for actual current measurements
 	val VampsTableName = "vamps"              							// table for actual vamps measurements
 
+	val InterpolatorStateTableName = "istate"							// table for interpolator state
 
 	val ColumnFamilyName = "d"      									// stands for data
 	val ValueQualifierName = "v"   										// stands for value
@@ -25,9 +26,14 @@ object Settings {
 
 	var instance: Option[Settings] = None
 
-	def apply(config: Config): Settings = {
+	def init(config: Config): Settings = {
+		instance = Some(new Settings(config))
+		instance.get
+	}
+
+	def apply(): Settings = {
 		if (!instance.isDefined)
-			instance = Some(new Settings(config))
+			throw new IllegalAccessException("Settings must be initialized first")
 
 		instance.get
 	}

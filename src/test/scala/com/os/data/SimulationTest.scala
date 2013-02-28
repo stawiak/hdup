@@ -20,7 +20,7 @@ import com.os.mql.parser.MQLParser
 class SimulationTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest with Timing {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
-	val settings = Settings(system.settings.config)
+	val settings = Settings.init(system.settings.config)
 	val top = system.actorOf(Props(new TopActor(
 		Props(new MQLHandlerActor(MQLParser.apply)),
 		Props(new TimeWindowActor(settings.ExpiredTimeWindow)),

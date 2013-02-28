@@ -1,7 +1,6 @@
 package com.os
 
 import dao.Writer
-import com.os.measurement.Measurement
 
 /**
  * @author Vadim Bobrov
@@ -10,7 +9,7 @@ class TestWriterImpl extends Writer {
 
 	def open() {}
 
-	def write(msmt: Measurement) { TestWriterImpl.counter += 1 }
+	def write(obj: AnyRef) { TestWriterImpl.counter += 1 }
 
 	def close()  {}
 

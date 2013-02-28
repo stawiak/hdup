@@ -1,7 +1,6 @@
 package com.os.actor.service
 
 import com.os.measurement._
-import scala.Some
 import akka.actor.{ActorLogging, Actor}
 import com.os.actor.util.SaveState
 import com.os.interpolation.{NQueueImpl, NQueue}

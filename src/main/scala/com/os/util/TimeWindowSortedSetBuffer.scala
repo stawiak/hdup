@@ -6,9 +6,9 @@ import collection.mutable
 /**
  * @author Vadim Bobrov
  */
-class TimeWindowSortedSetBuffer[A <% Ordered[A]] extends TimeWindow[A] {
+class TimeWindowSortedSetBuffer[A <% Ordered[A]] extends TimeWindow[A] with Loggable {
 
-	var set: mutable.SortedSet[A] = mutable.TreeSet.empty[A]
+	val set: mutable.SortedSet[A] = mutable.TreeSet.empty[A]
 
 	private def this(fromSet: mutable.SortedSet[A]) = {
 		this()
@@ -39,8 +39,16 @@ class TimeWindowSortedSetBuffer[A <% Ordered[A]] extends TimeWindow[A] {
 	 * @return    elems that satisfy/not satisfy predicate
 	 */
 	def span(p: A => Boolean): (TimeWindow[A], TimeWindow[A]) = {
-		val(left, right) = set span p
-		(new TimeWindowSortedSetBuffer[A](left), new TimeWindowSortedSetBuffer[A](right))
+		try {
+			val(left, right) = set span p
+			(new TimeWindowSortedSetBuffer[A](left), new TimeWindowSortedSetBuffer[A](right))
+		} catch {
+			case e: Exception =>
+				log.debug("null Exception")
+				log.debug("p: " + p)
+				log.debug("s: " + set)
+				throw e
+		}
 	}
 
 

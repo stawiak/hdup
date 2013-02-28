@@ -1,23 +1,19 @@
 package com.os.unit
 
-import akka.testkit.{TestActorRef, TestKit, ImplicitSender}
+import akka.testkit.{TestKit, ImplicitSender}
 import akka.actor._
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import com.typesafe.config.ConfigFactory
 import scala._
-import scala.Predef._
-import com.os.actor.read.{ReadRequest, ReadWorkerActor, MeasurementReadRequest, ReadMasterActor}
+import com.os.actor.read.{ReadRequest, ReadMasterActor}
 import org.joda.time.Interval
 import concurrent.duration._
 import com.os.util._
 import com.os.TestActors
-import akka.routing.RoundRobinRouter
 import com.os.actor.read.MeasurementReadRequest
 import scala.Some
-import com.os.actor.write.WriteMasterActor
-import com.os.actor.read.MeasurementReadRequest
-import scala.Some
+import com.os.dao.ReaderFactory
 
 /**
  * @author Vadim Bobrov
@@ -30,9 +26,9 @@ class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system)
 		system.shutdown()
 	}
 
-	val testRouterFactory = new MappableActorCache[ReadRequest, String] {
+	val testRouterFactory = new MappableActorCache[ReadRequest, ReaderFactory] {
 		def values: Traversable[ActorRef] = Nil
-		def keys: Traversable[String] = Nil
+		def keys: Traversable[Int] = Nil
 		def apply(r: ReadRequest)(implicit context: ActorContext) : ActorRef = context.actorOf(Props(new SlowActor()))
 	}
 
@@ -44,7 +40,7 @@ class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system)
 		expectMsg(1 second, Pong)
 	}
 
-	class TestReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, String]]) extends ReadMasterActor(mockFactory) {
+	class TestReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, ReaderFactory]]) extends ReadMasterActor(mockFactory) {
 		private final def pingPong: Receive = {	case Ping => sender ! Pong }
 		override def receive = pingPong orElse super.receive
 	}

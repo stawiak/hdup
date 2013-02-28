@@ -11,8 +11,7 @@ import concurrent.Await
 import java.sql.Timestamp
 import akka.util.Timeout
 import concurrent.duration._
-import scala.Predef._
-import util.{SettingsUse, GracefulStop}
+import util.GracefulStop
 import com.os.Settings
 import spray.http.MediaType
 import com.os.exchange.TimeSeriesData
@@ -25,7 +24,7 @@ import scala.util.{Failure, Try, Success}
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class WebServiceActor extends Actor with ActorLogging with SettingsUse with WebService {
+class WebServiceActor extends Actor with ActorLogging with WebService {
 
 	// the HttpService trait defines only one abstract member, which
 	// connects the services environment to the enclosing actor or test
@@ -43,7 +42,7 @@ class WebServiceActor extends Actor with ActorLogging with SettingsUse with WebS
 
 // this trait defines our service behavior independently from the service actor
 trait WebService extends HttpService with ReadMasterAware with TopAware with MQLHandlerAware {
-	this: Actor with ActorLogging with SettingsUse =>
+	this: Actor with ActorLogging =>
 
 	implicit val timeout: Timeout = 60 seconds
 

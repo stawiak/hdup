@@ -16,7 +16,7 @@ class ActorSystemTest(_system: ActorSystem) extends TestKit(_system) with TestAc
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
-	val settings = Settings(system.settings.config)
+	val settings = Settings.init(system.settings.config)
 	val top = system.actorOf(Props(new TopActor(
 		Props(new BasicTestActor),
 		Props(new BasicTestActor),

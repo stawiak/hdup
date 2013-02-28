@@ -1,29 +1,33 @@
 package com.os.actor.write
 
 import akka.actor.{ActorLogging, Actor}
-import com.os.dao.Writer
+import com.os.dao.{WriterFactory, AggregatorState}
 import com.os.util.Util._
 import com.os.measurement.Measurement
-import com.os.actor.util.{SettingsUse, GracefulStop}
+import com.os.actor.util.GracefulStop
+import concurrent.Future
 
 /**
   * @author Vadim Bobrov
   */
-class WriteWorkerActor(val tableName : String, val batchSize: Int) extends Actor with SettingsUse with ActorLogging{
+class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with ActorLogging{
 
-	val writer = Writer(tableName, settings)
+	val writer = writerFactory.createWriter
 	var measurements = List.empty[Measurement]
 
 
 	override def receive: Receive = {
 
-		case msmt : Measurement => {
+		case msmt: Measurement => {
 			measurements = msmt :: measurements
 
-			if(measurements.length == batchSize)
+			if(measurements.length == writerFactory.batchSize)
 				submitJob()
 		}
 
+		case state: Future[AggregatorState] =>
+			//state onSuccess(writer.write(_))
+			//TODO save state
 
 		case GracefulStop =>  {
 			log.debug("write worker received graceful stop")

@@ -25,10 +25,10 @@ trait Scanner {
 }
 
 object Scanner {
-	def apply(tableName: String, settings: Settings) : Scanner = new ScannerImpl(tableName, settings)
+	def apply(tableName: String) : Scanner = new ScannerImpl(tableName)
 
 
-	private class ScannerImpl(private val tableName: String, settings: Settings) extends Scanner {
+	private class ScannerImpl(private val tableName: String) extends Scanner {
 
 		/**
 		Sometimes it might be necessary to find a specific row, or the one just before the re-
@@ -68,7 +68,7 @@ object Scanner {
 
 		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte], timestampExtractor:(Array[Byte]) => Long) : Iterable[TimedValue] = {
 
-			val table = TableFactory(tableName, settings)
+			val table = TableFactory(tableName)
 
 			val output = new ListBuffer[TimedValue]()
 
@@ -80,7 +80,7 @@ object Scanner {
 			//scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.VampireQualifierName))
 
 			// how many rows are retrieved with every RPC call
-			scan.setCaching(settings.ScanCacheSize)
+			scan.setCaching(Settings().ScanCacheSize)
 
 			val results = table.getScanner(scan)
 

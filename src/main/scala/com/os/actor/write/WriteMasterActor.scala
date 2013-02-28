@@ -4,44 +4,34 @@ import akka.actor._
 import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
-import com.os.actor.util.{SettingsUse, GracefulStop, FinalCountDown}
+import com.os.actor.util.{GracefulStop, FinalCountDown}
 import com.os.measurement._
-import com.os.Settings
 import com.os.util.{MappableCachingActorFactory, MappableActorCache}
-import com.os.interpolation.NQueue
-import scala.Predef._
 import akka.actor.OneForOneStrategy
 import akka.routing.Broadcast
+import com.os.dao.{WriterFactory, AggregatorState}
 import concurrent.Future
+import akka.pattern.pipe
 
 
 /**
  * @author Vadim Bobrov
  */
 
-class WriteMasterActor(mockFactory: Option[MappableActorCache[Measurement, (String, Int)]] = None) extends FinalCountDown with SettingsUse {
+class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFactory]] = None) extends FinalCountDown {
 
 	import context._
-	type AggregatorState = (String, String, Future[Traversable[NQueue]])
 	// Since a restart does not clear out the mailbox, it often is best to terminate
 	// the children upon failure and re-create them explicitly from the supervisor
 
 	val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
 
-	val defaultFactory = MappableCachingActorFactory[Measurement, (String, Int)](
-		msmtToTable,
-		(tableBatch: (String, Int)) =>
-			actorOf(Props(new WriteWorkerActor(tableBatch._1, tableBatch._2)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher"))
+	val defaultFactory = MappableCachingActorFactory[AnyRef, WriterFactory](
+		WriterFactory(_),
+		(factory: WriterFactory) =>
+			actorOf(Props(new WriteWorkerActor(factory)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher"))
 	)
-
-	private def msmtToTable(msmt : Measurement) : (String, Int) = msmt match  {
-			case msmt: Interpolated => (Settings.MinuteInterpolatedTableName, settings.DerivedDataBatchSize)
-			case msmt: Rollup => (Settings.RollupTableName, settings.DerivedDataBatchSize)
-			case msmt: EnergyMeasurement => (Settings.TableName, settings.BatchSize)
-			case msmt: CurrentMeasurement => (Settings.CurrentTableName, settings.BatchSize)
-			case msmt: VampsMeasurement => (Settings.VampsTableName, settings.BatchSize)
-	}
 
 	val routers = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
 
@@ -59,9 +49,8 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[Measurement, (Stri
 		case msmt : Measurement =>
 			routers(msmt) ! msmt
 
-
-		case as: AggregatorState =>
-			//TODO save aggregator state
+		case state: Future[AggregatorState] =>
+			state pipeTo routers(state)
 
 		case GracefulStop =>
 			log.debug("write master received graceful stop")

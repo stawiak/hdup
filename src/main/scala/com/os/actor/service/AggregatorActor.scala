@@ -12,15 +12,18 @@ import com.os.interpolation.NQueue
 import akka.util.Timeout
 import concurrent.duration._
 import concurrent.Future
+import com.os.dao.AggregatorState
+import akka.pattern.pipe
 
 /**
  * Rollup by customer and location
  *
  * @author Vadim Bobrov
  */
-class AggregatorActor(val customer: String, val location: String, var timeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[String]] = None) extends FinalCountDown with WriterMasterAware with TimedActor with SettingsUse {
+class AggregatorActor(val customer: String, val location: String, var timeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[String]] = None) extends FinalCountDown with WriterMasterAware with TimedActor {
 
 	import context._
+	implicit val timeout: Timeout = 10 seconds
 
 	val defaultFactory = CachingActorFactory[String]((String) => actorOf(Props(new InterpolatorActor())))
 	val interpolators: ActorCache[String] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
@@ -61,10 +64,7 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 			//TODO dump remaining rollups - watch for new messages as depressionMode = false, beware of sortWith not implemented yet in TimeWindowMap
 			lastWill()
 
-			implicit val timeout: Timeout = 10 seconds
-
-			val state: Future[Traversable[NQueue]] = Future.traverse(children)(child => (child ? SaveState).mapTo[NQueue])
-			writeMaster ! (customer, location, state)
+			collectState pipeTo writeMaster
 
 		case GracefulStop =>
 			log.debug("aggregator received GracefulStop")
@@ -84,6 +84,21 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 
 		// discard old values
 		rollups = newmsmt
+	}
+
+	private def collectState:Future[AggregatorState] = {
+		val interpolatorStates: Traversable[Future[(String, NQueue)]] = interpolators.keys map (key => {
+			for {
+				k <- Future { key }
+				f <- (interpolators(key) ? SaveState).mapTo[NQueue]
+			} yield (k, f)
+		})
+
+		for {
+			c <- Future { customer }
+			l <- Future { location }
+			is <- Future.sequence(interpolatorStates)
+		} yield new AggregatorState(c, l, is)
 	}
 
  }

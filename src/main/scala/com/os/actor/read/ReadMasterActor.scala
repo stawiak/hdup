@@ -5,12 +5,13 @@ import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
 import akka.util.Timeout
-import com.os.actor.util.{SettingsUse, GracefulStop, FinalCountDown}
+import com.os.actor.util.{GracefulStop, FinalCountDown}
 import com.os.Settings
 import org.joda.time.Interval
-import com.os.util.{MappableActorCache, MappableCachingActorFactory, CachingActorFactory, ActorCache}
+import com.os.util.{MappableActorCache, MappableCachingActorFactory}
 import akka.routing.Broadcast
 import akka.actor.OneForOneStrategy
+import com.os.dao.ReaderFactory
 
 
 /**
@@ -19,11 +20,12 @@ import akka.actor.OneForOneStrategy
 sealed abstract class ReadRequest
 case class MeasurementReadRequest(tableName: String, customer: String, location: String, wireid: String, period: Interval) extends ReadRequest
 case class RollupReadRequest(customer: String, location: String, period: Interval) extends ReadRequest
+case class InterpolatorStateReadRequest() extends ReadRequest
 
-class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, String]] = None) extends FinalCountDown with SettingsUse {
+class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, ReaderFactory]] = None) extends FinalCountDown {
 
 	import context._
-	implicit val timeout: Timeout = settings.ReadTimeout
+	implicit val timeout: Timeout = Settings().ReadTimeout
 
 
 	// Since a restart does not clear out the mailbox, it often is best to terminate
@@ -36,14 +38,15 @@ class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, String
 		case r: MeasurementReadRequest => r.tableName
 	}
 
-	val defaultFactory = MappableCachingActorFactory[ReadRequest, String](requestToTable,
-		(tableName: String) =>
+	val defaultFactory = MappableCachingActorFactory[ReadRequest, ReaderFactory](
+		ReaderFactory(_),
+		(factory: ReaderFactory) =>
 			actorOf(
-				Props(new ReadWorkerActor(tableName)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher")
+				Props(new ReadWorkerActor(factory)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher")
 			)
 	)
 
-	val routers: MappableActorCache[ReadRequest, String] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+	val routers = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
 
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
@@ -55,18 +58,18 @@ class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, String
 
 	override def receive: Receive = {
 
-		case request : MeasurementReadRequest => {
+		case request : MeasurementReadRequest =>
 			log.debug("received measurement read request {}", request)
 			routers(request) forward request
-		}
 
-		case request : RollupReadRequest => {
+
+		case request : RollupReadRequest =>
 
 			//val f: Future[List[List[MeasuredValue]]] = Future.sequence(request.scanRequests.map(getRouter(request) ? _).map(_.mapTo[List[MeasuredValue]]))
 			//f.map(_.flatMap(identity)) pipeTo sender
 			log.debug("received rollup read request {}", request)
 			routers(request) forward request
-		}
+
 
 		case GracefulStop =>
 			log.debug("read master received graceful stop")

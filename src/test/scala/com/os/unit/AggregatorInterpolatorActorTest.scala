@@ -11,7 +11,6 @@ import scala.concurrent.duration._
 import com.os.TestActors
 import com.os.actor.TopActor
 import com.os.actor.util.DeadLetterListener
-import akka.util.Timeout
 
 /**
  * @author Vadim Bobrov

@@ -1,23 +1,24 @@
 package com.os.actor.service
 
-import akka.actor.{Props, ActorContext, ActorRef}
+import akka.actor.Props
 import com.os.measurement.{EnergyMeasurement, Measurement}
 import com.os.actor._
 import util._
 import write.WriterMasterAware
 import concurrent.duration.Duration
 import com.os.util._
+import com.os.Settings
 
 
 /**
   * @author Vadim Bobrov
   */
-class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with TimedActor with SettingsUse {
+class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with TimedActor {
 
 	import context._
 
-	override val interval = settings.TimeWindowProcessInterval
-  	val interpolation = settings.Interpolation
+	override val interval = Settings().TimeWindowProcessInterval
+  	val interpolation = Settings().Interpolation
 
 	var measurements:TimeWindow[Measurement] = new TimeWindowSortedSetBuffer[Measurement]()
 

@@ -21,7 +21,7 @@ import com.os.mql.parser.MQLParser
 object Main extends App with SprayCanHttpServerApp {
 
 	override lazy val system = ActorSystem("chaos", ConfigFactory.load().getConfig("chaos"))
-	val settings = Settings(system.settings.config)
+	val settings = Settings.init(system.settings.config)
 	val top = system.actorOf(Props(new TopActor(
 			Props(new MQLHandlerActor(MQLParser.apply)),
 			Props(new TimeWindowActor(settings.ExpiredTimeWindow)),

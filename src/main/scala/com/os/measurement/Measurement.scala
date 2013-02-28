@@ -1,12 +1,14 @@
 package com.os.measurement
 
+import com.os.dao.Saveable
+
 
 /**
  * @author Vadim Bobrov
  */
 trait Interpolated
 trait Rollup
-sealed abstract class Measurement(val customer: String, val location: String, val wireid: String, val timestamp: Long, val value: Double) extends Ordered[Measurement] {
+sealed abstract class Measurement(val customer: String, val location: String, val wireid: String, val timestamp: Long, val value: Double) extends Ordered[Measurement] with Saveable {
 
 	override def toString = "msmt " + customer + "/" + location + "/" + wireid + "/" + timestamp + "/" + value
 
