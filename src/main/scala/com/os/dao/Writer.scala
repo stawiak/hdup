@@ -4,6 +4,8 @@ import com.os.Settings
 import org.apache.hadoop.hbase.client.{HTableInterface, Put}
 import com.os.measurement._
 import org.apache.hadoop.hbase.util.Bytes
+import com.os.util.BytesWrapper._
+import com.os.util.BytesWrapper
 
 /**
  * @author Vadim Bobrov
@@ -82,52 +84,54 @@ object WriterFactory {
 		}
 	}
 
-	object EnergyMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.TableName) {
+	object EnergyMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.EnergyTableName) {
 		override val id = 1
-		override val batchSize = Settings().BatchSize
+		override val batchSize = Settings().LargeBatchSize
 	}
 
 	object CurrentMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.CurrentTableName) {
 		override val id = 2
-		override val batchSize = Settings().BatchSize
+		override val batchSize = Settings().LargeBatchSize
 	}
 
 	object VampsMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.VampsTableName) {
 		override val id = 3
-		override val batchSize = Settings().BatchSize
+		override val batchSize = Settings().LargeBatchSize
 	}
 
 	object RollupMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.RollupTableName) {
 		override val id = 4
-		override val batchSize = Settings().DerivedDataBatchSize
+		override val batchSize = Settings().SmallBatchSize
 	}
 
 	object InterpolatedMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.MinuteInterpolatedTableName) {
 		override val id = 5
-		override val batchSize = Settings().BatchSize
+		override val batchSize = Settings().LargeBatchSize
 	}
-
-
 
 	object InterpolatorStateWriterFactory extends WriterFactory {
 		override val id: Int = 6
-		override val batchSize = Settings().DerivedDataBatchSize
+		override val batchSize = Settings().SmallBatchSize
 
 		def createWriter: Writer = new AbstractWriter(Settings.InterpolatorStateTableName) {
 			def write(obj: AnyRef) {
+				val msmt = obj.asInstanceOf[AggregatorState]
 
-	/*
-				val rowkey = 	RowKeyUtils.createRollupRowKey(msmt.customer, msmt.location)
+				val p = new Put(msmt.customer << RowKeyUtils.Separator << msmt.location)
 
-				val p = new Put(rowkey)
+				msmt.interpolatorStates foreach { item =>
+						val (name, queue) = item
+						val content = queue.content()
 
-				p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.ValueQualifierName),Bytes.toBytes(msmt.value))
+						if (content.size != 0) {
+							val interpolatorValues = content map(BytesWrapper.pimpBytes(_)) reduce(_ << _)
+							p.add(Bytes.toBytes(Settings.InterpolatorStateColumnFamilyName), Bytes.toBytes(name), interpolatorValues)
+						}
+				}
+
 				table.put(p)
-	*/
 			}
-
 		}
-
 
 	}
 

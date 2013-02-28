@@ -11,4 +11,6 @@ public interface NQueue {
 	boolean isFull();
 
 	void offer(TimedValue tv);
+
+	TimedValue[] content();
 }

@@ -37,7 +37,7 @@ class MQLExecutor(val mql: MQLUnion) {
 					query.from.table match {
 
 						case MQLTableEnergy =>
-							new MeasurementReadRequest(Settings.TableName,
+							new MeasurementReadRequest(Settings.EnergyTableName,
 								query.where.get.customerCondition.get.value,
 								query.where.get.locationCondition.get.value,
 								query.where.get.wireidCondition.get.value,

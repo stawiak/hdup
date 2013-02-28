@@ -70,6 +70,9 @@ class TopActor(   // props of top-level actors to start
 		case GetWebService =>
 			sender ! webService
 
+		case SaveState =>
+			children foreach (_ ! SaveState)
+
 		case GracefulStop =>
 			log.debug("top received GracefulStop - stopping top level actors")
 			children foreach (_ ! SaveState)

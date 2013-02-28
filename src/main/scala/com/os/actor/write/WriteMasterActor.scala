@@ -49,14 +49,15 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 		case msmt : Measurement =>
 			routers(msmt) ! msmt
 
-		case state: Future[AggregatorState] =>
-			state pipeTo routers(state)
+		case state: AggregatorState =>
+			routers(state) forward state
 
 		case GracefulStop =>
 			log.debug("write master received graceful stop")
 			waitAndDie()
 			children foreach (_ ! Broadcast(GracefulStop))
 			children foreach (_ ! Broadcast(PoisonPill))
+
 	}
 }
 

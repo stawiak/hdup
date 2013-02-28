@@ -25,9 +25,8 @@ class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with Acto
 				submitJob()
 		}
 
-		case state: Future[AggregatorState] =>
-			//state onSuccess(writer.write(_))
-			//TODO save state
+		case state: AggregatorState =>
+			using(writer) {	writer.write(state) }
 
 		case GracefulStop =>  {
 			log.debug("write worker received graceful stop")

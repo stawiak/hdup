@@ -11,17 +11,19 @@ import javax.management.ObjectName
  */
 object Settings {
 	// non-configurable items
-	val TableName = "msmt"              								// table for actual energy measurements
+	val EnergyTableName = "msmt"           								// table for actual energy measurements
 	val MinuteInterpolatedTableName = "ismt" 					 		// table for minute interpolation
 	val RollupTableName = "rsmt"			    						// table for minute rollup by location
 
 	val CurrentTableName = "curr"              							// table for actual current measurements
 	val VampsTableName = "vamps"              							// table for actual vamps measurements
 
-	val InterpolatorStateTableName = "istate"							// table for interpolator state
-
 	val ColumnFamilyName = "d"      									// stands for data
 	val ValueQualifierName = "v"   										// stands for value
+
+
+	val InterpolatorStateTableName = "istate"							// table for interpolator state
+	val InterpolatorStateColumnFamilyName = "d"
 
 
 	var instance: Option[Settings] = None
@@ -46,8 +48,8 @@ trait SettingsMBean {
 	def getActiveMQQueue:String
 	def getHBaseHost:String
 	def getScanCacheSize:Int
-	def getBatchSize:Int
-	def getDerivedDataBatchSize:Int
+	def getLargeBatchSize:Int
+	def getSmallBatchSize:Int
 	def getTablePoolSize:Int
 	def getExpiredTimeWindow:Long
 	def getTimeWindowProcessInterval:Long
@@ -90,9 +92,10 @@ final class Settings(config: Config) extends SettingsMBean {
 	val ScanCacheSize = hBaseConfig.getInt("scanCacheSize")    									// how many rows are retrieved with every RPC call
 
 	@scala.beans.BeanProperty
-	val BatchSize = hBaseConfig.getInt("batchSize")            									// default writer batch size - can be lost
+	val LargeBatchSize = hBaseConfig.getInt("largeBatchSize")            									// default writer batch size - can be lost
 	@scala.beans.BeanProperty
-	val DerivedDataBatchSize = hBaseConfig.getInt("interpolatedBatchSize")						// writer batch size for minute interpolations- can be lost
+	val SmallBatchSize = hBaseConfig.getInt("smallBatchSize")						// writer batch size for minute interpolations- can be lost
+	val SingleBatchSize = 1
 
 	@scala.beans.BeanProperty
 	val TablePoolSize = hBaseConfig.getInt("tablePoolSize")

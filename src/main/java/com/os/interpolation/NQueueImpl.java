@@ -2,12 +2,14 @@ package com.os.interpolation;
 
 import com.os.measurement.TimedValue;
 
+import java.util.Arrays;
+
 /**
  * @author Vadim Bobrov
  */
 public class NQueueImpl implements NQueue {
 
-	private final TimedValue[] elems = new TimedValue[4];
+	private final TimedValue[] elems = {null, null, null, null};
 	private int counter = 0;
 
 	@Override
@@ -18,6 +20,11 @@ public class NQueueImpl implements NQueue {
 	@Override
 	public boolean isFull(){
 		return counter == 4;
+	}
+
+	@Override
+	public TimedValue[] content() {
+		return (counter == 0 ? new TimedValue[0] : Arrays.copyOfRange(elems, 4 - counter, 3));
 	}
 
 	@Override

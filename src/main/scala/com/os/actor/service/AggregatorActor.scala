@@ -87,18 +87,18 @@ class AggregatorActor(val customer: String, val location: String, var timeWindow
 	}
 
 	private def collectState:Future[AggregatorState] = {
-		val interpolatorStates: Traversable[Future[(String, NQueue)]] = interpolators.keys map (key => {
+		val interpolatorStates = interpolators.keys map (key => {
 			for {
-				k <- Future { key }
-				f <- (interpolators(key) ? SaveState).mapTo[NQueue]
-			} yield (k, f)
+				futureKey <- Future { key }
+				futureNQueue <- (interpolators(key) ? SaveState).mapTo[NQueue]
+			} yield (futureKey, futureNQueue)
 		})
 
 		for {
-			c <- Future { customer }
-			l <- Future { location }
+			futureCustomer <- Future { customer }
+			futureLocation <- Future { location }
 			is <- Future.sequence(interpolatorStates)
-		} yield new AggregatorState(c, l, is)
+		} yield new AggregatorState(futureCustomer, futureLocation, is)
 	}
 
  }
