@@ -1,13 +1,13 @@
 package com.os.unit
 
-import akka.testkit.{TestActorRef, TestKit, ImplicitSender}
+import akka.testkit.{TestProbe, TestActorRef, TestKit, ImplicitSender}
 import akka.actor._
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import com.typesafe.config.ConfigFactory
 import scala._
 import com.os.actor.read.MeasurementReadRequest
-import concurrent.Await
+import concurrent.{Future, Await}
 import org.joda.time.Interval
 import concurrent.duration._
 import akka.pattern.ask
@@ -21,12 +21,14 @@ import com.os.TestActors
 class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
+	import system.dispatcher
 
 	override def afterAll() {
 		system.shutdown()
 	}
 
 	var blockingActor = TestActorRef(new BlockingActor())
+	var slowForwarder = TestActorRef(new SlowForwarderActor())
 
 	"A blocking actor" should "block on its child worker" in {
 		blockingActor ! MeasurementReadRequest("", "", "", "", new Interval(0,1))
@@ -34,9 +36,20 @@ class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with Test
 		expectNoMsg(1 second)
 	}
 
+	"Future forwarding" should "not block in between" in {
+
+		slowForwarder ! Future[Int] {
+			Thread.sleep(20000)
+			println("I am done")
+			7
+		}
+
+		receiveOne(2 seconds)
+	}
+
 	class BlockingActor extends Actor {
 		implicit val timeout: Timeout = 3 seconds
-		private val slowWorker: ActorRef = context.actorOf(Props[SlowActor])
+		private val slowWorker: ActorRef = context.actorOf(Props(new SlowActor))
 
 		private final def blockingReceive: Receive = {
 			case _ =>
@@ -46,5 +59,15 @@ class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with Test
 		private final def pingPong: Receive = {	case Ping => sender ! Pong }
 		override def receive = pingPong orElse blockingReceive
 	}
+
+	class SlowForwarderActor extends Actor with ActorLogging {
+		override def receive: Receive = {
+			case x: Future[Int] =>
+				testActor ! x
+		}
+	}
+
+
+
 
 }
