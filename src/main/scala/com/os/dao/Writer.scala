@@ -74,7 +74,7 @@ object WriterFactory {
 
 				val p = new Put(rowkey)
 
-				p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.ValueQualifierName),Bytes.toBytes(msmt.value))
+				p.add(Settings.ColumnFamilyName, Settings.ValueQualifierName, msmt.value)
 				//p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.CurrentQualifierName),Bytes.toBytes(msmt.current))
 				//p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName),Bytes.toBytes(msmt.vampire))
 				// alternatively use
@@ -125,7 +125,7 @@ object WriterFactory {
 
 						if (content.size != 0) {
 							val interpolatorValues = content map(BytesWrapper.pimpBytes(_)) reduce(_ << _)
-							p.add(Bytes.toBytes(Settings.InterpolatorStateColumnFamilyName), Bytes.toBytes(name), interpolatorValues)
+							p.add(Settings.InterpolatorStateColumnFamilyName, name, interpolatorValues)
 						}
 				}
 

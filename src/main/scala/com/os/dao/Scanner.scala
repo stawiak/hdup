@@ -6,6 +6,7 @@ import org.apache.hadoop.hbase.util.Bytes
 import com.os.Settings
 import collection.mutable.ListBuffer
 import com.os.measurement.TimedValue
+import com.os.util.BytesWrapper._
 
 /**
  * @author Vadim Bobrov
@@ -75,7 +76,7 @@ object Scanner {
 
 			val scan = new Scan(startRowKey, endRowKey)
 
-			scan.addColumn(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.ValueQualifierName))
+			scan.addColumn(Settings.ColumnFamilyName, Settings.ValueQualifierName)
 			//scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.CurrentQualifierName))
 			//scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.VampireQualifierName))
 
@@ -89,13 +90,13 @@ object Scanner {
 			val iterator = Iterator.continually(results.next()) takeWhile (_ != null)
 
 			iterator foreach (res => {
-				val energy = res.getValue(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.ValueQualifierName))
+				val energy = res.getValue(Settings.ColumnFamilyName, Settings.ValueQualifierName)
 				//val current = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.CurrentQualifierName))
 				//val vampire = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.VampireQualifierName))
 
 				val row = res.getRow
 				//output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
-				output += new TimedValue(timestampExtractor(row), Bytes.toDouble(energy))
+				output += new TimedValue(timestampExtractor(row), energy)
 			})
 
 			results.close()
