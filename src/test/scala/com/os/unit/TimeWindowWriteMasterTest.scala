@@ -31,7 +31,7 @@ class TimeWindowWriteMasterTest(_system: ActorSystem) extends TestKit(_system) w
 		Props(new NoGoodnik),
 		Props(new TimeWindowActor(4 seconds,new TimeSource {}, Some(testAggregatorFactory))),
 		Props(new NoGoodnik),
-		Props(new TestActorForwarder),
+		Props(new ForwarderActor),
 		Props(new NoGoodnik),
 		Props(new NoGoodnik),
 		Props[DeadLetterListener],

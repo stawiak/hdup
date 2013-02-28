@@ -14,6 +14,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.os.util.{Pong, Ping}
 import com.os.TestActors
+import akka.pattern.pipe
 
 /**
  * @author Vadim Bobrov
@@ -28,7 +29,7 @@ class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with Test
 	}
 
 	var blockingActor = TestActorRef(new BlockingActor())
-	var slowForwarder = TestActorRef(new SlowForwarderActor())
+	var forwarderActor = TestActorRef(new ForwarderActor())
 
 	"A blocking actor" should "block on its child worker" in {
 		blockingActor ! MeasurementReadRequest("", "", "", "", new Interval(0,1))
@@ -37,14 +38,22 @@ class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with Test
 	}
 
 	"Future forwarding" should "not block in between" in {
-
-		slowForwarder ! Future[Int] {
-			Thread.sleep(20000)
+		forwarderActor ! Future[Int] {
+			Thread.sleep(60000)
 			println("I am done")
 			7
 		}
+		receiveN(1, 2 seconds)
+	}
 
-		receiveOne(2 seconds)
+	"Future piping" should "not block either actor" in {
+		Future[Int] {
+			Thread.sleep(60000)
+			println("I am done")
+			7
+		} pipeTo forwarderActor
+		println("sent")
+		expectNoMsg(2 seconds)
 	}
 
 	class BlockingActor extends Actor {
@@ -59,15 +68,5 @@ class BlockingActorTest(_system: ActorSystem) extends TestKit(_system) with Test
 		private final def pingPong: Receive = {	case Ping => sender ! Pong }
 		override def receive = pingPong orElse blockingReceive
 	}
-
-	class SlowForwarderActor extends Actor with ActorLogging {
-		override def receive: Receive = {
-			case x: Future[Int] =>
-				testActor ! x
-		}
-	}
-
-
-
 
 }

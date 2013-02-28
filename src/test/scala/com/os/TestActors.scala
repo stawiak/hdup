@@ -9,7 +9,7 @@ import akka.testkit.TestKit
 trait TestActors {
 	this:TestKit =>
 
-	class TestActorForwarder extends Actor with ActorLogging {
+	class ForwarderActor extends Actor with ActorLogging {
 		override def receive: Receive = {
 			case x =>
 				log.debug("forwarding {}", x)

@@ -22,7 +22,7 @@ class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_sys
 		Props(new NoGoodnik),
 		Props(new NoGoodnik),
 		Props(new NoGoodnik),
-		Props(new TestActorForwarder),
+		Props(new ForwarderActor),
 		Props(new NoGoodnik),
 		Props(new NoGoodnik),
 		Props[DeadLetterListener],

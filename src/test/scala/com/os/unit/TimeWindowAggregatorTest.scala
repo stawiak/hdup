@@ -25,7 +25,7 @@ class TimeWindowAggregatorTest(_system: ActorSystem) extends TestKit(_system) wi
 	val testAggregatorFactory: ActorCache[(String, String)] = new ActorCache[(String, String)] {
 		def values: Traversable[ActorRef] = Nil
 		def keys: Traversable[(String, String)] = Nil
-		def apply(t: (String, String))(implicit context: ActorContext): ActorRef = context.actorOf(Props(new TestActorForwarder))
+		def apply(t: (String, String))(implicit context: ActorContext): ActorRef = context.actorOf(Props(new ForwarderActor))
 	}
 
 	system.actorOf(Props(new TopActor(
