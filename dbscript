@@ -1,0 +1,6 @@
+create 'msmt', {NAME => 'd', VERSIONS => 1, COMPRESSION => 'SNAPPY'}
+create 'ismt', {NAME => 'd', VERSIONS => 1, COMPRESSION => 'SNAPPY'}
+create 'rsmt', {NAME => 'd', VERSIONS => 1, COMPRESSION => 'SNAPPY'}
+create 'curr', {NAME => 'd', VERSIONS => 1, COMPRESSION => 'SNAPPY'}
+create 'vamps', {NAME => 'd', VERSIONS => 1, COMPRESSION => 'SNAPPY'}
+create 'istate', {NAME => 'd', VERSIONS => 1, BLOCKCACHE => 'false', COMPRESSION => 'SNAPPY'}
