@@ -24,6 +24,8 @@ class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with Acto
 				submitJob()
 		}
 
+		// disabling and reenabling table will often cause exceptions
+		// multiple retries are in order here
 		case state: AggregatorState =>
 			using(writer) {	writer.write(state) }
 

@@ -9,7 +9,7 @@ import com.os.measurement._
 import com.os.util.{MappableCachingActorFactory, MappableActorCache}
 import akka.actor.OneForOneStrategy
 import akka.routing.Broadcast
-import com.os.dao.{WriterFactory, AggregatorState}
+import com.os.dao.{TimeWindowState, WriterFactory, AggregatorState}
 import com.os.actor.GracefulStop
 
 
@@ -42,13 +42,12 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 		}
 
 
-
 	override def receive: Receive = {
 
 		case msmt : Measurement =>
 			routers(msmt) ! msmt
 
-		case state: AggregatorState =>
+		case state: TimeWindowState =>
 			routers(state) forward state
 
 		case GracefulStop =>

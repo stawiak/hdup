@@ -9,7 +9,12 @@ import write.WriterMasterAware
 import concurrent.duration.Duration
 import com.os.util._
 import com.os.Settings
-import com.os.dao.AggregatorState
+import com.os.dao.{TimeWindowState, AggregatorState}
+import concurrent.Future
+import akka.pattern.ask
+import akka.pattern.pipe
+import akka.util.Timeout
+import concurrent.duration._
 
 
 /**
@@ -20,6 +25,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 	import context._
 
 	type AggregatorStates = Map[(String, String), AggregatorState]
+	implicit val timeout: Timeout = 10 seconds
 	override val interval = Settings().TimeWindowProcessInterval
   	val interpolation = Settings().Interpolation
 
@@ -53,7 +59,12 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			for (tv <- measurements.sortWith(_ < _))
 				aggregators((tv.customer, tv.location)) ! tv
 
-			children foreach ( _ ! SaveState)
+			val twState =
+				for ( aggState <- Future.traverse(children)(child => (child ? SaveState).mapTo[AggregatorState]) )
+				yield new TimeWindowState(aggState)
+
+			twState pipeTo writeMaster
+
 
 		case LoadState =>
 			log.debug("time window received LoadState")

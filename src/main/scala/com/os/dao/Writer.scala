@@ -1,7 +1,7 @@
 package com.os.dao
 
 import com.os.Settings
-import org.apache.hadoop.hbase.client.{HTableInterface, Put}
+import org.apache.hadoop.hbase.client.{Delete, HTableInterface, Put}
 import com.os.measurement._
 import org.apache.hadoop.hbase.util.Bytes
 import com.os.util.BytesWrapper._
@@ -27,7 +27,7 @@ object WriterFactory {
 	def apply(obj: AnyRef): WriterFactory = {
 		// returned concrete factory based on object type
 		obj match {
-			case _: AggregatorState => InterpolatorStateWriterFactory
+			case _: TimeWindowState => InterpolatorStateWriterFactory
 			case _: EnergyMeasurement => EnergyMeasurementWriterFactory
 			case _: Rollup => RollupMeasurementWriterFactory
 			case _: Interpolated => InterpolatedMeasurementWriterFactory
@@ -113,23 +113,25 @@ object WriterFactory {
 		override val id: Int = 6
 		override val batchSize = Settings().SmallBatchSize
 
-		def createWriter: Writer = new AbstractWriterWithTableDrop(Settings.InterpolatorStateTableName) {
+		def createWriter: Writer = new AbstractWriterWithTableCleanout(Settings.InterpolatorStateTableName) {
 			def write(obj: AnyRef) {
-				val msmt = obj.asInstanceOf[AggregatorState]
+				val states = obj.asInstanceOf[TimeWindowState]
 
-				val p = new Put(msmt.customer << RowKeyUtils.Separator << msmt.location)
+				states.aggs foreach { state =>
+					val p = new Put(state.customer << RowKeyUtils.Separator << state.location)
 
-				msmt.interpolatorStates foreach { item =>
-						val (name, queue) = item
-						val content = queue.content()
+					state.interpolatorStates foreach { item =>
+							val (name, queue) = item
+							val content = queue.content()
 
-						if (content.size != 0) {
-							val interpolatorValues = content map(BytesWrapper.pimpBytes(_)) reduce(_ << _)
-							p.add(Settings.InterpolatorStateColumnFamilyName, name, interpolatorValues)
-						}
+							if (content.size != 0) {
+								val interpolatorValues = content map(BytesWrapper.pimpBytes(_)) reduce(_ << _)
+								p.add(Settings.InterpolatorStateColumnFamilyName, name, interpolatorValues)
+							}
+					}
+
+					table.put(p)
 				}
-
-				table.put(p)
 			}
 		}
 
@@ -147,16 +149,11 @@ object WriterFactory {
 		}
 	}
 
-	private abstract class AbstractWriterWithTableDrop(private val tableName : String) extends Writer {
+	private abstract class AbstractWriterWithTableCleanout(private val tableName : String) extends Writer {
 		protected var table: HTableInterface = _
 
 		def open() {
-			// drop and recreate table each write
-			val tableDescriptor = TableFactory.admin.getTableDescriptor(tableName)
-			TableFactory.admin.disableTable(tableName)
-			TableFactory.admin.deleteTable(tableName)
-			TableFactory.admin.createTable(tableDescriptor)
-
+			dropRecreateTable()
 			table = TableFactory(tableName)
 		}
 
@@ -164,6 +161,15 @@ object WriterFactory {
 			table.flushCommits()
 			table.close()
 		}
+
+		private def dropRecreateTable() {
+			// drop and recreate table each write
+			val tableDescriptor = TableFactory.admin.getTableDescriptor(tableName)
+			TableFactory.admin.disableTable(tableName)
+			TableFactory.admin.deleteTable(tableName)
+			TableFactory.admin.createTable(tableDescriptor)
+		}
+
 	}
 
 }

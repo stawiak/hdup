@@ -78,7 +78,7 @@ class AggregatorActor(
 			//TODO dump remaining rollups - watch for new messages as depressionMode = false, beware of sortWith not implemented yet in TimeWindowMap
 			lastWill()
 
-			collectState pipeTo writeMaster
+			collectState pipeTo sender
 
 		case GracefulStop =>
 			log.debug("aggregator received GracefulStop")
