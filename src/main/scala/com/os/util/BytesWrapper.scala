@@ -2,6 +2,7 @@ package com.os.util
 
 import org.apache.hadoop.hbase.util.Bytes
 import com.os.measurement.TimedValue
+import collection.mutable.ListBuffer
 
 /**
  * @author Vadim Bobrov
@@ -52,6 +53,16 @@ class BytesWrapper(val bytes: Array[Byte]) {
 
 	def <<(in: TimedValue): Array[Byte] = {
 		Bytes.add(bytes, Bytes.add(Bytes.toBytes(in.timestamp()), Bytes.toBytes(in.value())))
+	}
+
+	def extractTimedValues: Traversable[TimedValue] = {
+
+		val output = ListBuffer[TimedValue]()
+
+		for ( pos <- 0 until bytes.length by Bytes.SIZEOF_LONG + Bytes.SIZEOF_DOUBLE)
+			output += new TimedValue(Bytes.toLong(bytes, pos), Bytes.toDouble(bytes, pos + Bytes.SIZEOF_LONG))
+
+		output.toList
 	}
 
 }

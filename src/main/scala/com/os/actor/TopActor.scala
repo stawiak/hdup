@@ -1,6 +1,7 @@
 package com.os.actor
 
 import akka.actor._
+import read.LoadState
 import util._
 import akka.actor.SupervisorStrategy.{Escalate, Resume}
 import akka.actor.DeadLetter
@@ -82,6 +83,9 @@ class TopActor(   // props of top-level actors to start
 
 		case SaveState =>
 			children foreach (_ ! SaveState)
+
+		case LoadState =>
+			timeWindow ! LoadState
 
 		case GracefulStop =>
 			log.debug("top received GracefulStop - stopping top level actors")

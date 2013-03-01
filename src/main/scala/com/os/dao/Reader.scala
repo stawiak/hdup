@@ -1,6 +1,6 @@
 package com.os.dao
 
-import com.os.actor.read.{InterpolatorStateReadRequest, RollupReadRequest, MeasurementReadRequest}
+import com.os.actor.read.{LoadState, InterpolatorStateReadRequest, RollupReadRequest, MeasurementReadRequest}
 import com.os.Settings
 
 /**
@@ -22,6 +22,7 @@ object ReaderFactory {
 			case _: MeasurementReadRequest => MeasurementReaderFactory
 			case _: RollupReadRequest => RollupReaderFactory
 			case _: InterpolatorStateReadRequest => InterpolatorStateReaderFactory
+			case _: LoadState => TimeWindowStateReaderFactory
 		}
 	}
 
@@ -67,10 +68,18 @@ object ReaderFactory {
 							table.put(p)
 				*/
 			}
-
 		}
+	}
 
+	object TimeWindowStateReaderFactory extends ReaderFactory {
+		override val id: Int = 6
 
+		def createReader: Reader = new Reader {
+			def read(readRequest: AnyRef):AnyRef = {
+				val scanner = Scanner(Settings.InterpolatorStateTableName)
+				scanner.scanInterpolatorStates
+			}
+		}
 	}
 
 }

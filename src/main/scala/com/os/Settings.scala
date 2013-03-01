@@ -53,6 +53,7 @@ trait SettingsMBean {
 	def getTablePoolSize:Int
 	def getExpiredTimeWindow:Long
 	def getTimeWindowProcessInterval:Long
+	def setTimeWindowProcessInterval(millis: Long)
 	def getInterpolation:Boolean
 	def getReadTimeout:Long
 }
@@ -106,8 +107,11 @@ final class Settings(config: Config) extends SettingsMBean {
 	// measurements older than that are not interpolated
 
 
-	val TimeWindowProcessInterval = FiniteDuration(config.getMilliseconds("timeWindowProcessInterval"), MILLISECONDS)
+	var TimeWindowProcessInterval = FiniteDuration(config.getMilliseconds("timeWindowProcessInterval"), MILLISECONDS)
 	def getTimeWindowProcessInterval = TimeWindowProcessInterval.toMillis
+	def setTimeWindowProcessInterval(millis: Long) {
+		TimeWindowProcessInterval = FiniteDuration(millis, MILLISECONDS)
+	}
 	// time between time window processing
 
 	@scala.beans.BeanProperty

@@ -22,7 +22,7 @@ object TableFactory extends Loggable{
 		instance.get.pool.getTable(Bytes.toBytes(tableName))
 	}
 
-
+	def admin: HBaseAdmin = instance.get.admin
 
 	private class TableFactory(settings: Settings) {
 		/** it is recommended that you create HTable instances only once—and one per thread
@@ -37,6 +37,7 @@ object TableFactory extends Loggable{
 		// HBase bug 5728: setAutoFlush(boolean) is missing from HTableInterface.
 		// Solution: custom HTableInterfaceFactory (suggestion from the HBase user mailing-list)
 		val pool = new HTablePool(config, settings.TablePoolSize, new NoFlushInterfaceFactory() )
+		val admin = new HBaseAdmin(config)
 
 
 		/** If you were ever required to access the write buffer content, you would find that

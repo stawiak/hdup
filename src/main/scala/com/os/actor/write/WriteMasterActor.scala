@@ -32,7 +32,7 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 			actorOf(Props(new WriteWorkerActor(factory)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher"))
 	)
 
-	val routers = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+	val routers = mockFactory.getOrElse(defaultFactory)
 
 
 	override val supervisorStrategy =

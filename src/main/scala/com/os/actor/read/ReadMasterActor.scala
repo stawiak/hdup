@@ -12,7 +12,7 @@ import com.os.util.{MappableActorCache, MappableCachingActorFactory}
 import akka.routing.Broadcast
 import akka.actor.OneForOneStrategy
 import com.os.dao.ReaderFactory
-import com.os.actor.GracefulStop
+import com.os.actor.{GracefulStop}
 
 
 /**
@@ -22,6 +22,8 @@ sealed abstract class ReadRequest
 case class MeasurementReadRequest(tableName: String, customer: String, location: String, wireid: String, period: Interval) extends ReadRequest
 case class RollupReadRequest(customer: String, location: String, period: Interval) extends ReadRequest
 case class InterpolatorStateReadRequest() extends ReadRequest
+
+case class LoadState(id: AnyRef) extends ReadRequest
 
 class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, ReaderFactory]] = None) extends FinalCountDown {
 
@@ -34,11 +36,6 @@ class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, Reader
 
 	val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
-	private def requestToTable(request: ReadRequest):String = request match {
-		case r: RollupReadRequest => Settings.RollupTableName
-		case r: MeasurementReadRequest => r.tableName
-	}
-
 	val defaultFactory = MappableCachingActorFactory[ReadRequest, ReaderFactory](
 		ReaderFactory(_),
 		(factory: ReaderFactory) =>
@@ -47,15 +44,13 @@ class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, Reader
 			)
 	)
 
-	val routers = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+	val routers = mockFactory.getOrElse(defaultFactory)
 
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
 			case _: Exception     				⇒ Resume
 			case _: Throwable                	⇒ Escalate
 		}
-
-
 
 	override def receive: Receive = {
 
@@ -71,6 +66,9 @@ class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, Reader
 			log.debug("received rollup read request {}", request)
 			routers(request) forward request
 
+		case request @ LoadState(_) =>
+			log.debug("read master received LoadState")
+			routers(request) forward request
 
 		case GracefulStop =>
 			log.debug("read master received graceful stop")
@@ -78,6 +76,8 @@ class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, Reader
 			waitAndDie()
 			children foreach (_ ! Broadcast(PoisonPill))
 
+		case x =>
+			log.debug("received unknown {}", x)
 	}
 }
 

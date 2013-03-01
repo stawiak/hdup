@@ -113,7 +113,7 @@ object WriterFactory {
 		override val id: Int = 6
 		override val batchSize = Settings().SmallBatchSize
 
-		def createWriter: Writer = new AbstractWriter(Settings.InterpolatorStateTableName) {
+		def createWriter: Writer = new AbstractWriterWithTableDrop(Settings.InterpolatorStateTableName) {
 			def write(obj: AnyRef) {
 				val msmt = obj.asInstanceOf[AggregatorState]
 
@@ -146,4 +146,24 @@ object WriterFactory {
 			table.close()
 		}
 	}
+
+	private abstract class AbstractWriterWithTableDrop(private val tableName : String) extends Writer {
+		protected var table: HTableInterface = _
+
+		def open() {
+			// drop and recreate table each write
+			val tableDescriptor = TableFactory.admin.getTableDescriptor(tableName)
+			TableFactory.admin.disableTable(tableName)
+			TableFactory.admin.deleteTable(tableName)
+			TableFactory.admin.createTable(tableDescriptor)
+
+			table = TableFactory(tableName)
+		}
+
+		def close()  {
+			table.flushCommits()
+			table.close()
+		}
+	}
+
 }

@@ -3,27 +3,30 @@ package com.os.actor.service
 import akka.actor.Props
 import com.os.measurement.{EnergyMeasurement, Measurement}
 import com.os.actor._
+import read.{LoadState, ReadMasterAware}
 import util._
 import write.WriterMasterAware
 import concurrent.duration.Duration
 import com.os.util._
 import com.os.Settings
+import com.os.dao.AggregatorState
 
 
 /**
   * @author Vadim Bobrov
   */
-class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with TimedActor {
+class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor {
 
 	import context._
 
+	type AggregatorStates = Map[(String, String), AggregatorState]
 	override val interval = Settings().TimeWindowProcessInterval
   	val interpolation = Settings().Interpolation
 
 	var measurements:TimeWindow[Measurement] = new TimeWindowSortedSetBuffer[Measurement]()
 
 	val defaultFactory = CachingActorFactory[(String, String)]((customerLocation: (String, String)) => actorOf(Props(new AggregatorActor(customerLocation._1, customerLocation._2, timeWindow = expiredTimeWindow))))
-	val aggregators: ActorCache[(String, String)] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+	var aggregators: ActorCache[(String, String)] = mockFactory.getOrElse(defaultFactory)
 
 	override def receive: Receive = {
 
@@ -51,6 +54,19 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 				aggregators((tv.customer, tv.location)) ! tv
 
 			children foreach ( _ ! SaveState)
+
+		case LoadState =>
+			log.debug("time window received LoadState")
+			readMaster ! LoadState(self.path)
+
+		case states: AggregatorStates =>
+			log.debug("received AggregatorStates with {} elements", states.size)
+			states.values foreach  { v =>
+				log.debug("\t {} {} {}", v.customer, v.location, v.interpolatorStates.size)
+			}
+			aggregators = CachingActorFactory[(String, String)]((customerLocation: (String, String)) => actorOf(Props(
+				new AggregatorActor(customerLocation._1, customerLocation._2, timeWindow = expiredTimeWindow, aggregatorState = states.get(customerLocation))
+			)))
 
 		case GracefulStop =>
 			log.debug("time window received GracefulStop")

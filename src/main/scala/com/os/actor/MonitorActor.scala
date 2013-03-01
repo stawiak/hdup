@@ -1,6 +1,7 @@
 package com.os.actor
 
 import akka.actor.{PoisonPill, ActorLogging, Actor}
+import read.LoadState
 import util.{Tick, TimedActor}
 import management.ManagementFactory
 import javax.management.ObjectName
@@ -13,6 +14,8 @@ trait MonitorActorMBean {
 	def stop: Unit
 	def startMessageListener: Unit
 	def stopMessageListener: Unit
+	def saveState: Unit
+	def loadState: Unit
 
 	def getTimeWindowSize:Long
 	def getAggregators:Long
@@ -55,6 +58,9 @@ class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware
 
 	def startMessageListener { top ! StartMessageListener }
 	def stopMessageListener { top ! StopMessageListener }
+
+	def saveState { top ! SaveState }
+	def loadState { top ! LoadState }
 
 	override def receive: Receive = {
 

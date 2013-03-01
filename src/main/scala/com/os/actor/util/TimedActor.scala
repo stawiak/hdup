@@ -25,4 +25,9 @@ trait TimedActor {
 	override def postStop() {
 		schedule.cancel()
 	}
+
+	def updateInterval(newInterval: FiniteDuration) {
+		schedule.cancel()
+		schedule = context.system.scheduler.schedule(Duration.Zero, newInterval, self, Tick)
+	}
 }

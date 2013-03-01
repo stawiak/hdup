@@ -10,9 +10,9 @@ import com.os.actor.SaveState
  *
  * @author Vadim Bobrov
  */
-class InterpolatorActor(val boundary: Int = 60000) extends Actor with ActorLogging {
+class InterpolatorActor(loadQueue: Option[NQueue] = None, boundary: Int = 60000) extends Actor with ActorLogging {
 
-	val queue:NQueue = new NQueueImpl
+	val queue:NQueue = loadQueue.getOrElse(new NQueueImpl)
 
 	override def receive: Receive = {
 

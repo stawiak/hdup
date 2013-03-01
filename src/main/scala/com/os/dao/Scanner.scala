@@ -1,28 +1,30 @@
 package com.os.dao
 
 import org.joda.time.Interval
-import org.apache.hadoop.hbase.client.{Result, Scan}
-import org.apache.hadoop.hbase.util.Bytes
+import org.apache.hadoop.hbase.client.{Scan}
 import com.os.Settings
 import collection.mutable.ListBuffer
 import com.os.measurement.TimedValue
 import com.os.util.BytesWrapper._
+import com.os.interpolation.{NQueueImpl, NQueue}
 
 /**
  * @author Vadim Bobrov
 */
 trait Scanner {
-	def scan(customer: String, location: String, wireid: String, period: Interval) : Iterable[TimedValue] = {
+	def scan(customer: String, location: String, wireid: String, period: Interval): Iterable[TimedValue] = {
 		scan(customer, location, wireid, period.getStartMillis, period.getEndMillis)
 	}
 
-	def scan(customer: String, location: String, wireid: String, start: Long, end: Long) : Iterable[TimedValue]
+	def scan(customer: String, location: String, wireid: String, start: Long, end: Long): Iterable[TimedValue]
 
-	def scan(customer : String, location : String, period: Interval) : Iterable[TimedValue] = {
+	def scan(customer : String, location : String, period: Interval): Iterable[TimedValue] = {
 		scan(customer, location, period.getStartMillis, period.getEndMillis)
 	}
 
-	def scan(customer: String, location: String, start: Long, end: Long) : Iterable[TimedValue]
+	def scan(customer: String, location: String, start: Long, end: Long): Iterable[TimedValue]
+
+	def scanInterpolatorStates: Map[(String, String), AggregatorState]
 }
 
 object Scanner {
@@ -55,25 +57,22 @@ object Scanner {
 		stop row. If no stop row was specified, the scan will run to the end of the table.
 		  */
 
-		def scan(customer : String, location : String, wireid : String, start : Long, end : Long) : Iterable[TimedValue] = {
+		def scan(customer : String, location : String, wireid : String, start : Long, end : Long): Iterable[TimedValue] = {
 			val startRowKey = RowKeyUtils.createRowKey(customer, location, wireid, end)
 			val endRowKey = RowKeyUtils.createRowKey(customer, location, wireid, start)
 			scan(startRowKey, endRowKey, RowKeyUtils.getTimestamp(_) )
 		}
 
-		def scan(customer : String, location : String, start : Long, end : Long) : Iterable[TimedValue] = {
+		def scan(customer : String, location : String, start : Long, end : Long): Iterable[TimedValue] = {
 			val startRowKey = RowKeyUtils.createRollupRowKey(customer, location, end)
 			val endRowKey = RowKeyUtils.createRollupRowKey(customer, location, start)
 			scan(startRowKey, endRowKey, RowKeyUtils.getTimestampFromRollup(_))
 		}
 
-		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte], timestampExtractor:(Array[Byte]) => Long) : Iterable[TimedValue] = {
+		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte], timestampExtractor:(Array[Byte]) => Long): Iterable[TimedValue] = {
 
 			val table = TableFactory(tableName)
-
 			val output = new ListBuffer[TimedValue]()
-
-
 			val scan = new Scan(startRowKey, endRowKey)
 
 			scan.addColumn(Settings.ColumnFamilyName, Settings.ValueQualifierName)
@@ -84,9 +83,6 @@ object Scanner {
 			scan.setCaching(Settings().ScanCacheSize)
 
 			val results = table.getScanner(scan)
-
-			var res : Result = null
-
 			val iterator = Iterator.continually(results.next()) takeWhile (_ != null)
 
 			iterator foreach (res => {
@@ -94,13 +90,49 @@ object Scanner {
 				//val current = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.CurrentQualifierName))
 				//val vampire = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.VampireQualifierName))
 
-				val row = res.getRow
+				val rowkey = res.getRow
 				//output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
-				output += new TimedValue(timestampExtractor(row), energy)
+				output += new TimedValue(timestampExtractor(rowkey), energy)
 			})
 
 			results.close()
 			output
+		}
+
+		def scanInterpolatorStates: Map[(String, String), AggregatorState] = {
+			import scala.collection.JavaConversions._
+
+			val table = TableFactory(Settings.InterpolatorStateTableName)
+
+			var output = Map[(String, String), AggregatorState]()
+			val scan = new Scan()
+
+			scan.addFamily(Settings.InterpolatorStateColumnFamilyName)
+
+			// how many rows are retrieved with every RPC call
+			scan.setCaching(Settings().ScanCacheSize)
+
+			val results = table.getScanner(scan)
+			val iterator = Iterator.continually(results.next()) takeWhile (_ != null)
+
+			iterator foreach (res => {
+				val familyMap = res.getFamilyMap(Settings.ColumnFamilyName)
+				val interpolatorStates = familyMap.keySet() map {key => ( bytesToString(key), bytesToNQueue(familyMap.get(key)))}
+				val (c, l) = res.getRow.span(_ == RowKeyUtils.Separator)
+				val customer: String = c
+				val location: String = l
+
+				output += ((customer, location) -> new AggregatorState(customer, location, interpolatorStates))
+			})
+
+			results.close()
+			output
+		}
+
+		private def bytesToNQueue(in: Array[Byte]): NQueue = {
+			val queue = new NQueueImpl()
+			in.extractTimedValues foreach ( queue offer _)
+			queue
 		}
 
 

@@ -4,6 +4,7 @@ import akka.actor.{PoisonPill, Props}
 import com.os.measurement._
 import com.os.actor.write.WriterMasterAware
 import com.os.actor._
+import read.ReadMasterAware
 import util._
 import com.os.util._
 import com.os.measurement.EnergyMeasurement
@@ -12,7 +13,7 @@ import com.os.interpolation.NQueue
 import akka.util.Timeout
 import concurrent.duration._
 import concurrent.Future
-import com.os.dao.AggregatorState
+import com.os.dao.{Saveable, AggregatorState}
 import akka.pattern.pipe
 
 /**
@@ -20,13 +21,26 @@ import akka.pattern.pipe
  *
  * @author Vadim Bobrov
  */
-class AggregatorActor(val customer: String, val location: String, var timeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[String]] = None) extends FinalCountDown with WriterMasterAware with TimedActor {
+class AggregatorActor(
+						 customer: String,
+						 location: String,
+						 timeWindow : Duration,
+						 timeSource: TimeSource = new TimeSource {},
+						 aggregatorState: Option[AggregatorState] = None,
+						 mockFactory: Option[ActorCache[String]] = None
+					)
+
+	extends FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor {
 
 	import context._
 	implicit val timeout: Timeout = 10 seconds
 
-	val defaultFactory = CachingActorFactory[String]((String) => actorOf(Props(new InterpolatorActor())))
-	val interpolators: ActorCache[String] = if (mockFactory.isEmpty) defaultFactory else mockFactory.get
+	val queueMap = if (!aggregatorState.isEmpty) aggregatorState.get.interpolatorStates.toMap else Map.empty[String, NQueue]
+	val defaultFactory = CachingActorFactory[String]((key: String) => actorOf(Props(new InterpolatorActor(
+		queueMap.get(key)
+	))))
+
+	val interpolators: ActorCache[String] = mockFactory.getOrElse(defaultFactory)
 
 	var rollups: TimeWindowMap[Long, Double] = new TimeWindowSortedMap[Long, Double]()
 
