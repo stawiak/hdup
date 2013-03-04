@@ -41,4 +41,13 @@ public class NQueueImpl implements NQueue {
 		}
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+
+		for(TimedValue tv: elems)
+			sb.append(tv == null? "null" : tv );
+
+		return sb.toString();
+	}
 }

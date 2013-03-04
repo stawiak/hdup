@@ -13,15 +13,19 @@ class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with Acto
 
 	val writer = writerFactory.createWriter
 	var measurements = List.empty[Measurement]
+	var counter = 0
 
 
 	override def receive: Receive = {
 
 		case msmt: Measurement => {
 			measurements = msmt :: measurements
+			counter += 1
 
-			if(measurements.length == writerFactory.batchSize)
+			if(counter == writerFactory.batchSize) {
 				submitJob()
+				counter = 0
+			}
 		}
 
 		case state: TimeWindowState =>
@@ -40,7 +44,7 @@ class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with Acto
 
 
 	def submitJob() {
-		//log.debug("submitting write job to " + tableName)
+		log.debug("submitting write job to " + writerFactory.name)
 		using(writer) {
 			// this can fail anytime and should be retried
 			measurements foreach writer.write

@@ -19,6 +19,7 @@ trait Writer {
 trait WriterFactory {
 	val batchSize: Int
 	val id: Int
+	val name: String
 	def createWriter: Writer
 }
 
@@ -37,6 +38,7 @@ object WriterFactory {
 
 
 	abstract class AbstractMeasurementWriterFactory(val tableName: String) extends WriterFactory{
+		override val name = tableName
 
 		def createWriter: Writer = new AbstractWriter(tableName) {
 			/**
@@ -110,6 +112,7 @@ object WriterFactory {
 
 	object InterpolatorStateWriterFactory extends WriterFactory {
 		override val id: Int = 6
+		override val name = "interpolatorstate"
 		override val batchSize = Settings().SmallBatchSize
 
 		def createWriter: Writer = new AbstractWriterWithTableCleanout(Settings.InterpolatorStateTableName) with Loggable {
