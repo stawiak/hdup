@@ -56,6 +56,8 @@ trait SettingsMBean {
 	def setTimeWindowProcessInterval(millis: Long)
 	def getInterpolation:Boolean
 	def getReadTimeout:Long
+	def getSaveStateOnShutdown:Boolean
+	def setSaveStateOnShutdown(b: Boolean)
 }
 final class Settings(config: Config) extends SettingsMBean {
 	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("settings:name=data"))
@@ -120,4 +122,8 @@ final class Settings(config: Config) extends SettingsMBean {
 
 	val ReadTimeout = FiniteDuration(config.getMilliseconds("readTimeout"), MILLISECONDS)
 	def getReadTimeout = ReadTimeout.toMillis
+
+	@scala.beans.BeanProperty
+	var SaveStateOnShutdown = config.getBoolean("saveStateOnShutdown")
+
 }

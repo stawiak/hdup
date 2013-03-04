@@ -1,7 +1,7 @@
 package com.os.dao
 
 import org.joda.time.Interval
-import org.apache.hadoop.hbase.client.{Scan}
+import org.apache.hadoop.hbase.client.Scan
 import com.os.Settings
 import collection.mutable.ListBuffer
 import com.os.measurement.TimedValue

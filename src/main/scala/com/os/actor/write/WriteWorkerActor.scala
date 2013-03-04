@@ -1,7 +1,7 @@
 package com.os.actor.write
 
 import akka.actor.{ActorLogging, Actor}
-import com.os.dao.{WriterFactory, AggregatorState}
+import com.os.dao.{TimeWindowState, WriterFactory}
 import com.os.util.Util._
 import com.os.measurement.Measurement
 import com.os.actor.GracefulStop
@@ -24,14 +24,16 @@ class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with Acto
 				submitJob()
 		}
 
-		// disabling and reenabling table will often cause exceptions
-		// multiple retries are in order here
-		case state: AggregatorState =>
+		case state: TimeWindowState =>
+			log.debug("write worker received TimeWindowState")
 			using(writer) {	writer.write(state) }
 
 		case GracefulStop =>  {
 			log.debug("write worker received graceful stop")
-			submitJob()
+			// writers that drop and recreate table should not be called here
+			// as using(writer) will drop table
+			if (!measurements.isEmpty)
+				submitJob()
 		}
 
 	}

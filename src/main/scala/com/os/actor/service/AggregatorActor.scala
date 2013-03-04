@@ -13,7 +13,7 @@ import com.os.interpolation.NQueue
 import akka.util.Timeout
 import concurrent.duration._
 import concurrent.Future
-import com.os.dao.{Saveable, AggregatorState}
+import com.os.dao.AggregatorState
 import akka.pattern.pipe
 
 /**

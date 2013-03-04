@@ -6,7 +6,6 @@ import com.os.actor._
 import read.{LoadState, ReadMasterAware}
 import util._
 import write.WriterMasterAware
-import concurrent.duration.Duration
 import com.os.util._
 import com.os.Settings
 import com.os.dao.{TimeWindowState, AggregatorState}

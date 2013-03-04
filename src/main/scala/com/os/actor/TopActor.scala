@@ -8,6 +8,7 @@ import akka.actor.DeadLetter
 import akka.actor.OneForOneStrategy
 import concurrent.duration._
 import akka.util.Timeout
+import com.os.Settings
 
 /**
  * Top actor
@@ -82,6 +83,7 @@ class TopActor(   // props of top-level actors to start
 				messageListener.get ! GracefulStop
 
 		case SaveState =>
+			log.debug("top received SaveState from " + sender.path)
 			children foreach (_ ! SaveState)
 
 		case LoadState =>
@@ -89,7 +91,10 @@ class TopActor(   // props of top-level actors to start
 
 		case GracefulStop =>
 			log.debug("top received GracefulStop - stopping top level actors")
-			children foreach (_ ! SaveState)
+			if (Settings().SaveStateOnShutdown) {
+				log.debug("saving state on shutdown")
+				children foreach (_ ! SaveState)
+			}
 
 			// time window must be flushed before stopping write master
 			killChild(timeWindow, () => killChild(writeMaster))

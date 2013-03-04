@@ -12,7 +12,7 @@ import com.os.util.{MappableActorCache, MappableCachingActorFactory}
 import akka.routing.Broadcast
 import akka.actor.OneForOneStrategy
 import com.os.dao.ReaderFactory
-import com.os.actor.{GracefulStop}
+import com.os.actor.GracefulStop
 
 
 /**

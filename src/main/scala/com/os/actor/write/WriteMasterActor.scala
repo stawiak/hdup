@@ -9,7 +9,7 @@ import com.os.measurement._
 import com.os.util.{MappableCachingActorFactory, MappableActorCache}
 import akka.actor.OneForOneStrategy
 import akka.routing.Broadcast
-import com.os.dao.{TimeWindowState, WriterFactory, AggregatorState}
+import com.os.dao.{TimeWindowState, WriterFactory}
 import com.os.actor.GracefulStop
 
 

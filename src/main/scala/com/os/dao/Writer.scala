@@ -1,11 +1,10 @@
 package com.os.dao
 
 import com.os.Settings
-import org.apache.hadoop.hbase.client.{Delete, HTableInterface, Put}
+import org.apache.hadoop.hbase.client.{HTableInterface, Put}
 import com.os.measurement._
-import org.apache.hadoop.hbase.util.Bytes
 import com.os.util.BytesWrapper._
-import com.os.util.BytesWrapper
+import com.os.util.{Loggable, BytesWrapper}
 
 /**
  * @author Vadim Bobrov
@@ -113,7 +112,7 @@ object WriterFactory {
 		override val id: Int = 6
 		override val batchSize = Settings().SmallBatchSize
 
-		def createWriter: Writer = new AbstractWriterWithTableCleanout(Settings.InterpolatorStateTableName) {
+		def createWriter: Writer = new AbstractWriterWithTableCleanout(Settings.InterpolatorStateTableName) with Loggable {
 			def write(obj: AnyRef) {
 				val states = obj.asInstanceOf[TimeWindowState]
 
@@ -149,11 +148,13 @@ object WriterFactory {
 		}
 	}
 
-	private abstract class AbstractWriterWithTableCleanout(private val tableName : String) extends Writer {
+	private abstract class AbstractWriterWithTableCleanout(private val tableName : String) extends Writer with Loggable{
 		protected var table: HTableInterface = _
 
 		def open() {
+			log.info("dropping and recreating table {}", tableName)
 			dropRecreateTable()
+			log.info("table recreated {}", tableName)
 			table = TableFactory(tableName)
 		}
 
@@ -166,8 +167,11 @@ object WriterFactory {
 			// drop and recreate table each write
 			val tableDescriptor = TableFactory.admin.getTableDescriptor(tableName)
 			TableFactory.admin.disableTable(tableName)
+			log.debug("table disabled {}", tableName)
 			TableFactory.admin.deleteTable(tableName)
+			log.debug("table deleted {}", tableName)
 			TableFactory.admin.createTable(tableDescriptor)
+			log.debug("table created {}", tableName)
 		}
 
 	}
