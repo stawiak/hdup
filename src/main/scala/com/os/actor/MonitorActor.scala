@@ -75,7 +75,7 @@ class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware
 					case "timeWindow" =>
 						timeWindowSize = m("length").asInstanceOf[Int]
 						aggregators = m("aggregators").asInstanceOf[Int]
-						aggregatorNames = (m("aggregatorNames").asInstanceOf[Traversable[(String, String)]] map ( x => x._1 + "@//" + x._2)).toArray
+						aggregatorNames = (m("aggregatorNames").asInstanceOf[Traversable[(String, String)]] map ( x => x._1 + "@" + x._2)).toArray
 
 					case "messageProcessor" =>
 						sentMsmt = m("msmt").asInstanceOf[Long]

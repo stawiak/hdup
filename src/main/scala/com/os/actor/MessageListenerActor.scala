@@ -10,6 +10,9 @@ import concurrent.duration._
 import akka.actor.SupervisorStrategy.{Restart, Escalate}
 import scala.Some
 import akka.actor.OneForOneStrategy
+import management.ManagementFactory
+import javax.management.ObjectName
+import com.os.util.JMXNotifier
 
 /**
  * @author Vadim Bobrov
@@ -18,8 +21,10 @@ import akka.actor.OneForOneStrategy
 /**
  * This is a simple parent just for supervisor strategy
  */
-class MessageListenerActor(host: String, port: Int, queue: String) extends FinalCountDown {
+trait MessageListenerActorMBean
+class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNotifier with MessageListenerActorMBean with FinalCountDown {
 
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=MessageListener,name=messageListener"))
 	import context._
 
 	var worker = watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue)), name = "messageProcessor"))
@@ -62,7 +67,7 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends Final
 				val customer = msg.getString("customer")
 				val location = msg.getString("location")
 
-				log.debug("picking up job for {}@//{}", customer, location)
+				log.debug("picking up job for {}@{}", customer, location)
 
 				val dataArray = DefaultJSONFactory.getInstance().jsonArrayFromZipped(msg.getString("blob"))
 

@@ -37,7 +37,7 @@ class AggregatorActor(
 
 	extends JMXNotifier with FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with AggregatorActorMBean {
 
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=TimeWindow,TimeWindow=aggregators,name=\"" + customer + "@//" + location + "\""))
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=TimeWindow,TimeWindow=aggregators,name=\"" + customer + "@" + location + "\""))
 
 	import context._
 	implicit val timeout: Timeout = 10 seconds

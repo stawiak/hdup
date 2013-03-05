@@ -10,11 +10,16 @@ import akka.util.Timeout
 import concurrent.duration._
 import com.os.mql.executor.MQLCommand
 import util.{Failure, Success, Try}
+import management.ManagementFactory
+import javax.management.ObjectName
 
 /**
  * @author Vadim Bobrov
  */
-class MQLWorkerActor(val parser: MQLParser) extends Actor with ReadMasterAware with ActorLogging {
+trait MQLWorkerActorMBean
+class MQLWorkerActor(val parser: MQLParser) extends Actor with ReadMasterAware with ActorLogging with MQLWorkerActorMBean {
+
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=MQLHandler,MQLHandler=workers,name=\"" + self.path.name + "\""))
 	import context._
 	implicit val timeout: Timeout = 60 seconds
 

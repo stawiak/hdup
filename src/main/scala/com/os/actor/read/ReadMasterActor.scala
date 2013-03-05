@@ -13,6 +13,8 @@ import akka.routing.Broadcast
 import akka.actor.OneForOneStrategy
 import com.os.dao.ReaderFactory
 import com.os.actor.GracefulStop
+import management.ManagementFactory
+import javax.management.ObjectName
 
 
 /**
@@ -25,8 +27,10 @@ case class InterpolatorStateReadRequest() extends ReadRequest
 
 case class LoadState(id: AnyRef) extends ReadRequest
 
-class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, ReaderFactory]] = None) extends FinalCountDown {
+trait ReadMasterActorMBean
+class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, ReaderFactory]] = None) extends FinalCountDown with ReadMasterActorMBean {
 
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=Reader,name=readMaster"))
 	import context._
 	implicit val timeout: Timeout = Settings().ReadTimeout
 
