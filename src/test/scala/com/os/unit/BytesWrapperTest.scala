@@ -6,6 +6,7 @@ import com.os.util.BytesWrapper._
 import com.os.util.BytesWrapper
 import com.os.measurement.TimedValue
 import com.os.interpolation.{NQueue, NQueueImpl}
+import com.os.dao.RowKeyUtils
 
 
 /**
@@ -21,6 +22,14 @@ class BytesWrapperTest extends FlatSpec with ShouldMatchers {
 	"Byte wrapper" should "convert string" in {
 		val res: String = new BytesWrapper << "hello byte"
 		res should be ("hello byte")
+	}
+
+	it should "convert strings separated by separator" in {
+		val bytes: Array[Byte] = "customer" << RowKeyUtils.Separator << "location"
+		val(customer,location) = RowKeyUtils.split(bytes)
+
+		customer should be ("customer")
+		location should be ("location")
 	}
 
 	it should "convert long" in {

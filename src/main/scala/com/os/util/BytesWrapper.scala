@@ -50,6 +50,10 @@ object BytesWrapper {
 
 class BytesWrapper(val bytes: Array[Byte] = Array.empty[Byte]) {
 
+	def <<(in: Byte): Array[Byte] = {
+		Bytes.add(bytes, Array[Byte](in))
+	}
+
 	def <<(in: Array[Byte]): Array[Byte] = {
 		Bytes.add(bytes, in)
 	}

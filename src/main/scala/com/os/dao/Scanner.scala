@@ -118,9 +118,7 @@ object Scanner {
 			iterator foreach (res => {
 				val familyMap = res.getFamilyMap(Settings.ColumnFamilyName)
 				val interpolatorStates = familyMap.keySet() map {key => ( bytesToString(key), bytesToNQueue(familyMap.get(key)))}
-				val (c, l) = res.getRow.span(_ == RowKeyUtils.Separator)
-				val customer: String = c
-				val location: String = l
+				val (customer, location) = RowKeyUtils.split(res.getRow)
 
 				output += ((customer, location) -> new AggregatorState(customer, location, interpolatorStates))
 			})

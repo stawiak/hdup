@@ -58,14 +58,16 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 		case SaveState =>
 			log.debug("time window received SaveState")
 			// send out remaining measurements
-			for (tv <- measurements.sortWith(_ < _))
-				aggregators((tv.customer, tv.location)) ! tv
 
-			val twState =
+			//TODO: this causes unordered message exception in interpolators queues
+			//for (tv <- measurements)
+			//	aggregators((tv.customer, tv.location)) ! tv
+
+			val timeWindowState =
 				for ( aggState <- Future.traverse(children)(child => (child ? SaveState).mapTo[AggregatorState]) )
 				yield new TimeWindowState(aggState)
 
-			twState pipeTo writeMaster
+			timeWindowState pipeTo writeMaster
 
 
 		case LoadState =>
@@ -75,7 +77,8 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 		case states: AggregatorStates =>
 			log.debug("received AggregatorStates with {} elements", states.size)
 			states.values foreach  { v =>
-				log.debug("\t {} {} {}", v.customer, v.location, v.interpolatorStates.size)
+				log.debug("\t {}", v.customer)
+				log.debug("\t {} {}", v.location, v.interpolatorStates.size)
 				v.interpolatorStates foreach (sv =>
 					log.debug("\t\t{}\t{}", sv._1, sv._2)
 				)
@@ -104,7 +107,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			// sort by time, interpolate, save to storage and discard
 			val(oldmsmt, newmsmt) = measurements span (_.timestamp < (current - expiredTimeWindow.toMillis))
 
-			for (tv <- oldmsmt.sortWith(_ < _))
+			for (tv <- oldmsmt)
 				aggregators((tv.customer, tv.location)) ! tv
 
 			// discard old values

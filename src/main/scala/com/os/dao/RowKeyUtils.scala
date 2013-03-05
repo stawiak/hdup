@@ -3,6 +3,7 @@ package com.os.dao
 import org.apache.hadoop.hbase.util.Bytes
 import java.security.MessageDigest
 import scala.Byte
+import com.os.util.BytesWrapper._
 
 /**
  * @author Vadim Bobrov
@@ -100,6 +101,16 @@ object RowKeyUtils {
 	def getTimestampFromRollup(rowkey : Array[Byte]) : Long = {
 		val reverseTimestamp = Bytes.toLong(rowkey, SIZEOF_STRING + SIZEOF_STRING)
 		Long.MaxValue - reverseTimestamp
+	}
+
+	/**
+	 * extract two strings left and right of separator
+	 * @param bytes to split
+	 * @return left and right part
+	 */
+	def split(bytes : Array[Byte]) : (String, String) = {
+		val(left, right) = bytes.span(_ != Separator)
+		(left, right.tail)
 	}
 
 }
