@@ -27,10 +27,13 @@ object WriterFactory {
 	def apply(obj: AnyRef): WriterFactory = {
 		// returned concrete factory based on object type
 		obj match {
-			case _: TimeWindowState => InterpolatorStateWriterFactory
-			case _: EnergyMeasurement => EnergyMeasurementWriterFactory
+			// rollup and interpolated should be matched before
+			// other measurement classes or they will be swallowed
 			case _: Rollup => RollupMeasurementWriterFactory
 			case _: Interpolated => InterpolatedMeasurementWriterFactory
+
+			case _: TimeWindowState => InterpolatorStateWriterFactory
+			case _: EnergyMeasurement => EnergyMeasurementWriterFactory
 			case _: CurrentMeasurement => CurrentMeasurementWriterFactory
 			case _: VampsMeasurement => VampsMeasurementWriterFactory
 		}
