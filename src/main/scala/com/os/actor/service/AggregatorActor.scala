@@ -15,12 +15,17 @@ import concurrent.duration._
 import concurrent.Future
 import com.os.dao.AggregatorState
 import akka.pattern.pipe
+import management.ManagementFactory
+import javax.management.{Notification, NotificationBroadcasterSupport, ObjectName}
 
 /**
  * Rollup by customer and location
  *
  * @author Vadim Bobrov
  */
+trait AggregatorActorMBean {
+	def getInterpolatorInfo: Array[String]
+}
 class AggregatorActor(
 						 customer: String,
 						 location: String,
@@ -30,23 +35,28 @@ class AggregatorActor(
 						 mockFactory: Option[ActorCache[String]] = None
 					)
 
-	extends FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor {
+	extends JMXNotifier with FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with AggregatorActorMBean {
+
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=TimeWindow,TimeWindow=aggregators,name=\"" + customer + "@//" + location + "\""))
 
 	import context._
 	implicit val timeout: Timeout = 10 seconds
 
 	val queueMap = if (!aggregatorState.isEmpty) aggregatorState.get.interpolatorStates.toMap else Map.empty[String, NQueue]
-	val defaultFactory = CachingActorFactory[String]((key: String) => actorOf(Props(new InterpolatorActor(
-		queueMap.get(key)
-	))))
+	val defaultFactory = CachingActorFactory[String]((key: String) =>
+			actorOf(Props(new InterpolatorActor(queueMap.get(key))))
+	)
 
 	val interpolators: ActorCache[String] = mockFactory.getOrElse(defaultFactory)
 
 	var rollups: TimeWindowMap[Long, Double] = new TimeWindowSortedMap[Long, Double]()
 
 
+	def getInterpolatorInfo:Array[String] = interpolators.keys.toArray
+
+
 	override val lastWill: () => Unit = () => {
-		log.debug("saving remaining rollups")
+		log.info("saving remaining rollups")
 		// save remaining rollups
 		for( tv <- rollups)
 			writeMaster !  new EnergyMeasurement(customer, location, "", tv._1, tv._2) with Rollup
@@ -56,6 +66,7 @@ class AggregatorActor(
 
 		// received back from interpolator - add to rollups and save to storage
 		case ismt : Interpolated =>
+
 			val m = ismt.asInstanceOf[EnergyMeasurement]
 			if (!rollups.contains(m.timestamp))
 				rollups += (m.timestamp -> m.value)
@@ -88,6 +99,7 @@ class AggregatorActor(
 	}
 
 	private def processRollups() {
+
 		val current = timeSource.now()
 		// if any of the rollups are more than 9.5 minutes old
 		// save to storage and discard

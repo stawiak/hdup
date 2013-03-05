@@ -35,7 +35,7 @@ case object StopMessageListener
 class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware with MonitorActorMBean {
 
 	type Monitoring = Map[String, Any]
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("dynamic:name=data"))
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=Monitor,name=monitor"))
 
 	@scala.beans.BeanProperty
 	var timeWindowSize:Long = 0

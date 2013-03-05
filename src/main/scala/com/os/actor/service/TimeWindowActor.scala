@@ -14,13 +14,16 @@ import akka.pattern.ask
 import akka.pattern.pipe
 import akka.util.Timeout
 import concurrent.duration._
+import management.ManagementFactory
+import javax.management.ObjectName
 
 
 /**
   * @author Vadim Bobrov
   */
-class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor {
+class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with TimeWindowActorMBean {
 
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=TimeWindow,name=timeWindow"))
 	import context._
 
 	type AggregatorStates = Map[(String, String), AggregatorState]
@@ -73,6 +76,9 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			log.debug("received AggregatorStates with {} elements", states.size)
 			states.values foreach  { v =>
 				log.debug("\t {} {} {}", v.customer, v.location, v.interpolatorStates.size)
+				v.interpolatorStates foreach (sv =>
+					log.debug("\t\t{}\t{}", sv._1, sv._2)
+				)
 			}
 			aggregators = CachingActorFactory[(String, String)]((customerLocation: (String, String)) => actorOf(Props(
 				new AggregatorActor(customerLocation._1, customerLocation._2, timeWindow = expiredTimeWindow, aggregatorState = states.get(customerLocation))
@@ -110,4 +116,6 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 
 	}
 
- }
+}
+
+trait TimeWindowActorMBean

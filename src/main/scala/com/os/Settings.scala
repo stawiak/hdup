@@ -60,7 +60,7 @@ trait SettingsMBean {
 	def setSaveStateOnShutdown(b: Boolean)
 }
 final class Settings(config: Config) extends SettingsMBean {
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("settings:name=data"))
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=Settings,name=settings"))
 
 	val activeMQConfig = config.getConfig("activemq")
 	val hBaseConfig = config.getConfig("hbase")

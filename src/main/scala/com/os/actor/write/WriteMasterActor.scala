@@ -6,19 +6,22 @@ import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
 import com.os.actor.util.FinalCountDown
 import com.os.measurement._
-import com.os.util.{MappableCachingActorFactory, MappableActorCache}
+import com.os.util.{JMXNotifier, MappableCachingActorFactory, MappableActorCache}
 import akka.actor.OneForOneStrategy
 import akka.routing.Broadcast
 import com.os.dao.{TimeWindowState, WriterFactory}
 import com.os.actor.GracefulStop
+import management.ManagementFactory
+import javax.management.{Notification, NotificationBroadcasterSupport, ObjectName}
 
 
 /**
  * @author Vadim Bobrov
  */
+trait WriteMasterActorMBean
+class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFactory]] = None) extends JMXNotifier with FinalCountDown with WriteMasterActorMBean {
 
-class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFactory]] = None) extends FinalCountDown {
-
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=Writer,name=writeMaster"))
 	import context._
 	// Since a restart does not clear out the mailbox, it often is best to terminate
 	// the children upon failure and re-create them explicitly from the supervisor
@@ -33,7 +36,6 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 	)
 
 	val routers = mockFactory.getOrElse(defaultFactory)
-
 
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
@@ -56,6 +58,11 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 			children foreach (_ ! Broadcast(GracefulStop))
 			children foreach (_ ! Broadcast(PoisonPill))
 
+		case x =>
+			notify("writeMaster.unknown", x.toString)
+
+
 	}
 }
+
 

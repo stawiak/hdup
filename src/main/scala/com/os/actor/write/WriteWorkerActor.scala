@@ -5,11 +5,16 @@ import com.os.dao.{TimeWindowState, WriterFactory}
 import com.os.util.Util._
 import com.os.measurement.Measurement
 import com.os.actor.GracefulStop
+import management.ManagementFactory
+import javax.management.ObjectName
 
 /**
   * @author Vadim Bobrov
   */
-class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with ActorLogging{
+trait WriteWorkerActorMBean
+class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with ActorLogging with WriteWorkerActorMBean {
+
+	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=Writer,Writer=workers,name=\"" + writerFactory.name + self.path.name + "\""))
 
 	val writer = writerFactory.createWriter
 	var measurements = List.empty[Measurement]
@@ -53,4 +58,5 @@ class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with Acto
 		measurements = List.empty[Measurement]
 	}
 
- }
+}
+
