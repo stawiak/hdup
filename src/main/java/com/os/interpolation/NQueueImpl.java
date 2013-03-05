@@ -24,7 +24,7 @@ public class NQueueImpl implements NQueue {
 
 	@Override
 	public TimedValue[] content() {
-		return (counter == 0 ? new TimedValue[0] : Arrays.copyOfRange(elems, 4 - counter, 3));
+		return (counter == 0 ? new TimedValue[0] : Arrays.copyOfRange(elems, 4 - counter, 4));
 	}
 
 	@Override
@@ -32,7 +32,9 @@ public class NQueueImpl implements NQueue {
 		// skip duplicates
 		if(tv != null && !(elems[3] != null && tv.equals(elems[3]))) {
 			// must be sorted
-			assert (elems[3] == null || tv.compareTo(elems[3]) > 0);
+			if(elems[3] != null && tv.compareTo(elems[3]) < 0)
+				throw new IllegalArgumentException("NQueue input must be sorted");
+
 			elems[0] = elems[1];
 			elems[1] = elems[2];
 			elems[2] = elems[3];
