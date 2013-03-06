@@ -21,6 +21,7 @@ import javax.management.ObjectName
 /**
   * @author Vadim Bobrov
   */
+trait TimeWindowActorMBean
 class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with TimeWindowActorMBean {
 
 	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=TimeWindow,name=timeWindow"))
@@ -59,9 +60,10 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			log.debug("time window received SaveState")
 			// send out remaining measurements
 
-			//TODO: this causes unordered message exception in interpolators queues
-			//for (tv <- measurements)
-			//	aggregators((tv.customer, tv.location)) ! tv
+			for (tv <- measurements)
+				aggregators((tv.customer, tv.location)) ! tv
+			// this is important!!! or time window tick will kick in on the same msmts
+			measurements = new TimeWindowSortedSetBuffer[Measurement]()
 
 			val timeWindowState =
 				for ( aggState <- Future.traverse(children)(child => (child ? SaveState).mapTo[AggregatorState]) )
@@ -121,4 +123,3 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 
 }
 
-trait TimeWindowActorMBean

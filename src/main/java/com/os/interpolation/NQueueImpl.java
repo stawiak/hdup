@@ -33,7 +33,7 @@ public class NQueueImpl implements NQueue {
 		if(tv != null && !(elems[3] != null && tv.equals(elems[3]))) {
 			// must be sorted
 			if(elems[3] != null && tv.compareTo(elems[3]) < 0)
-				throw new IllegalArgumentException("NQueue input must be sorted");
+				throw new IllegalArgumentException("NQueue input must be sorted at " + System.currentTimeMillis() + " where " + elems[3] + " vs " + tv);
 
 			elems[0] = elems[1];
 			elems[1] = elems[2];
