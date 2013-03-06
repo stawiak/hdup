@@ -30,7 +30,6 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 	type AggregatorStates = Map[(String, String), AggregatorState]
 	implicit val timeout: Timeout = 10 seconds
 	override val interval = Settings().TimeWindowProcessInterval
-  	val interpolation = Settings().Interpolation
 
 	var measurements:TimeWindow[Measurement] = new TimeWindowSortedSetBuffer[Measurement]()
 
@@ -40,14 +39,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 	override def receive: Receive = {
 
 		case msmt : EnergyMeasurement =>
-			writeMaster ! msmt
-
-			// if less than 9.5 minutes old - add to time window
-			if (interpolation && timeSource.now - msmt.timestamp < expiredTimeWindow.toMillis)
-				measurements += msmt
-
-    	case msmt : Measurement =>
-      		writeMaster ! msmt
+			measurements += msmt
 
 		// send old measurements for aggregation and interpolation
 		case Tick => processWindow

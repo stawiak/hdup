@@ -12,7 +12,9 @@ import scala.Some
 import akka.actor.OneForOneStrategy
 import management.ManagementFactory
 import javax.management.ObjectName
-import com.os.util.JMXNotifier
+import com.os.util.{TimeSource, JMXNotifier}
+import write.WriterMasterAware
+import com.os.Settings
 
 /**
  * @author Vadim Bobrov
@@ -54,10 +56,13 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 			case _: Throwable                	=> Escalate
 		}
 
-	class MessageListenerChildActor(host: String, port: Int, queue: String) extends ActiveMQActor(host, port, queue) with TopAware {
+	class MessageListenerChildActor(host: String, port: Int, queue: String) extends ActiveMQActor(host, port, queue) with TopAware with WriterMasterAware {
 
 		import scala.collection.JavaConversions._
 		val timeWindow = context.system.actorFor("/user/top/timeWindow")
+		val interpolation = Settings().Interpolation
+		val timeSource: TimeSource = new TimeSource {}
+		val expiredTimeWindow : Duration = Settings().ExpiredTimeWindow
 
 		override def receive: Receive = super.receive orElse { // super.receive must be enabled to process Connect
 
@@ -94,8 +99,12 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 
 					// yes, wireid can be null!!!
 					if (msmt.isDefined && wireid != null) {
-						//log.debug("sending {}", msmt.get)
-						timeWindow ! msmt.get
+						writeMaster ! msmt.get
+
+						// if less than 9.5 minutes old - send to time window
+						if (interpolation && timeSource.now - msmt.get.timestamp < expiredTimeWindow.toMillis)
+							timeWindow ! msmt.get
+
 						counterMsmt += 1
 					}
 				}
