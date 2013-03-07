@@ -6,7 +6,7 @@ import akka.actor._
 import com.os.measurement.{Measurement, EnergyMeasurement}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.typesafe.config.ConfigFactory
-import com.os.actor.{GracefulStop, WebServiceActor, MessageListenerActor, TopActor}
+import com.os.actor._
 import com.os.actor.util.DeadLetterListener
 import com.os.{TestActors, Settings}
 import com.os.actor.read.{MQLHandlerActor, ReadMasterActor}
@@ -16,6 +16,7 @@ import akka.util.Timeout
 import concurrent.duration._
 import concurrent.Await
 import com.os.mql.parser.MQLParser
+import com.os.util.Ping
 
 /**
  * @author Vadim Bobrov
@@ -30,16 +31,15 @@ class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) w
 		Props(new MQLHandlerActor(MQLParser.apply)),
 		Props(new TestTimeWindowActor()),
 		Props(new ReadMasterActor),
-		Props(new WriteMasterActor),
+		Props(new ForwarderActor),
 		Props(new MessageListenerActor(settings.ActiveMQHost, settings.ActiveMQPort, settings.ActiveMQQueue)),
 		Props[WebServiceActor],
 		Props[DeadLetterListener],
-		Props(new NoGoodnik)
+		Props(new MonitorActor(Props(new Crasher)))
 	)), name = "top")
 
 
 	override def afterAll() {
-		top ! GracefulStop
 		system.awaitTermination()
 	}
 
@@ -54,6 +54,17 @@ class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) w
 		Await.result((testTimeWindow ? Report).mapTo[Int], timeout.duration) should be (4)
 		testTimeWindow ! Crash
 		Await.result((testTimeWindow ? Report).mapTo[Int], timeout.duration) should be (4)
+		top ! GracefulStop
+	}
+
+	"monitor worker" should "crash without taking system down" in {
+		val testMonitor = system.actorFor("/user/top/monitor")
+		val testWriteMaster = system.actorFor("/user/top/writeMaster")
+		testMonitor ! Crash
+		testWriteMaster ! Ping
+
+		receiveN(1, 2 seconds)
+		top ! GracefulStop
 	}
 
 	private case object Crash

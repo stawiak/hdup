@@ -3,6 +3,7 @@ package com.os.actor
 import com.os.measurement.{VampsMeasurement, CurrentMeasurement, EnergyMeasurement, Measurement}
 import javax.jms._
 import akka.actor._
+import service.TimeWindowAware
 import util.{FinalCountDown, ActiveMQActor}
 import com.os.exchange.MeasurementXO
 import com.os.exchange.json.{JSONObject, DefaultJSONFactory}
@@ -27,7 +28,7 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 
 	import context._
 
-	var worker = watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue)), name = "messageProcessor"))
+	var worker = watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue)), name = "worker"))
 
 	case object RestartMessageProcessor
 
@@ -40,7 +41,7 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 			system.scheduler.scheduleOnce(30 seconds, self, RestartMessageProcessor)
 
 		case RestartMessageProcessor =>
-			worker = watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue)), name = "messageProcessor"))
+			worker = watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue)), name = "worker"))
 
 		case GracefulStop =>
 			waitAndDie()
@@ -55,10 +56,9 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 			case _: Throwable                	=> Escalate
 		}
 
-	class MessageListenerChildActor(host: String, port: Int, queue: String) extends ActiveMQActor(host, port, queue) with TopAware with WriterMasterAware {
+	class MessageListenerChildActor(host: String, port: Int, queue: String) extends ActiveMQActor(host, port, queue) with TopAware with WriterMasterAware with TimeWindowAware {
 
 		import scala.collection.JavaConversions._
-		val timeWindow = context.system.actorFor("/user/top/timeWindow")
 		val interpolation = Settings().Interpolation
 		val timeSource: TimeSource = new TimeSource {}
 		val expiredTimeWindow : Duration = Settings().ExpiredTimeWindow
@@ -101,8 +101,10 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 						writeMaster ! msmt.get
 
 						// if less than 9.5 minutes old - send to time window
-						if (interpolation && timeSource.now - msmt.get.timestamp < expiredTimeWindow.toMillis)
+						if (interpolation && timeSource.now - msmt.get.timestamp < expiredTimeWindow.toMillis) {
+							//log.debug("sending to time window")
 							timeWindow ! msmt.get
+						}
 
 						counterMsmt += 1
 					}

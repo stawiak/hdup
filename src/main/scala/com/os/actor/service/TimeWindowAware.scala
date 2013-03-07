@@ -9,6 +9,6 @@ import akka.actor.Actor
 trait TimeWindowAware {
 
 	this: Actor =>
-	lazy val timeWindow = context.system.actorFor("/user/top/timeWindow")
+	lazy val timeWindow = context.system.actorFor("/user/top/timeWindow/worker")
 
 }

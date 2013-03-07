@@ -1,16 +1,38 @@
 package com.os.actor
 
-import akka.actor.{PoisonPill, ActorLogging, Actor}
+import akka.actor._
 import read.LoadState
-import util.{Tick, TimedActor}
+import read.{ReadMasterAware, LoadState}
+import service.TimeWindowChildActor
+import util.{FinalCountDown, Tick, TimedActor}
 import javax.management.ObjectName
-import com.os.util.JMXActorBean
+import com.os.util.{ActorCache, TimeSource, JMXActorBean}
+import concurrent.duration.Duration
+import write.WriterMasterAware
+import akka.actor.SupervisorStrategy.Stop
 
 
 /**
  * @author Vadim Bobrov
  */
-trait MonitorActorMBean {
+class MonitorActor(workerProps: Props = Props(new MonitorChildActor())) extends FinalCountDown {
+
+	import context._
+	var worker = watch(context.actorOf(workerProps, name = "worker"))
+
+	override def receive: Receive = {
+		case GracefulStop =>
+			waitAndDie()
+			children foreach  (_ ! GracefulStop)
+
+		case m => worker forward m
+	}
+
+	// stop monitor on any exceptions
+	override val supervisorStrategy = OneForOneStrategy() {	case _ => Stop }
+}
+
+trait MonitorChildActorMBean {
 	def stop: Unit
 	def startMessageListener: Unit
 	def stopMessageListener: Unit
@@ -32,7 +54,7 @@ case object SaveState
 case object StartMessageListener
 case object StopMessageListener
 
-class MonitorActor extends JMXActorBean with Actor with ActorLogging with TimedActor with TopAware with MonitorActorMBean {
+class MonitorChildActor extends JMXActorBean with Actor with ActorLogging with TimedActor with TopAware with MonitorChildActorMBean {
 
 	type Monitoring = Map[String, Any]
 	override val jmxName = new ObjectName("com.os.chaos:type=Monitor,name=monitor")
@@ -67,24 +89,27 @@ class MonitorActor extends JMXActorBean with Actor with ActorLogging with TimedA
 
 		case m: Monitoring =>
 
-			if (sender.path.parent.name == "timeWindow") {
-				rollups += m("rollups").asInstanceOf[Long]
-				interpolators += m("interpolators").asInstanceOf[Long]
-			} else
-				sender.path.name match {
-					case "timeWindow" =>
-						timeWindowSize = m("length").asInstanceOf[Int]
-						aggregators = m("aggregators").asInstanceOf[Int]
-						aggregatorNames = (m("aggregatorNames").asInstanceOf[Traversable[(String, String)]] map ( x => x._1 + "@" + x._2)).toArray
+			// grandpa						dad 					 self
+			(sender.path.parent.parent.name, sender.path.parent.name, sender.path.name) match {
+				// aggregator
+				case ("timeWindow", "worker", _) =>
+					rollups += m("rollups").asInstanceOf[Long]
+					interpolators += m("interpolators").asInstanceOf[Long]
 
-					case "messageProcessor" =>
-						sentMsmt = m("msmt").asInstanceOf[Long]
-						receivedBatches = m("batch").asInstanceOf[Long]
+				// time window
+				case (_, "timeWindow", "worker") =>
+					timeWindowSize = m("length").asInstanceOf[Int]
+					aggregators = m("aggregators").asInstanceOf[Int]
+					aggregatorNames = (m("aggregatorNames").asInstanceOf[Traversable[(String, String)]] map ( x => x._1 + "@" + x._2)).toArray
 
-					case s =>
-						log.debug("monitor received from {}", s)
-				}
+				// message listener
+				case (_, "messageProcessor", "worker") =>
+					sentMsmt = m("msmt").asInstanceOf[Long]
+					receivedBatches = m("batch").asInstanceOf[Long]
 
+				case x =>
+					log.debug("monitor received from {}", x)
+			}
 
 		case Tick =>
 			// zero out because those have to be summed up across multiple messages

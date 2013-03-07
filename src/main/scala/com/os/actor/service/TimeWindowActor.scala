@@ -1,6 +1,6 @@
 package com.os.actor.service
 
-import akka.actor.Props
+import akka.actor.{OneForOneStrategy, Props}
 import com.os.measurement.{EnergyMeasurement, Measurement}
 import com.os.actor._
 import read.{LoadState, ReadMasterAware}
@@ -14,13 +14,34 @@ import akka.pattern.ask
 import akka.util.Timeout
 import concurrent.duration._
 import javax.management.ObjectName
+import akka.actor.SupervisorStrategy.{Stop}
 
 
 /**
   * @author Vadim Bobrov
   */
-trait TimeWindowActorMBean
-class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends JMXActorBean with FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with TimeWindowActorMBean {
+class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown {
+
+	import context._
+	var worker = watch(context.actorOf(Props(new TimeWindowChildActor(expiredTimeWindow, timeSource, mockFactory)), name = "worker"))
+
+	override def receive: Receive = {
+		case GracefulStop =>
+			waitAndDie()
+			children foreach  (_ ! GracefulStop)
+
+		case m => worker forward m
+	}
+
+	// stop interpolation on any exceptions
+	override val supervisorStrategy = OneForOneStrategy() {	case _ => Stop }
+}
+
+trait TimeWindowChildActorMBean {
+	def getTimeWindowSize:Long
+	def getAggregators:Long
+}
+class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with TimeWindowChildActorMBean with JMXActorBean {
 
 	import context._
 
@@ -34,6 +55,9 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 
 	val defaultFactory = CachingActorFactory[(String, String)]((customerLocation: (String, String)) => actorOf(Props(new AggregatorActor(customerLocation._1, customerLocation._2, timeWindow = expiredTimeWindow))))
 	var aggregators: ActorCache[(String, String)] = mockFactory.getOrElse(defaultFactory)
+
+	def getTimeWindowSize:Long = measurements.size
+	def getAggregators:Long = aggregators.size
 
 	override def receive: Receive = {
 
@@ -81,8 +105,6 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 			flush()
 			waitAndDie()
 			children foreach ( _ ! GracefulStop)
-
-
 	}
 
 	/**
@@ -119,4 +141,3 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 	}
 
 }
-

@@ -48,7 +48,7 @@ class TopActor(   // props of top-level actors to start
 		readMaster = actorOf(readMasterProps, name = "readMaster")
 		writeMaster = actorOf(writeMasterProps, name = "writeMaster")
 		// not started by default
-		//messageListener = Some(actorOf(messageListenerProps, name = "jmsListener"))
+		//messageListener = Some(actorOf(messageListenerProps, name = "messageListener"))
 		webService = actorOf(webServiceProps, name = "webService")
 		deadLetterListener = actorOf(deadLetterListenerProps, name = "deadLetterListener")
 		monitor = actorOf(monitorProps, name = "monitor")
@@ -78,7 +78,7 @@ class TopActor(   // props of top-level actors to start
 
 		case StartMessageListener =>
 			if (!messageListener.isDefined || messageListener.get.isTerminated)
-				messageListener = Some(actorOf(messageListenerProps, name = "jmsListener"))
+				messageListener = Some(actorOf(messageListenerProps, name = "messageListener"))
 
 		case StopMessageListener =>
 			if (messageListener.isDefined && !messageListener.get.isTerminated)
