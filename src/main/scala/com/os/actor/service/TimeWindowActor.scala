@@ -9,7 +9,7 @@ import write.WriterMasterAware
 import com.os.util._
 import com.os.Settings
 import com.os.dao.{TimeWindowState, AggregatorState}
-import concurrent.Future
+import concurrent.{Await, Future}
 import akka.pattern.ask
 import akka.pattern.pipe
 import akka.util.Timeout
@@ -50,19 +50,14 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 
 		case SaveState =>
 			log.debug("time window received SaveState")
-			// send out remaining measurements
-
-			for (tv <- measurements)
-				aggregators((tv.customer, tv.location)) ! tv
-			// this is important!!! or time window tick will kick in on the same msmts
-			measurements = new TimeWindowSortedSetBuffer[Measurement]()
+			flush()
 
 			val timeWindowState =
 				for ( aggState <- Future.traverse(children)(child => (child ? SaveState).mapTo[AggregatorState]) )
 				yield new TimeWindowState(aggState)
 
-			timeWindowState pipeTo writeMaster
-
+			// this must be fully synchronous or else write master could be killed prematurely
+			writeMaster ! Await.result(timeWindowState, 10 seconds)
 
 		case LoadState =>
 			log.debug("time window received LoadState")
@@ -84,11 +79,22 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 		case GracefulStop =>
 			log.debug("time window received GracefulStop")
 
-			children foreach ( _ ! GracefulStop)
+			flush()
 			waitAndDie()
+			children foreach ( _ ! GracefulStop)
+
 
 	}
 
+	/**
+	 * send out remaining measurements
+	 */
+	private def flush() {
+		for (tv <- measurements)
+			aggregators((tv.customer, tv.location)) ! tv
+		// this is important!!! or time window tick will kick in on the same msmts
+		measurements = new TimeWindowSortedSetBuffer[Measurement]()
+	}
 
 	/**
 	 * send events older than a time window for aggregation and interpolation

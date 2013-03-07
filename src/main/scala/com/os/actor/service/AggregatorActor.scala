@@ -12,7 +12,7 @@ import akka.pattern.ask
 import com.os.interpolation.NQueue
 import akka.util.Timeout
 import concurrent.duration._
-import concurrent.Future
+import concurrent.{Await, Future}
 import com.os.dao.AggregatorState
 import akka.pattern.pipe
 import management.ManagementFactory
@@ -55,13 +55,7 @@ class AggregatorActor(
 	def getInterpolatorInfo:Array[String] = interpolators.keys.toArray
 
 
-	override val lastWill: () => Unit = () => {
-		log.info("saving remaining rollups")
-		// save remaining rollups
-		for( tv <- rollups)
-			writeMaster !  new EnergyMeasurement(customer, location, "", tv._1, tv._2) with Rollup
-		rollups = new TimeWindowSortedMap[Long, Double]()
-	}
+	override val lastWill: () => Unit = flush
 
 	override def receive: Receive = {
 
@@ -87,14 +81,15 @@ class AggregatorActor(
 
 		case SaveState =>
 			log.debug("aggregator received SaveState")
-			//TODO dump remaining rollups - watch for new messages as depressionMode = false, beware of sortWith not implemented yet in TimeWindowMap
-			lastWill()
+			flush()
 
-			collectState pipeTo sender
+			// this must be fully synchronous or else write master could be killed prematurely
+			sender ! Await.result(collectState, 10 seconds)
 
 		case GracefulStop =>
 			log.debug("aggregator received GracefulStop")
-			//TODO dump remaining rollups - watch for new messages as depressionMode = false, beware of sortWith not implemented yet in TimeWindowMap
+
+			// flushing is done in last will as new interpolated values can keep arriving
 			waitAndDie(depressionMode = false)
 			children foreach (_ ! PoisonPill)
 	}
@@ -106,11 +101,19 @@ class AggregatorActor(
 		// save to storage and discard
 		val(oldmsmt, newmsmt) = rollups span (current - _._1 > timeWindow.toMillis)
 
-		for( tv <- oldmsmt)
+		for(tv <- oldmsmt)
 			writeMaster !  new EnergyMeasurement(customer, location, "", tv._1, tv._2) with Rollup
 
 		// discard old values
 		rollups = newmsmt
+	}
+
+	private def flush() {
+		log.info("saving remaining rollups")
+		// save remaining rollups
+		for( tv <- rollups)
+			writeMaster !  new EnergyMeasurement(customer, location, "", tv._1, tv._2) with Rollup
+		rollups = new TimeWindowSortedMap[Long, Double]()
 	}
 
 	private def collectState:Future[AggregatorState] = {

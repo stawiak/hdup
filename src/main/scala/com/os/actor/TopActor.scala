@@ -91,17 +91,27 @@ class TopActor(   // props of top-level actors to start
 
 		case GracefulStop =>
 			log.debug("top received GracefulStop - stopping top level actors")
-			if (Settings().SaveStateOnShutdown) {
-				log.debug("saving state on shutdown")
-				children foreach (_ ! SaveState)
-			}
+
+			// shut down message listener then have everyone save state
+			if (messageListener.isDefined && !messageListener.get.isTerminated)
+				killChild(messageListener.get, saveState)
+			else
+				saveState()
 
 			// time window must be flushed before stopping write master
 			killChild(timeWindow, () => killChild(writeMaster))
+
 			// do the rest
 			children foreach (_ ! GracefulStop)
 			waitAndDie()
 
+	}
+
+	private def saveState() {
+		if (Settings().SaveStateOnShutdown) {
+			log.debug("saving state on shutdown")
+			children foreach (_ ! SaveState)
+		}
 	}
 
 }
