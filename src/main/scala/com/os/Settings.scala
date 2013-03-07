@@ -58,6 +58,7 @@ trait SettingsMBean {
 	def getReadTimeout:Long
 	def getSaveStateOnShutdown:Boolean
 	def setSaveStateOnShutdown(b: Boolean)
+	def getLoadStateOnStartup:Boolean
 }
 final class Settings(config: Config) extends SettingsMBean {
 	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=Settings,name=settings"))
@@ -125,5 +126,8 @@ final class Settings(config: Config) extends SettingsMBean {
 
 	@scala.beans.BeanProperty
 	var SaveStateOnShutdown = config.getBoolean("saveStateOnShutdown")
+
+	@scala.beans.BeanProperty
+	val LoadStateOnStartup = config.getBoolean("loadStateOnStartup")
 
 }
