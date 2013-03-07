@@ -60,6 +60,7 @@ class AggregatorActor(
 		// save remaining rollups
 		for( tv <- rollups)
 			writeMaster !  new EnergyMeasurement(customer, location, "", tv._1, tv._2) with Rollup
+		rollups = new TimeWindowSortedMap[Long, Double]()
 	}
 
 	override def receive: Receive = {
