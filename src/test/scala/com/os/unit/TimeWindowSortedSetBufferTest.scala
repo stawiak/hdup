@@ -3,7 +3,7 @@ package com.os.unit
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import com.os.measurement.{EnergyMeasurement, Measurement}
-import com.os.util.{TimeWindowSortedSetBuffer}
+import com.os.util.TimeWindowSortedSetBuffer
 
 /**
  * @author Vadim Bobrov

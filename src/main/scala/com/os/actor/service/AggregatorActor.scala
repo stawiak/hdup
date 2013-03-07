@@ -14,9 +14,7 @@ import akka.util.Timeout
 import concurrent.duration._
 import concurrent.{Await, Future}
 import com.os.dao.AggregatorState
-import akka.pattern.pipe
-import management.ManagementFactory
-import javax.management.{Notification, NotificationBroadcasterSupport, ObjectName}
+import javax.management.ObjectName
 
 /**
  * Rollup by customer and location
@@ -35,11 +33,11 @@ class AggregatorActor(
 						 mockFactory: Option[ActorCache[String]] = None
 					)
 
-	extends JMXNotifier with FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with AggregatorActorMBean {
+	extends JMXNotifier with JMXActorBean with FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with AggregatorActorMBean {
 
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=TimeWindow,TimeWindow=aggregators,name=\"" + customer + "@" + location + "\""))
 
 	import context._
+	override val jmxName = new ObjectName("com.os.chaos:type=TimeWindow,TimeWindow=aggregators,name=\"" + customer + "@" + location + "\"")
 	implicit val timeout: Timeout = 10 seconds
 
 	val queueMap = if (!aggregatorState.isEmpty) aggregatorState.get.interpolatorStates.toMap else Map.empty[String, NQueue]

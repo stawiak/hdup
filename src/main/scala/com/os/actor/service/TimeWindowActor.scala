@@ -11,10 +11,8 @@ import com.os.Settings
 import com.os.dao.{TimeWindowState, AggregatorState}
 import concurrent.{Await, Future}
 import akka.pattern.ask
-import akka.pattern.pipe
 import akka.util.Timeout
 import concurrent.duration._
-import management.ManagementFactory
 import javax.management.ObjectName
 
 
@@ -22,10 +20,11 @@ import javax.management.ObjectName
   * @author Vadim Bobrov
   */
 trait TimeWindowActorMBean
-class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with TimeWindowActorMBean {
+class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends JMXActorBean with FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with TimeWindowActorMBean {
 
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=TimeWindow,name=timeWindow"))
 	import context._
+
+	override val jmxName = new ObjectName("com.os.chaos:type=TimeWindow,name=timeWindow")
 
 	type AggregatorStates = Map[(String, String), AggregatorState]
 	implicit val timeout: Timeout = 10 seconds

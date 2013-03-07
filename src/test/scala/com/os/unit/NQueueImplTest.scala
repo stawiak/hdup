@@ -2,8 +2,6 @@ package com.os.unit
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import com.os.util.BytesWrapper._
-import com.os.util.BytesWrapper
 import com.os.measurement.TimedValue
 import com.os.interpolation.NQueueImpl
 

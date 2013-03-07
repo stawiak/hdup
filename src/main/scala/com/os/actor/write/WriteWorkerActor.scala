@@ -5,16 +5,16 @@ import com.os.dao.{TimeWindowState, WriterFactory}
 import com.os.util.Util._
 import com.os.measurement.Measurement
 import com.os.actor.GracefulStop
-import management.ManagementFactory
 import javax.management.ObjectName
+import com.os.util.JMXActorBean
 
 /**
   * @author Vadim Bobrov
   */
 trait WriteWorkerActorMBean
-class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with ActorLogging with WriteWorkerActorMBean {
+class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with ActorLogging with WriteWorkerActorMBean with JMXActorBean {
 
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=Writer,Writer=workers,name=\"" + writerFactory.name + self.path.name + "\""))
+	override val jmxName = new ObjectName("com.os.chaos:type=Writer,Writer=workers,name=\"" + writerFactory.name + self.path.name + "\"")
 
 	val writer = writerFactory.createWriter
 	var measurements = List.empty[Measurement]

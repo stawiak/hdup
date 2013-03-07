@@ -54,6 +54,8 @@ class TopActor(   // props of top-level actors to start
 		monitor = actorOf(monitorProps, name = "monitor")
 
 		system.eventStream.subscribe(deadLetterListener, classOf[DeadLetter])
+
+		super.preStart()
 	}
 
 	override val supervisorStrategy =

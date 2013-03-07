@@ -9,8 +9,7 @@ import concurrent.duration._
  * @author Vadim Bobrov
 */
 case object Tick
-trait TimedActor {
-	this: Actor =>
+trait TimedActor extends Actor {
 
 	val interval: FiniteDuration = 5 seconds
 
@@ -18,12 +17,14 @@ trait TimedActor {
 
 	var schedule: Cancellable = _
 
-	override def preStart() {
+	abstract override def preStart() {
 		schedule = context.system.scheduler.schedule(Duration.Zero, interval, self, Tick)
+		super.preStart()
 	}
 
-	override def postStop() {
+	abstract override def postStop() {
 		schedule.cancel()
+		super.postStop()
 	}
 
 	def updateInterval(newInterval: FiniteDuration) {

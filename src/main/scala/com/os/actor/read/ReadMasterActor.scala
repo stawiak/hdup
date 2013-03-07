@@ -8,12 +8,11 @@ import akka.util.Timeout
 import com.os.actor.util.FinalCountDown
 import com.os.Settings
 import org.joda.time.Interval
-import com.os.util.{MappableActorCache, MappableCachingActorFactory}
+import com.os.util.{JMXActorBean, MappableActorCache, MappableCachingActorFactory}
 import akka.routing.Broadcast
 import akka.actor.OneForOneStrategy
 import com.os.dao.ReaderFactory
 import com.os.actor.GracefulStop
-import management.ManagementFactory
 import javax.management.ObjectName
 
 
@@ -28,10 +27,10 @@ case class InterpolatorStateReadRequest() extends ReadRequest
 case class LoadState(id: AnyRef) extends ReadRequest
 
 trait ReadMasterActorMBean
-class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, ReaderFactory]] = None) extends FinalCountDown with ReadMasterActorMBean {
+class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, ReaderFactory]] = None) extends FinalCountDown with ReadMasterActorMBean with JMXActorBean {
 
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=Reader,name=readMaster"))
 	import context._
+	override val jmxName = new ObjectName("com.os.chaos:type=Reader,name=readMaster")
 	implicit val timeout: Timeout = Settings().ReadTimeout
 
 

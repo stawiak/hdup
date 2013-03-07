@@ -10,17 +10,17 @@ import akka.util.Timeout
 import concurrent.duration._
 import com.os.mql.executor.MQLCommand
 import util.{Failure, Success, Try}
-import management.ManagementFactory
 import javax.management.ObjectName
+import com.os.util.JMXActorBean
 
 /**
  * @author Vadim Bobrov
  */
 trait MQLWorkerActorMBean
-class MQLWorkerActor(val parser: MQLParser) extends Actor with ReadMasterAware with ActorLogging with MQLWorkerActorMBean {
+class MQLWorkerActor(val parser: MQLParser) extends Actor with ReadMasterAware with ActorLogging with MQLWorkerActorMBean with JMXActorBean {
 
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=MQLHandler,MQLHandler=workers,name=\"" + self.path.name + "\""))
 	import context._
+	override val jmxName = new ObjectName("com.os.chaos:type=MQLHandler,MQLHandler=workers,name=\"" + self.path.name + "\"")
 	implicit val timeout: Timeout = 60 seconds
 
 	override def receive: Receive = {

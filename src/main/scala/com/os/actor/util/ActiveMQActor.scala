@@ -40,6 +40,7 @@ abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Act
 	override def preStart() {
 		log.debug("ActiveMQ listener starting")
 		system.scheduler.scheduleOnce(1 second, self, Connect)
+		super.preStart()
 	}
 
 	override def postStop() {
@@ -51,6 +52,8 @@ abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Act
 			// ignore errors on close
 			case _: Throwable =>
 		}
+
+		super.postStop()
 	}
 
 

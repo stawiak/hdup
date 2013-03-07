@@ -10,9 +10,8 @@ import concurrent.duration._
 import akka.actor.SupervisorStrategy.{Restart, Escalate}
 import scala.Some
 import akka.actor.OneForOneStrategy
-import management.ManagementFactory
 import javax.management.ObjectName
-import com.os.util.{TimeSource, JMXNotifier}
+import com.os.util.{JMXActorBean, TimeSource, JMXNotifier}
 import write.WriterMasterAware
 import com.os.Settings
 
@@ -24,9 +23,8 @@ import com.os.Settings
  * This is a simple parent just for supervisor strategy
  */
 trait MessageListenerActorMBean
-class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNotifier with MessageListenerActorMBean with FinalCountDown {
+class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNotifier with MessageListenerActorMBean with FinalCountDown with JMXActorBean {
 
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=MessageListener,name=messageListener"))
 	import context._
 
 	var worker = watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue)), name = "messageProcessor"))
@@ -35,6 +33,7 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 
 	var counterMsmt:Long = 0
 	var counterBatch:Long = 0
+	override val jmxName = new ObjectName("com.os.chaos:type=MessageListener,name=messageListener")
 
 	override def receive: Receive = {
 		case Terminated(ref) =>

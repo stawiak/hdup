@@ -3,8 +3,8 @@ package com.os.actor
 import akka.actor.{PoisonPill, ActorLogging, Actor}
 import read.LoadState
 import util.{Tick, TimedActor}
-import management.ManagementFactory
 import javax.management.ObjectName
+import com.os.util.JMXActorBean
 
 
 /**
@@ -32,10 +32,10 @@ case object SaveState
 case object StartMessageListener
 case object StopMessageListener
 
-class MonitorActor extends Actor with ActorLogging with TimedActor with TopAware with MonitorActorMBean {
+class MonitorActor extends JMXActorBean with Actor with ActorLogging with TimedActor with TopAware with MonitorActorMBean {
 
 	type Monitoring = Map[String, Any]
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=Monitor,name=monitor"))
+	override val jmxName = new ObjectName("com.os.chaos:type=Monitor,name=monitor")
 
 	@scala.beans.BeanProperty
 	var timeWindowSize:Long = 0
