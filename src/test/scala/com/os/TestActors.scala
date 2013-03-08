@@ -17,7 +17,7 @@ trait TestActors {
 				self ! PoisonPill
 
 			case x =>
-				log.debug("forwarding {}", x)
+				//log.debug("forwarding {}", x)
 				testActor ! x
 		}
 	}
@@ -53,6 +53,15 @@ trait TestActors {
 				log.debug("starting my long work")
 				Thread.sleep(60000)
 				log.debug("long work done")
+		}
+	}
+
+	class SlowDieActor extends Actor with ActorLogging {
+		override def receive: Receive = {
+			case GracefulStop =>
+				log.debug("received graceful stop")
+				Thread.sleep(5000)
+				self ! PoisonPill
 		}
 	}
 

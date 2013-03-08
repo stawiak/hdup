@@ -9,6 +9,8 @@ import akka.actor.OneForOneStrategy
 import concurrent.duration._
 import akka.util.Timeout
 import com.os.Settings
+import concurrent.{Future, Await}
+import akka.pattern.gracefulStop
 
 /**
  * Top actor
@@ -96,24 +98,26 @@ class TopActor(   // props of top-level actors to start
 
 			// shut down message listener then have everyone save state
 			if (messageListener.isDefined && !messageListener.get.isTerminated)
-				killChild(messageListener.get, saveState)
-			else
-				saveState()
+				syncKill(messageListener.get)
+
+
+			//TODO: is this synchronous? can we proceed?
+			if (Settings().SaveStateOnShutdown) {
+				log.debug("saving state on shutdown")
+				children foreach (_ ! SaveState)
+			}
 
 			// time window must be flushed before stopping write master
-			killChild(timeWindow, () => killChild(writeMaster))
+			log.debug("killing timeWindow")
+			syncKill(timeWindow)
+			log.debug("killing writeMaster")
+			syncKill(writeMaster)
 
 			// do the rest
+			log.debug("killing rest")
 			children foreach (_ ! GracefulStop)
 			waitAndDie()
 
-	}
-
-	private def saveState() {
-		if (Settings().SaveStateOnShutdown) {
-			log.debug("saving state on shutdown")
-			children foreach (_ ! SaveState)
-		}
 	}
 
 }

@@ -9,19 +9,19 @@ import util.Loggable
  */
 object DataGenerator extends Loggable{
 
-	private val CustomerNumber = 3//20
-	private val LocationNumber = 2//2
-	private val WireNumber = 3//300
+	private val CustomerNumber = 20
+	private val LocationNumber = 2
+	private val WireNumber = 3
 
 	private val CUSTOMERS =  new Array[String](CustomerNumber)
-	private val LOCATIONS =  Array[String]("11 Mercer", "11 Mercer") //        ("location0", "location1")
+	private val LOCATIONS =  Array[String]("location0", "location1")
 	private val WIREIDS =  new Array[String](WireNumber)
 
 	for (i <- 0 until CustomerNumber)
-		CUSTOMERS(i) = "OutSmart Power Systems" //customer" + i
+		CUSTOMERS(i) = "customer" + i
 
 	for (i <- 0 until WireNumber)
-		WIREIDS(i) = "Master"//"wireid" + i
+		WIREIDS(i) = "wireid" + i
 
 	private val random : Random = new Random()
 
