@@ -12,6 +12,7 @@ import akka.actor.ActorRef
  */
 object DataFiller extends Loggable{
 
+	val dataGenerator = new DataGenerator
 	//TODO
 	var writer: Writer = _ //Writer()
 	/**
@@ -22,7 +23,7 @@ object DataFiller extends Loggable{
 		using(writer) {
 
 			for (i <- 0 until records) {
-				writer.write(DataGenerator.getRandomMeasurement)
+				writer.write(dataGenerator.getRandomMeasurement)
 				if (i % 1000 == 0) debug(i)
 			}
 
@@ -62,7 +63,7 @@ object DataFiller extends Loggable{
 					debug("filling for " + new DateTime(l))
 
 				for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
-					writer.write(new EnergyMeasurement(DataGenerator.getCustomer(i), DataGenerator.getLocation(j), DataGenerator.getWireId(k), l, value))
+					writer.write(new EnergyMeasurement(dataGenerator.getCustomer(i), dataGenerator.getLocation(j), dataGenerator.getWireId(k), l, value))
 					counter += 1
 				}
 
@@ -88,7 +89,7 @@ object DataFiller extends Loggable{
 				debug("filling for " + new DateTime(l))
 
 			for (i <- 0 until 20; j <- 0 until 2; k <- 0 until 300) {
-				actor ! new EnergyMeasurement(DataGenerator.getCustomer(i), DataGenerator.getLocation(j), DataGenerator.getWireId(k), l, value)
+				actor ! new EnergyMeasurement(dataGenerator.getCustomer(i), dataGenerator.getLocation(j), dataGenerator.getWireId(k), l, value)
 				counter += 1
 			}
 		}

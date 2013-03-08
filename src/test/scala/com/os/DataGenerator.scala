@@ -7,27 +7,26 @@ import util.Loggable
 /**
  * @author Vadim Bobrov
  */
-object DataGenerator extends Loggable{
+object DataGenerator {
+	def apply(): DataGenerator = new DataGenerator
+}
+class DataGenerator(val customerNumber: Int = 20, val locationNumber: Int = 2, val wireNumber: Int = 300) extends Loggable{
 
-	private val CustomerNumber = 20
-	private val LocationNumber = 2
-	private val WireNumber = 3
-
-	private val CUSTOMERS =  new Array[String](CustomerNumber)
+	private val CUSTOMERS =  new Array[String](customerNumber)
 	private val LOCATIONS =  Array[String]("location0", "location1")
-	private val WIREIDS =  new Array[String](WireNumber)
+	private val WIREIDS =  new Array[String](wireNumber)
 
-	for (i <- 0 until CustomerNumber)
+	for (i <- 0 until customerNumber)
 		CUSTOMERS(i) = "customer" + i
 
-	for (i <- 0 until WireNumber)
+	for (i <- 0 until wireNumber)
 		WIREIDS(i) = "wireid" + i
 
 	private val random : Random = new Random()
 
-	def getRandomCustomer = CUSTOMERS(random.nextInt(CustomerNumber))
-	def getRandomLocation = LOCATIONS(random.nextInt(LocationNumber))
-	def getRandomWireId = WIREIDS(random.nextInt(WireNumber))
+	def getRandomCustomer = CUSTOMERS(random.nextInt(customerNumber))
+	def getRandomLocation = LOCATIONS(random.nextInt(locationNumber))
+	def getRandomWireId = WIREIDS(random.nextInt(wireNumber))
 
 	def getRandomMeasurement = new EnergyMeasurement(
 		getRandomCustomer,
@@ -64,16 +63,16 @@ object DataGenerator extends Loggable{
 		def hasNext: Boolean = curTime < start + 1000L * 60L * minutes
 
 		def next(): Measurement = {
-			if (curCustomer == CustomerNumber - 1 && curLocation == LocationNumber - 1 && curWireId == WireNumber - 1) {
+			if (curCustomer == customerNumber - 1 && curLocation == locationNumber - 1 && curWireId == wireNumber - 1) {
 				if (realTime)
 					curTime = System.currentTimeMillis()
 				else
 					curTime += 1000 * 60 * 5
 
 				curCustomer = 0; curLocation = 0; curWireId = 0
-			} else if(curWireId != WireNumber - 1)
+			} else if(curWireId != wireNumber - 1)
 				curWireId += 1
-			else if(curLocation != LocationNumber - 1) {
+			else if(curLocation != locationNumber - 1) {
 				curLocation += 1
 				curWireId = 0
 			} else {

@@ -24,7 +24,7 @@ class FinalCountDownTest(_system: ActorSystem) extends TestKit(_system) with Fla
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
 	override protected def afterAll() {
-		system.awaitTermination()
+		system.shutdown()
 	}
 
 	"FinalCountDown actor" should "wait for the children routers to shutdown before shutting down" in {
@@ -43,19 +43,22 @@ class FinalCountDownTest(_system: ActorSystem) extends TestKit(_system) with Fla
 
 	"syncKill" should "wait for the children to shutdown before proceeding" in {
 		val actorUnderTest = system.actorOf(Props(new TestSyncKillActor), name = "parent")
+		actorUnderTest !  GracefulStop
 		actorUnderTest !  Ping
+		expectNoMsg(2 seconds)
+		receiveN(1, 5 seconds)
 	}
 
 
 	class TestSyncKillActor extends Actor with GracefulStopSupport1 with ActorLogging {
-		import context._
 		val child = context.actorOf(Props(new SlowDieActor), name = "child")
 		override def receive: Receive = {
-			case Ping =>
+			case GracefulStop =>
 				val stopped = gracefulStop(child, 1 minute, GracefulStop)(context.system)
 				Await.result(stopped, 1 minute)
-				//stopped foreach println
 				log.debug("proceeding")
+			case x =>
+				testActor ! x
 		}
 
 	}

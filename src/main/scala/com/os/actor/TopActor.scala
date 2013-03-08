@@ -100,7 +100,6 @@ class TopActor(   // props of top-level actors to start
 			if (messageListener.isDefined && !messageListener.get.isTerminated)
 				syncKill(messageListener.get)
 
-
 			//TODO: is this synchronous? can we proceed?
 			if (Settings().SaveStateOnShutdown) {
 				log.debug("saving state on shutdown")

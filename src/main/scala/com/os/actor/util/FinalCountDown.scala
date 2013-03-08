@@ -3,10 +3,10 @@ package com.os.actor.util
 import akka.actor._
 import akka.actor.Terminated
 import com.os.actor.GracefulStop
-import concurrent.{Future, Await, Promise}
+import concurrent.{Await}
 import concurrent.duration._
 import util.Try
-import akka.pattern.{GracefulStopSupport}
+import akka.pattern.GracefulStopSupport1
 
 /**
  * @author Vadim Bobrov
@@ -23,7 +23,7 @@ trait LastMohican
  * This trait adds functionality to wait for the children actors to finish their
  * work and then stop itself or the system
  */
-trait FinalCountDown extends Actor with ActorLogging with GracefulStopSupport {
+trait FinalCountDown extends Actor with ActorLogging with GracefulStopSupport1 {
 	import context._
 
 	val lastWill : () => Unit = () => {}
@@ -36,7 +36,7 @@ trait FinalCountDown extends Actor with ActorLogging with GracefulStopSupport {
 	 */
 	protected def syncKill(actorRef : ActorRef, timeout: FiniteDuration = 1 minute): Try[Boolean] = {
 		Try[Boolean] {
-			val stopped = gracefulStop(actorRef, timeout)(system)
+			val stopped = gracefulStop(actorRef, timeout, GracefulStop)(system)
 			Await.result(stopped, timeout)
 			true
 		}
