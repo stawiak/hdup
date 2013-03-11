@@ -3,6 +3,7 @@ package com.os
 import actor.GracefulStop
 import akka.actor.{PoisonPill, ActorLogging, Actor}
 import akka.testkit.TestKit
+import util.CounterMap
 
 /**
  * @author Vadim Bobrov
@@ -11,13 +12,19 @@ trait TestActors {
 	this:TestKit =>
 
 	class ForwarderActor extends Actor with ActorLogging {
+
+		var counterMap = new CounterMap[String]()
+
 		override def receive: Receive = {
 			case GracefulStop =>
 				log.debug("received graceful stop")
+				log.debug("forwarder log")
+				log.debug(counterMap.toString)
 				self ! PoisonPill
 
 			case x =>
 				//log.debug("forwarding {}", x)
+				counterMap incr x.getClass.getName
 				testActor ! x
 		}
 	}
