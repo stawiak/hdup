@@ -39,16 +39,12 @@ class TimeWindowSortedSetBuffer[A <% Ordered[A]] extends TimeWindow[A] with Logg
 	 * @return    elems that satisfy/not satisfy predicate
 	 */
 	def span(p: A => Boolean): (TimeWindow[A], TimeWindow[A]) = {
-		try {
-			val(left, right) = set span p
-			(new TimeWindowSortedSetBuffer[A](left), new TimeWindowSortedSetBuffer[A](right))
-		} catch {
-			case e: Exception =>
-				log.debug("null Exception")
-				log.debug("p: " + p)
-				log.debug("s: " + set)
-				throw e
+		if(set == null) {
+			log.error("set was found to be null")
+			(new TimeWindowSortedSetBuffer[A](), new TimeWindowSortedSetBuffer[A]())
 		}
+		val(left, right) = set span p
+		(new TimeWindowSortedSetBuffer[A](left), new TimeWindowSortedSetBuffer[A](right))
 	}
 
 
