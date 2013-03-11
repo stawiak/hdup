@@ -12,6 +12,7 @@ import com.os.actor.read.ReadMasterActor
 import akka.util.Timeout
 import concurrent.duration._
 import service.TimeWindowActor
+import com.os.measurement.EnergyMeasurement
 
 /**
  * @author Vadim Bobrov
@@ -30,25 +31,30 @@ class GracefulShutdownTest(_system: ActorSystem) extends TestKit(_system) with T
 		Props(new NoGoodnik),
 		Props(new NoGoodnik),
 		Props[DeadLetterListener],
-		Props(new MonitorActor)
+		Props(new NoGoodnik)
 	)), name = "top")
 
 	override def afterAll() {
-		system.shutdown()
+		system.awaitTermination()
 	}
 
 	// run with both saveStateOnShutdown = on and off
 	"graceful shutdown" should "allow all measurements to be processed" in {
-		val dataGenerator = new DataGenerator()
-		//val timeWindow = system.actorFor("/user/top/timeWindow")
-		//dataGenerator.dailyDataIterator(20, false) foreach (timeWindow ! _)
-		var counter = 0
-		dataGenerator.dailyDataIterator(20, false) foreach (x => counter +=1)
-		println("" + counter)
+		val timeWindow = system.actorFor("/user/top/timeWindow")
 
-		//top ! GracefulStop
-		//receiveN(144000, 5 seconds)
-		//receiveN(60000, 5 seconds)
+		timeWindow !  new EnergyMeasurement("", "", "", 119995,5)
+		timeWindow !  new EnergyMeasurement("", "", "", 119997,3)
+		timeWindow !  new EnergyMeasurement("", "", "", 120001,5)
+		timeWindow !  new EnergyMeasurement("", "", "", 120002,6)
+
+
+		top ! GracefulStop
+		// 4 original messages are not sent - they are handled around time window
+		// 1 interpolated
+		// 1 rollup
+		// 1 SaveState
+		// 1 TimeWindowState
+		receiveN(4, 5 seconds)
 	}
 
 }
