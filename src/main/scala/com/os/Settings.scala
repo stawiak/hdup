@@ -60,8 +60,14 @@ trait SettingsMBean {
 	def setSaveStateOnShutdown(b: Boolean)
 	def getLoadStateOnStartup:Boolean
 }
-final class Settings(config: Config) extends SettingsMBean {
-	ManagementFactory.getPlatformMBeanServer.registerMBean(this, new ObjectName("com.os.chaos:type=Settings,name=settings"))
+final class Settings(val config: Config) extends SettingsMBean {
+
+	val mBeanServer = ManagementFactory.getPlatformMBeanServer
+	val jmxName = new ObjectName("com.os.chaos:type=Settings,name=settings")
+	if (mBeanServer.isRegistered(jmxName))
+		mBeanServer.unregisterMBean(jmxName)
+
+	mBeanServer.registerMBean(this, jmxName)
 
 	val activeMQConfig = config.getConfig("activemq")
 	val hBaseConfig = config.getConfig("hbase")
