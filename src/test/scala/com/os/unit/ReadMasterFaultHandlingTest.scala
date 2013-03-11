@@ -10,7 +10,7 @@ import com.os.actor.read.{ReadRequest, ReadMasterActor}
 import org.joda.time.Interval
 import concurrent.duration._
 import com.os.util._
-import com.os.TestActors
+import com.os.{Settings, TestActors}
 import com.os.actor.read.MeasurementReadRequest
 import scala.Some
 import com.os.dao.ReaderFactory
@@ -20,7 +20,7 @@ import com.os.dao.ReaderFactory
 */
 class ReadMasterFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
 
-	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
+	def this() = this(ActorSystem("chaos", Settings.init(ConfigFactory.load().getConfig("chaos")).config))
 
 	override def afterAll() {
 		system.shutdown()

@@ -1,6 +1,6 @@
 package com.os.unit
 
-import org.scalatest.{OneInstancePerTest, BeforeAndAfterAll, WordSpec}
+import org.scalatest.{BeforeAndAfterAll, WordSpec}
 import org.scalatest.matchers.MustMatchers
 import akka.actor._
 import com.os.measurement.EnergyMeasurement
@@ -15,7 +15,7 @@ import com.os.actor.util.DeadLetterListener
 /**
  * @author Vadim Bobrov
  */
-class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_system) with TestActors with WordSpec with MustMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest{
+class AggregatorInterpolatorActorTest(_system: ActorSystem) extends TestKit(_system) with TestActors with WordSpec with MustMatchers with ImplicitSender with BeforeAndAfterAll {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 	system.actorOf(Props(new TopActor(

@@ -1,6 +1,6 @@
 package com.os.unit
 
-import org.scalatest.{OneInstancePerTest, FlatSpec, BeforeAndAfterAll}
+import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import com.os.measurement.EnergyMeasurement
@@ -9,14 +9,14 @@ import com.os.actor.service.TimeWindowActor
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
 import com.os.util.{ActorCache, TimeSource}
-import com.os.TestActors
+import com.os.{Settings, TestActors}
 
 /**
  * @author Vadim Bobrov
  */
-class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest {
+class TimeWindowActorTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
 
-	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
+	def this() = this(ActorSystem("chaos", Settings.init(ConfigFactory.load().getConfig("chaos")).config))
 
 	override def afterAll() {
 		system.shutdown()

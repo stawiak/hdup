@@ -1,7 +1,7 @@
 package akka.pattern
 
 import akka.actor._
-import akka.util.{ Timeout }
+import akka.util.Timeout
 import akka.dispatch.{ Unwatch, Watch }
 import scala.concurrent.Future
 import scala.util.Success

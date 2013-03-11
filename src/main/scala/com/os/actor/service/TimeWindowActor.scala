@@ -14,7 +14,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import concurrent.duration._
 import javax.management.ObjectName
-import akka.actor.SupervisorStrategy.{Stop}
+import akka.actor.SupervisorStrategy.Stop
 
 
 /**

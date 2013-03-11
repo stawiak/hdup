@@ -1,6 +1,6 @@
 package com.os.unit
 
-import org.scalatest.{OneInstancePerTest, FlatSpec, BeforeAndAfterAll}
+import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import akka.testkit.TestKit
@@ -9,7 +9,7 @@ import com.typesafe.config.ConfigFactory
 /**
  * @author Vadim Bobrov
  */
-class SettingsTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with BeforeAndAfterAll with OneInstancePerTest {
+class SettingsTest(_system: ActorSystem) extends TestKit(_system) with FlatSpec with ShouldMatchers with BeforeAndAfterAll {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 

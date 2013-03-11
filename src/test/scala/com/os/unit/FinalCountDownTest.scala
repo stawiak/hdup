@@ -10,9 +10,9 @@ import annotation.tailrec
 import com.os.actor.util.{LastMohican, FinalCountDown}
 import com.os.actor.GracefulStop
 import com.os.TestActors
-import com.os.util.{Pong, Ping}
+import com.os.util.Ping
 import concurrent.duration._
-import concurrent.{Future, Await, blocking}
+import concurrent.Await
 import akka.pattern.GracefulStopSupport1
 
 

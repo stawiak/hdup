@@ -3,7 +3,7 @@ package com.os.actor.util
 import akka.actor._
 import akka.actor.Terminated
 import com.os.actor.GracefulStop
-import concurrent.{Await}
+import concurrent.Await
 import concurrent.duration._
 import util.Try
 import akka.pattern.GracefulStopSupport1

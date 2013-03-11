@@ -1,6 +1,6 @@
 package com.os.data
 
-import org.scalatest.{FlatSpec, OneInstancePerTest, BeforeAndAfterAll}
+import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}
@@ -17,7 +17,7 @@ import com.os.mql.parser.MQLParser
 /**
  * @author Vadim Bobrov
  */
-class SimulationTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest with Timing {
+class SimulationTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with Timing {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 	val settings = Settings.init(system.settings.config)

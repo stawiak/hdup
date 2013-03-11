@@ -1,6 +1,6 @@
 package com.os.unit
 
-import org.scalatest.{OneInstancePerTest, FlatSpec, BeforeAndAfterAll}
+import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import org.scalatest.matchers.ShouldMatchers
 import akka.actor._
 import com.os.measurement.{Measurement, EnergyMeasurement}
@@ -10,7 +10,6 @@ import com.os.actor._
 import com.os.actor.util.DeadLetterListener
 import com.os.{TestActors, Settings}
 import com.os.actor.read.{MQLHandlerActor, ReadMasterActor}
-import com.os.actor.write.WriteMasterActor
 import akka.pattern._
 import akka.util.Timeout
 import concurrent.duration._
@@ -21,7 +20,7 @@ import com.os.util.Ping
 /**
  * @author Vadim Bobrov
  */
-class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with OneInstancePerTest {
+class TopActorFaultHandlingTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
 
 	implicit val timeout: Timeout = 10 seconds
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))

@@ -9,8 +9,6 @@ import akka.actor.OneForOneStrategy
 import concurrent.duration._
 import akka.util.Timeout
 import com.os.Settings
-import concurrent.{Future, Await}
-import akka.pattern.gracefulStop
 
 /**
  * Top actor

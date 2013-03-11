@@ -2,13 +2,9 @@ package com.os.actor
 
 import akka.actor._
 import read.LoadState
-import read.{ReadMasterAware, LoadState}
-import service.TimeWindowChildActor
 import util.{FinalCountDown, Tick, TimedActor}
 import javax.management.ObjectName
-import com.os.util.{ActorCache, TimeSource, JMXActorBean}
-import concurrent.duration.Duration
-import write.WriterMasterAware
+import com.os.util.JMXActorBean
 import akka.actor.SupervisorStrategy.Stop
 
 
