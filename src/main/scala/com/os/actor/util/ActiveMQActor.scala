@@ -9,6 +9,7 @@ import concurrent.duration._
  * @author Vadim Bobrov
  */
 case object Connect
+case object Disconnect
 abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Actor with ActorLogging with MessageListener {
 
 	import context._
@@ -35,6 +36,9 @@ abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Act
 			consumer.setMessageListener(this)
 			connection.start()
 			log.debug("connected to ActiveMQ")
+
+		case Disconnect =>
+			close()
 	}
 
 	override def preStart() {
@@ -43,11 +47,16 @@ abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Act
 		super.preStart()
 	}
 
+	private def close() {
+		log.debug("closing connection to ActiveMQ")
+		consumer.close()
+		session.close()
+		connection.close()
+	}
+
 	override def postStop() {
 		try {
-			consumer.close()
-			session.close()
-			connection.close()
+			close()
 		} catch {
 			// ignore errors on close
 			case _: Throwable =>

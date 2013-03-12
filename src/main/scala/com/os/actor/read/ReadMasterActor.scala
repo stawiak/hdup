@@ -9,10 +9,9 @@ import com.os.actor.util.FinalCountDown
 import com.os.Settings
 import org.joda.time.Interval
 import com.os.util.{JMXActorBean, MappableActorCache, MappableCachingActorFactory}
-import akka.routing.Broadcast
 import akka.actor.OneForOneStrategy
 import com.os.dao.ReaderFactory
-import com.os.actor.GracefulStop
+import com.os.actor.{Disabled, Disable}
 import javax.management.ObjectName
 
 
@@ -73,14 +72,8 @@ class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, Reader
 			log.debug("read master received LoadState")
 			routers(request) forward request
 
-		case GracefulStop =>
-			log.debug("read master received graceful stop")
-			routers.values foreach (_ ! Broadcast(GracefulStop))
-			waitAndDie()
-			children foreach (_ ! Broadcast(PoisonPill))
-
-		case x =>
-			log.debug("received unknown {}", x)
+		case Disable(id) =>
+			sender ! Disabled(id)
 	}
 }
 

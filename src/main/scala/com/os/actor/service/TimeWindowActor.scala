@@ -25,13 +25,7 @@ class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSour
 	import context._
 	var worker = watch(context.actorOf(Props(new TimeWindowChildActor(expiredTimeWindow, timeSource, mockFactory)), name = "worker"))
 
-	override def receive: Receive = {
-		case GracefulStop =>
-			waitAndDie()
-			children foreach  (_ ! GracefulStop)
-
-		case m => worker forward m
-	}
+	override def receive: Receive = { case m => worker forward m }
 
 	// stop interpolation on any exceptions
 	override val supervisorStrategy = OneForOneStrategy() {	case _ => Stop }
@@ -71,17 +65,6 @@ class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: Tim
 			sender ! Map[String, Any]("length" -> measurements.size, "aggregators" -> aggregators.keys.size, "aggregatorNames" -> aggregators.keys)
 			aggregators.values foreach (_ forward Monitor)
 
-		case SaveState =>
-			log.debug("time window received SaveState")
-			flush()
-
-			val timeWindowState =
-				for ( aggState <- Future.traverse(children)(child => (child ? SaveState).mapTo[AggregatorState]) )
-				yield new TimeWindowState(aggState)
-
-			// this must be fully synchronous or else write master could be killed prematurely
-			writeMaster ! Await.result(timeWindowState, 10 seconds)
-
 		case LoadState =>
 			log.debug("time window received LoadState")
 			readMaster ! LoadState(self.path)
@@ -93,28 +76,50 @@ class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: Tim
 				log.debug("\t {} {}", v.location, v.interpolatorStates.size)
 				v.interpolatorStates foreach (sv =>
 					log.debug("\t\t{}\t{}", sv._1, sv._2)
-				)
+					)
 			}
 			aggregators = CachingActorFactory[(String, String)]((customerLocation: (String, String)) => actorOf(Props(
 				new AggregatorActor(customerLocation._1, customerLocation._2, timeWindow = expiredTimeWindow, aggregatorState = states.get(customerLocation))
 			)))
 
-		case GracefulStop =>
-			log.debug("time window received GracefulStop")
+		case Disable(id) =>
+			// will not receive Tick no more but some might still be in the mailbox
+			// they will not be processed as we become disabled at the end of Disable
+			cancelSchedule()
 
+			// flush remaining measurements to aggregators
 			flush()
-			waitAndDie()
-			children foreach ( _ ! GracefulStop)
+
+			val childrenDisabled = Future.traverse(children)(child => (child ? new Disable))
+			Await.ready(childrenDisabled, 5 minutes)
+
+			become(disabled)
+			sender ! Disabled(id)
+	}
+
+	def disabled: Receive = {
+		case SaveState =>
+			log.debug("time window received SaveState")
+			flush()
+
+			val timeWindowState =
+				for ( aggState <- Future.traverse(children)(child => (child ? SaveState).mapTo[AggregatorState]) )
+				yield new TimeWindowState(aggState)
+
+			// this must be fully synchronous or else write master could be killed prematurely
+			writeMaster ! Await.result(timeWindowState, 10 seconds)
 	}
 
 	/**
 	 * send out remaining measurements
 	 */
 	private def flush() {
+		log.debug("started flushing")
 		for (tv <- measurements)
 			aggregators((tv.customer, tv.location)) ! tv
 		// this is important!!! or time window tick will kick in on the same msmts
 		measurements = new TimeWindowSortedSetBuffer[Measurement]()
+		log.debug("done flushing")
 	}
 
 	/**
@@ -122,6 +127,7 @@ class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: Tim
 	 * and remove them from window
 	 */
 	private def processWindow() {
+		log.debug("processing time window")
 		try {
 			val current = timeSource.now()
 			// if any of the existing measurements are more than 9.5 minutes old
@@ -137,6 +143,7 @@ class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: Tim
 			case e: Exception =>
 				log.error(e, e.getMessage)
 		}
+		log.debug("done processing time window")
 
 	}
 

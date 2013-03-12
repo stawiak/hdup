@@ -3,7 +3,8 @@ package com.os.actor.service
 import com.os.measurement._
 import akka.actor.{ActorLogging, Actor}
 import com.os.interpolation.{NQueueImpl, NQueue}
-import com.os.actor.SaveState
+import com.os.actor._
+import com.os.actor.Disable
 
 /**
  * Actor interface to interpolation. Given a measurement send back interpolated values
@@ -11,7 +12,7 @@ import com.os.actor.SaveState
  * @author Vadim Bobrov
  */
 class InterpolatorActor(loadQueue: Option[NQueue] = None, boundary: Int = 60000) extends Actor with ActorLogging {
-
+	import context._
 	val queue:NQueue = loadQueue.getOrElse(new NQueueImpl)
 
 	override def receive: Receive = {
@@ -27,11 +28,15 @@ class InterpolatorActor(loadQueue: Option[NQueue] = None, boundary: Int = 60000)
 					sender ! interpolated
 				}
 
-		case SaveState =>
-			sender ! queue
+		case Disable(id) =>
+			become(disabled)
+			sender ! new Disabled(id)
 
 	}
 
-
+	def disabled: Receive = {
+		case SaveState =>
+			sender ! queue
+	}
 
  }

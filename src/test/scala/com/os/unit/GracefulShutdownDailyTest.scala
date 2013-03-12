@@ -6,15 +6,15 @@ import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}
 import com.typesafe.config.ConfigFactory
 import com.os.actor._
-import com.os.{TestActors, Settings}
+import com.os.{DataGenerator, TestActors, Settings}
 import concurrent.duration._
 import service.TimeWindowActor
-import com.os.measurement.EnergyMeasurement
+import com.os.util.Loggable
 
 /**
  * @author Vadim Bobrov
  */
-class GracefulShutdownTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll {
+class GracefulShutdownDailyTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ShouldMatchers with ImplicitSender with BeforeAndAfterAll with Loggable {
 
 	def this() = this(ActorSystem("chaos", ConfigFactory.load().getConfig("chaos")))
 
@@ -36,21 +36,21 @@ class GracefulShutdownTest(_system: ActorSystem) extends TestKit(_system) with T
 
 	// run with both saveStateOnShutdown = on and off
 	"graceful shutdown" should "allow all measurements to be processed" in {
+		val dataGenerator = new DataGenerator()
 		val timeWindow = system.actorFor("/user/top/timeWindow")
 
-		timeWindow !  new EnergyMeasurement("", "", "", 119995,5)
-		timeWindow !  new EnergyMeasurement("", "", "", 119997,3)
-		timeWindow !  new EnergyMeasurement("", "", "", 120001,5)
-		timeWindow !  new EnergyMeasurement("", "", "", 120002,6)
+		dataGenerator.dailyDataIterator(20, false) foreach (timeWindow ! _)
 
 
-		top ! GracefulStop
-		// 4 original messages are not sent - they are handled around time window
-		// 1 interpolated
-		// 1 rollup
+		// original messages are not sent - they are handled around time window
+		// 20 * 2 * 300 = 12000 wires
+		// 5 * 12000 interpolated
+		// 5 * 40 rollup (why 405?)
 		// 1 SaveState
 		// 1 TimeWindowState
+		top ! GracefulStop
 		receiveN(4, 5 seconds)
+
 	}
 
 }

@@ -9,6 +9,8 @@ import akka.actor.OneForOneStrategy
 import concurrent.duration._
 import akka.util.Timeout
 import com.os.Settings
+import akka.pattern.ask
+import concurrent.Await
 
 /**
  * Top actor
@@ -96,25 +98,34 @@ class TopActor(   // props of top-level actors to start
 
 			// shut down message listener then have everyone save state
 			if (messageListener.isDefined && !messageListener.get.isTerminated)
-				syncKill(messageListener.get)
+				Await.ready(messageListener.get ? new Disable, 5 minutes)
+
 
 			//TODO: is this synchronous? can we proceed?
 			if (Settings().SaveStateOnShutdown) {
 				log.debug("saving state on shutdown")
-				children foreach (_ ! SaveState)
+			//	children foreach (_ ! SaveState)
 			}
 
 			// time window must be flushed before stopping write master
 			log.debug("killing timeWindow")
-			syncKill(timeWindow)
+
+			Await.ready(timeWindow ? new Disable, 5 minutes)
+/*
+			match {
+				case Success(s) => log.debug("success {}", s)
+				case Failure(thrown) => log.debug("failure {}", thrown.toString)
+			}
+*/
+
+
 			log.debug("killing writeMaster")
-			syncKill(writeMaster)
+			Await.ready(writeMaster ? new Disable, 5 minutes)
 
 			// do the rest
 			log.debug("killing rest")
-			children foreach (_ ! GracefulStop)
-			waitAndDie()
-
+			children foreach(x => log.debug("" + x.path))
+			self ! PoisonPill
 	}
 
 }

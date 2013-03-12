@@ -27,6 +27,11 @@ trait TimedActor extends Actor {
 		super.postStop()
 	}
 
+	def cancelSchedule() {
+		if(!schedule.isCancelled)
+			schedule.cancel()
+	}
+
 	def updateInterval(newInterval: FiniteDuration) {
 		schedule.cancel()
 		schedule = context.system.scheduler.schedule(Duration.Zero, newInterval, self, Tick)

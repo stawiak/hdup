@@ -2,10 +2,11 @@ package com.os.actor
 
 import akka.actor._
 import read.LoadState
-import util.{FinalCountDown, Tick, TimedActor}
+import util.{Ideable, FinalCountDown, Tick, TimedActor}
 import javax.management.ObjectName
 import com.os.util.JMXActorBean
 import akka.actor.SupervisorStrategy.Stop
+import java.util.UUID
 
 
 /**
@@ -16,13 +17,7 @@ class MonitorActor(workerProps: Props = Props(new MonitorChildActor())) extends 
 	import context._
 	var worker = watch(context.actorOf(workerProps, name = "worker"))
 
-	override def receive: Receive = {
-		case GracefulStop =>
-			waitAndDie()
-			children foreach  (_ ! GracefulStop)
-
-		case m => worker forward m
-	}
+	override def receive: Receive = { case m => worker forward m	}
 
 	// stop monitor on any exceptions
 	override val supervisorStrategy = OneForOneStrategy() {	case _ => Stop }
@@ -47,6 +42,9 @@ trait MonitorChildActorMBean {
 case object Monitor
 case object GracefulStop
 case object SaveState
+case object DoneMark
+case class Disable(override val id: UUID = UUID.randomUUID()) extends Ideable
+case class Disabled(override val id: UUID = UUID.randomUUID()) extends Ideable
 case object StartMessageListener
 case object StopMessageListener
 
@@ -114,8 +112,8 @@ class MonitorChildActor extends JMXActorBean with Actor with ActorLogging with T
 			top ! Monitor
 
 
-		case GracefulStop =>
-			self ! PoisonPill
+		case Disable(id) =>
+			sender ! Disabled(id)
 	}
 
 }

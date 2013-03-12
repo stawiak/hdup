@@ -4,7 +4,7 @@ import com.os.measurement.{VampsMeasurement, CurrentMeasurement, EnergyMeasureme
 import javax.jms._
 import akka.actor._
 import service.TimeWindowAware
-import util.{FinalCountDown, ActiveMQActor}
+import util.{Disconnect, FinalCountDown, ActiveMQActor}
 import com.os.exchange.MeasurementXO
 import com.os.exchange.json.{JSONObject, DefaultJSONFactory}
 import concurrent.duration._
@@ -15,6 +15,7 @@ import javax.management.ObjectName
 import com.os.util.{JMXActorBean, TimeSource, JMXNotifier}
 import write.WriterMasterAware
 import com.os.Settings
+import java.util.UUID
 
 /**
  * @author Vadim Bobrov
@@ -37,15 +38,12 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 	override val jmxName = new ObjectName("com.os.chaos:type=MessageListener,name=messageListener")
 
 	override def receive: Receive = {
+		// attempt to restart message processor on failure
 		case Terminated(ref) =>
 			system.scheduler.scheduleOnce(30 seconds, self, RestartMessageProcessor)
 
 		case RestartMessageProcessor =>
 			worker = watch(context.actorOf(Props(new MessageListenerChildActor(host, port, queue)), name = "worker"))
-
-		case GracefulStop =>
-			waitAndDie()
-			children foreach  (_ ! GracefulStop)
 
 		case m => worker forward m
 	}
@@ -62,8 +60,9 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 		val interpolation = Settings().Interpolation
 		val timeSource: TimeSource = new TimeSource {}
 		val expiredTimeWindow : Duration = Settings().ExpiredTimeWindow
+		var reportDisabledId: UUID = _
 
-		override def receive: Receive = super.receive orElse { // super.receive must be enabled to process Connect
+		override def receive: Receive = super.receive orElse { // super.receive must be enabled to process Connect and Disconnect
 
 			case msg : MapMessage => {
 
@@ -123,9 +122,19 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 			case Monitor =>
 				sender ! Map("msmt" -> counterMsmt, "batch" -> counterBatch)
 
-			case GracefulStop =>
-				self ! PoisonPill
+			case Disable(id) =>
+				reportDisabledId = id
+				self ! Disconnect
+				// send marker to be added after all other messages have been processed
+				self ! DoneMark
+				become(collecting)
 
+		}
+
+		def collecting(): Receive = {
+			case DoneMark =>
+				become(FSM.NullFunction)
+				sender ! Disabled(reportDisabledId)
 		}
 
 	}

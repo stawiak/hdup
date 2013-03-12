@@ -4,7 +4,7 @@ import akka.actor.{ActorLogging, Actor}
 import com.os.dao.{TimeWindowState, WriterFactory}
 import com.os.util.Util._
 import com.os.measurement.Measurement
-import com.os.actor.GracefulStop
+import com.os.actor.{Disabled, Disable}
 import javax.management.ObjectName
 import com.os.util.JMXActorBean
 
@@ -13,7 +13,7 @@ import com.os.util.JMXActorBean
   */
 trait WriteWorkerActorMBean
 class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with ActorLogging with WriteWorkerActorMBean with JMXActorBean {
-
+	import context._
 	override val jmxName = new ObjectName("com.os.chaos:type=Writer,Writer=workers,name=\"" + writerFactory.name + self.path.name + "\"")
 
 	val writer = writerFactory.createWriter
@@ -33,20 +33,24 @@ class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with Acto
 			}
 		}
 
-		case state: TimeWindowState =>
-			log.debug("write worker received TimeWindowState")
-			using(writer) {	writer.write(state) }
-
-		case GracefulStop =>  {
-			log.debug("write worker received graceful stop")
+		case Disable(id) =>
+			log.debug("write worker received Disable")
 			// writers that drop and recreate table should not be called here
 			// as using(writer) will drop table
 			if (!measurements.isEmpty)
 				submitJob()
-		}
+
+			become(deaf)
+			sender ! new Disabled(id)
 
 	}
 
+	def deaf: Receive = {
+		case state: TimeWindowState =>
+			log.debug("write worker received TimeWindowState")
+			using(writer) {	writer.write(state) }
+
+	}
 
 	def submitJob() {
 		log.debug("submitting write job to " + writerFactory.name)

@@ -4,14 +4,14 @@ import akka.actor._
 import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
-import com.os.actor.util.FinalCountDown
+import com.os.actor.util.{Collector, FinalCountDown}
 import com.os.measurement._
 import com.os.util.{JMXActorBean, JMXNotifier, MappableCachingActorFactory, MappableActorCache}
 import akka.actor.OneForOneStrategy
-import akka.routing.Broadcast
 import com.os.dao.{TimeWindowState, WriterFactory}
-import com.os.actor.GracefulStop
+import com.os.actor.{Disabled, Disable}
 import javax.management.ObjectName
+import java.util.UUID
 
 
 /**
@@ -36,6 +36,8 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 	)
 
 	val routers = mockFactory.getOrElse(defaultFactory)
+	val doneCollector = new Collector
+	var reportDisabledId: UUID = _
 
 	override val supervisorStrategy =
 		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
@@ -49,19 +51,29 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 		case msmt : Measurement =>
 			routers(msmt) ! msmt
 
+		case Disable(id) =>
+			log.debug("write master received Disable")
+			reportDisabledId = id
+
+			children foreach (doneCollector.broadcast(_, () => new Disable))
+			become(collecting)
+	}
+
+	def collecting: Receive = {
+		case Disabled(id) =>
+			doneCollector.receive(id)
+
+			// then become deaf
+			if (doneCollector.isDone) {
+				// listen to saving state only
+				become(deaf)
+				parent ! Disabled(reportDisabledId)
+			}
+	}
+
+	def deaf: Receive = {
 		case state: TimeWindowState =>
 			routers(state) forward state
-
-		case GracefulStop =>
-			log.debug("write master received graceful stop")
-			waitAndDie()
-			children foreach (_ ! Broadcast(GracefulStop))
-			children foreach (_ ! Broadcast(PoisonPill))
-
-		case x =>
-			notify("writeMaster.unknown", x.toString)
-
-
 	}
 }
 

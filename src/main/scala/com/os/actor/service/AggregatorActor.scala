@@ -1,6 +1,6 @@
 package com.os.actor.service
 
-import akka.actor.{PoisonPill, Props}
+import akka.actor.Props
 import com.os.measurement._
 import com.os.actor.write.WriterMasterAware
 import com.os.actor._
@@ -15,6 +15,7 @@ import concurrent.duration._
 import concurrent.{Await, Future}
 import com.os.dao.AggregatorState
 import javax.management.ObjectName
+import java.util.UUID
 
 /**
  * Rollup by customer and location
@@ -48,7 +49,8 @@ class AggregatorActor(
 	val interpolators: ActorCache[String] = mockFactory.getOrElse(defaultFactory)
 
 	var rollups: TimeWindowMap[Long, Double] = new TimeWindowSortedMap[Long, Double]()
-
+	val doneCollector = new Collector
+	var reportDisabledId: UUID = _
 
 	def getInterpolatorInfo:Array[String] = interpolators.keys.toArray
 
@@ -58,15 +60,7 @@ class AggregatorActor(
 	override def receive: Receive = {
 
 		// received back from interpolator - add to rollups and save to storage
-		case ismt : Interpolated =>
-
-			val m = ismt.asInstanceOf[EnergyMeasurement]
-			if (!rollups.contains(m.timestamp))
-				rollups += (m.timestamp -> m.value)
-			else
-				rollups += (m.timestamp -> (m.value + rollups(m.timestamp)))
-
-			writeMaster ! ismt
+		case ismt: Interpolated => onInterpolated(ismt)
 
 		// send for interpolation
 		case msmt : EnergyMeasurement => interpolators(msmt.wireid) ! msmt
@@ -77,19 +71,50 @@ class AggregatorActor(
 		// flush old rollups
 		case Tick => processRollups()
 
+		case Disable(id) =>
+			reportDisabledId = id
+			// will not receive Tick no more but some might still be in the mailbox
+			// they will not be processed as we become collecting/deaf at the end of Disable
+			cancelSchedule()
+
+			// ask children to send Done when done
+			children foreach (doneCollector.send(_, new Disable))
+			// we need to continue processing interpolations until all kids report done
+			// expect Done and Interpolation only
+			become(collecting)
+	}
+
+	def collecting: Receive = {
+		case ismt: Interpolated => onInterpolated(ismt)
+
+		case Disabled(id) =>
+			doneCollector.receive(id)
+
+			// then become deaf and expect SaveState only
+			if (doneCollector.isDone) {
+				// only flush to write master when all interpolations have been received
+				flush()
+				become(disabled)
+				parent ! Disabled(reportDisabledId)
+			}
+	}
+
+	def disabled: Receive = {
 		case SaveState =>
 			log.debug("aggregator received SaveState")
-			flush()
-
 			// this must be fully synchronous or else write master could be killed prematurely
 			sender ! Await.result(collectState, 10 seconds)
+	}
 
-		case GracefulStop =>
-			log.debug("aggregator received GracefulStop")
 
-			// flushing is done in last will as new interpolated values can keep arriving
-			waitAndDie(depressionMode = false)
-			children foreach (_ ! PoisonPill)
+	private def onInterpolated(ismt: Interpolated) {
+		val m = ismt.asInstanceOf[EnergyMeasurement]
+		if (!rollups.contains(m.timestamp))
+			rollups += (m.timestamp -> m.value)
+		else
+			rollups += (m.timestamp -> (m.value + rollups(m.timestamp)))
+
+		writeMaster ! ismt
 	}
 
 	private def processRollups() {
@@ -107,7 +132,7 @@ class AggregatorActor(
 	}
 
 	private def flush() {
-		log.info("saving remaining rollups")
+		//log.info("saving remaining rollups")
 		// save remaining rollups
 		for( tv <- rollups)
 			writeMaster !  new EnergyMeasurement(customer, location, "", tv._1, tv._2) with Rollup

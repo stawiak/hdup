@@ -1,6 +1,6 @@
 package com.os.actor
 
-import akka.actor.{ActorLogging, PoisonPill, Actor}
+import akka.actor.{ActorLogging, Actor}
 import akka.pattern.ask
 import read.{MQLHandlerAware, ReadMasterAware, RollupReadRequest, MeasurementReadRequest}
 import spray.routing._
@@ -33,8 +33,8 @@ class WebServiceActor extends Actor with ActorLogging with WebService {
 	// other things here, like request stream processing
 	// or timeout handling
 	def receive = runRoute(route) orElse {
-		case GracefulStop =>
-			self ! PoisonPill
+		case Disable(id) =>
+			sender ! Disabled(id)
 	}
 }
 

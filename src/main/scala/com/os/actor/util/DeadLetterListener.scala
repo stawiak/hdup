@@ -4,7 +4,7 @@ import akka.actor._
 import com.os.measurement.Measurement
 import akka.actor.Terminated
 import akka.actor.DeadLetter
-import com.os.actor.GracefulStop
+import com.os.actor.{Disabled, Disable}
 import javax.management.ObjectName
 import com.os.util.{JMXActorBean, JMXNotifier}
 
@@ -28,8 +28,8 @@ class DeadLetterListener extends JMXNotifier with Actor with ActorLogging with D
 			notify("deadletter", msmt.toString)
 		}
 
-		case GracefulStop =>
-			self ! PoisonPill
+		case Disable(id) =>
+			sender ! Disabled(id)
 	}
 
 }

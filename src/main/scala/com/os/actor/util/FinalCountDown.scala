@@ -5,7 +5,6 @@ import akka.actor.Terminated
 import com.os.actor.GracefulStop
 import concurrent.Await
 import concurrent.duration._
-import util.Try
 import akka.pattern.GracefulStopSupport1
 
 /**
@@ -34,14 +33,34 @@ trait FinalCountDown extends Actor with ActorLogging with GracefulStopSupport1 {
 	 * @param actorRef to kill
 	 * @return true or akka.pattern.AskTimeoutException
 	 */
-	protected def syncKill(actorRef : ActorRef, timeout: FiniteDuration = 1 minute): Try[Boolean] = {
-		Try[Boolean] {
-			val stopped = gracefulStop(actorRef, timeout, GracefulStop)(system)
-			Await.result(stopped, timeout)
+	protected def syncKill(actorRef : ActorRef, timeout: FiniteDuration = 10 minutes): Boolean = {
+			val stopped = gracefulStop(actorRef, 10 minutes, GracefulStop)(system)
+			log.debug("waiting to stop")
+			try {
+				val res = Await.result(stopped, timeout)
+				log.debug("hoo")
+			} catch {
+				case t: Throwable => log.debug("caught {}", t)
+			}
+
+			log.debug("boo")
 			true
-		}
 	}
 
+	/**
+	 * kill a child actor and do andThen when it's dead
+	 */
+	protected def killChild(child : ActorRef, andThenDo : () => Unit = () => {}) {
+		watch(child)
+		become(waitForDeath(child, andThenDo))
+		log.debug("sending graceful stop to " + child.path)
+		child ! GracefulStop
+
+		def waitForDeath(toWait : ActorRef, andThenDo : () => Unit) : Receive = {
+			case Terminated(ref) =>
+				andThenDo()
+		}
+	}
 
 	/**
 	 * execute this function to start shutdown procedure
@@ -68,6 +87,7 @@ trait FinalCountDown extends Actor with ActorLogging with GracefulStopSupport1 {
 			else
 				// send a poison pill rather than stop to process
 				// messages received if not in depression
+				log.debug("all children done - suicide")
 				self ! PoisonPill
 		}
 	}

@@ -1,9 +1,9 @@
 package com.os.actor.read
 
-import akka.actor.{Props, PoisonPill, ActorLogging, Actor}
+import akka.actor.{Props, ActorLogging, Actor}
 import com.os.mql.parser.MQLParser
 import akka.routing.RoundRobinRouter
-import com.os.actor.GracefulStop
+import com.os.actor.{Disabled, Disable}
 import javax.management.ObjectName
 import com.os.util.JMXActorBean
 
@@ -22,10 +22,8 @@ class MQLHandlerActor(val parserFactory: () => MQLParser) extends Actor with Act
 		case mql: String =>
 			router forward mql
 
-		case GracefulStop =>
-			log.debug("mqlHandler received graceful stop")
-			self ! PoisonPill
-
+		case Disable(id) =>
+			sender ! Disabled(id)
 	}
 
 
