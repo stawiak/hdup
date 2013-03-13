@@ -4,7 +4,7 @@ import akka.actor._
 import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
-import com.os.actor.util.{Collector, FinalCountDown}
+import com.os.actor.util.{GroupMessage, FinalCountDown}
 import com.os.measurement._
 import com.os.util.{JMXActorBean, JMXNotifier, MappableCachingActorFactory, MappableActorCache}
 import akka.actor.OneForOneStrategy
@@ -36,7 +36,7 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 	)
 
 	val routers = mockFactory.getOrElse(defaultFactory)
-	val doneCollector = new Collector()
+	val disableGroup = GroupMessage(() => Disable())
 	var reportDisabledId: UUID = _
 
 	override val supervisorStrategy =
@@ -56,15 +56,15 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 			reportDisabledId = id
 
 			become(collecting)
-			children foreach (doneCollector.broadcast(_, () => Disable()))
+			children foreach (disableGroup.broadcast(_))
 	}
 
 	def collecting: Receive = {
 		case Disabled(id) =>
-			doneCollector.receive(id)
+			disableGroup.receive(id)
 
 			// then become deaf
-			if (doneCollector.isDone) {
+			if (disableGroup.isDone) {
 				// listen to saving state only
 				become(deaf)
 				parent ! Disabled(reportDisabledId)

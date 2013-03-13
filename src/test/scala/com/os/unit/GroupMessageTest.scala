@@ -8,6 +8,7 @@ import akka.routing.RoundRobinRouter
 import com.os.TestActors
 import akka.util.Timeout
 import com.os.actor.util.GroupMessage
+import java.util.UUID
 
 /**
  * @author Vadim Bobrov
@@ -17,7 +18,8 @@ class GroupMessageTest(_system: ActorSystem) extends TestKit(_system) with TestA
 	implicit val timeout: Timeout = 10 seconds
 	def this() = this(ActorSystem())
 
-	case class TestMessage()
+	case class TestMessage(id: UUID = UUID.randomUUID())
+	case class TestReply(id: UUID = UUID.randomUUID())
 
 	override def afterAll() {
 		system.shutdown()
@@ -46,7 +48,7 @@ class GroupMessageTest(_system: ActorSystem) extends TestKit(_system) with TestA
 		val testActor3 = actorOf(Props(new TestWorkerActor))
 
 		override def receive: Receive = {
-			case TestMessage() =>
+			case TestMessage(id) =>
 				toSendBack = sender
 				become(collecting)
 				testActor1 ! disableGroup.newMessage()
@@ -62,7 +64,7 @@ class GroupMessageTest(_system: ActorSystem) extends TestKit(_system) with TestA
 		val router = context.actorOf(Props(new TestWorkerActor()).withRouter(new RoundRobinRouter(4)))
 
 		override def receive: Receive = {
-			case TestMessage() =>
+			case TestMessage(id) =>
 				toSendBack = sender
 				become(collecting)
 				disableGroup.broadcast(router)
@@ -74,12 +76,12 @@ class GroupMessageTest(_system: ActorSystem) extends TestKit(_system) with TestA
 		var toSendBack: ActorRef = _
 
 		def collecting: Receive = {
-			case x @ TestMessage() =>
+			case TestReply(id) =>
 				println("received disabled from child " + sender.path)
-				disableGroup.receive(x)
+				disableGroup.receive(id)
 				if (disableGroup.isDone) {
 					println("reporting disabled")
-					toSendBack ! x
+					toSendBack ! "done"
 				}
 
 		}
@@ -88,8 +90,8 @@ class GroupMessageTest(_system: ActorSystem) extends TestKit(_system) with TestA
 
 	private class TestWorkerActor extends Actor with ActorLogging {
 		override def receive: Receive = {
-			case x @ TestMessage() =>
-				sender ! x
+			case TestMessage(id) =>
+				sender ! TestReply(id)
 		}
 	}
 

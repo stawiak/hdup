@@ -11,7 +11,7 @@ import akka.pattern.ask
 
 
 object GroupMessage {
-	def apply(messageFactory:() => Any): GroupMessage = new GroupMessage(messageFactory)
+	def apply(messageFactory:() => { val id: UUID }): GroupMessage = new GroupMessage(messageFactory)
 }
 
 /**
@@ -21,7 +21,7 @@ object GroupMessage {
  *
  * val disableGroup = GroupMessage(() => Disable())
  * // regular actor
- * child ! disableGroup.newMessage()  // new message is added to set
+ * child ! disableGroup.newMessage()
  *
  * // router
  * disableGroup.broadcast(router)
@@ -32,20 +32,17 @@ object GroupMessage {
  * 			doSomething
  * }
  * </pre>
- * Prerequisites:
- * 		message type must be Set-able (i.e. equals and hash must work, e.g. be a case class)
- * 		must be replied with the same message i.e. case x => sender ! x
  * @param messageFactory new message creator
  */
-class GroupMessage(messageFactory:() => Any) {
+class GroupMessage(messageFactory:() => { val id: UUID }) {
 
 	implicit val timeout: Timeout = 10 seconds
 
-	val messages = mutable.Set[Any]()
+	val messages = mutable.Set[UUID]()
 
 	def newMessage(): Any = {
 		val msg = messageFactory()
-		messages += msg
+		messages += msg.id
 		msg
 	}
 
@@ -55,8 +52,12 @@ class GroupMessage(messageFactory:() => Any) {
 		routees foreach { _.tell(newMessage(), senderRef) }
 	}
 
-	def receive(msg: Any) {
-		messages -= msg
+	def receive(msg: { val id: UUID } ) {
+		messages -= msg.id
+	}
+
+	def receive(id: UUID) {
+		messages -= id
 	}
 
 	def isDone:Boolean = messages.isEmpty

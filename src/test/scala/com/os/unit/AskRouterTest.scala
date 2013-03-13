@@ -31,7 +31,6 @@ class AskRouterTest(_system: ActorSystem) extends TestKit(_system) with TestActo
 	}
 
 	private class TestMasterActor extends Actor with ActorLogging {
-		import context.dispatcher
 		val router = context.actorOf(Props(new PingPonger()).withRouter(new RoundRobinRouter(3)))
 
 		override def receive: Receive = {

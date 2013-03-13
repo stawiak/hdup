@@ -2,7 +2,7 @@ package com.os.actor
 
 import akka.actor._
 import read.LoadState
-import util.{Ideable, FinalCountDown, Tick, TimedActor}
+import util.{FinalCountDown, Tick, TimedActor}
 import javax.management.ObjectName
 import com.os.util.JMXActorBean
 import akka.actor.SupervisorStrategy.Stop
@@ -43,8 +43,8 @@ case object Monitor
 case object GracefulStop
 case object SaveState
 case object Done
-case class Disable(override val id: UUID = UUID.randomUUID()) extends Ideable
-case class Disabled(override val id: UUID = UUID.randomUUID()) extends Ideable
+case class Disable(id: UUID = UUID.randomUUID())
+case class Disabled(id: UUID = UUID.randomUUID())
 case object Enable
 case object StartMessageListener
 case object StopMessageListener

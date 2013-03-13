@@ -49,7 +49,7 @@ class AggregatorActor(
 	val interpolators: ActorCache[String] = mockFactory.getOrElse(defaultFactory)
 
 	var rollups: TimeWindowMap[Long, Double] = new TimeWindowSortedMap[Long, Double]()
-	val doneCollector = new Collector()
+	val disableGroup = GroupMessage(() => Disable())
 	var reportDisabledId: UUID = _
 
 	def getInterpolatorInfo:Array[String] = interpolators.keys.toArray
@@ -82,7 +82,7 @@ class AggregatorActor(
 			become(collecting)
 
 			// ask children to send Done when done
-			children foreach (doneCollector.send(_, Disable()))
+			children foreach (_ ! disableGroup.newMessage())
 
 	}
 
@@ -90,10 +90,10 @@ class AggregatorActor(
 		case ismt: Interpolated => onInterpolated(ismt)
 
 		case Disabled(id) =>
-			doneCollector.receive(id)
+			disableGroup.receive(id)
 
 			// then become deaf and expect SaveState only
-			if (doneCollector.isDone) {
+			if (disableGroup.isDone) {
 				// only flush to write master when all interpolations have been received
 				flush()
 				become(disabled)
