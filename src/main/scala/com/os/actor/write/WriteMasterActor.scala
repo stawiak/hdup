@@ -4,7 +4,7 @@ import akka.actor._
 import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
-import com.os.actor.util.{GroupMessage, FinalCountDown}
+import com.os.actor.util.GroupMessage
 import com.os.measurement._
 import com.os.util.{JMXActorBean, JMXNotifier, MappableCachingActorFactory, MappableActorCache}
 import akka.actor.OneForOneStrategy
@@ -18,7 +18,7 @@ import java.util.UUID
  * @author Vadim Bobrov
  */
 trait WriteMasterActorMBean
-class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFactory]] = None) extends JMXNotifier with FinalCountDown with WriteMasterActorMBean with JMXActorBean {
+class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFactory]] = None) extends JMXNotifier with ActorLogging with WriteMasterActorMBean with JMXActorBean {
 
 	import context._
 

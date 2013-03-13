@@ -2,7 +2,6 @@ package com.os.actor
 
 import akka.actor._
 import read.LoadState
-import util._
 import akka.actor.SupervisorStrategy.{Escalate, Resume}
 import akka.actor.DeadLetter
 import akka.actor.OneForOneStrategy
@@ -28,7 +27,7 @@ class TopActor(   // props of top-level actors to start
 				  val deadLetterListenerProps: Props,
 				  val monitorProps: Props
 				  )
-	extends FinalCountDown with LastMohican {
+	extends Actor with ActorLogging {
 
 	import context._
 	implicit val timeout: Timeout = 10 seconds

@@ -35,16 +35,7 @@ trait FinalCountDown extends Actor with ActorLogging with GracefulStopSupport1 {
 	 */
 	protected def syncKill(actorRef : ActorRef, timeout: FiniteDuration = 10 minutes): Boolean = {
 			val stopped = gracefulStop(actorRef, 10 minutes, GracefulStop)(system)
-			log.debug("waiting to stop")
-			try {
-				val res = Await.result(stopped, timeout)
-				log.debug("hoo")
-			} catch {
-				case t: Throwable => log.debug("caught {}", t)
-			}
-
-			log.debug("boo")
-			true
+			Await.result(stopped, timeout)
 	}
 
 	/**

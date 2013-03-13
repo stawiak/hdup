@@ -4,7 +4,7 @@ import com.os.measurement.{VampsMeasurement, CurrentMeasurement, EnergyMeasureme
 import javax.jms._
 import akka.actor._
 import service.TimeWindowAware
-import util.{Disconnect, FinalCountDown, ActiveMQActor}
+import util.{Disconnect, ActiveMQActor}
 import com.os.exchange.MeasurementXO
 import com.os.exchange.json.{JSONObject, DefaultJSONFactory}
 import concurrent.duration._
@@ -25,7 +25,7 @@ import java.util.UUID
  * This is a simple parent just for supervisor strategy
  */
 trait MessageListenerActorMBean
-class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNotifier with MessageListenerActorMBean with FinalCountDown with JMXActorBean {
+class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNotifier with MessageListenerActorMBean with JMXActorBean {
 
 	import context._
 

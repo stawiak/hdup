@@ -2,7 +2,7 @@ package com.os.actor
 
 import akka.actor._
 import read.LoadState
-import util.{FinalCountDown, Tick, TimedActor}
+import util.{Tick, TimedActor}
 import javax.management.ObjectName
 import com.os.util.JMXActorBean
 import akka.actor.SupervisorStrategy.Stop
@@ -12,7 +12,7 @@ import java.util.UUID
 /**
  * @author Vadim Bobrov
  */
-class MonitorActor(workerProps: Props = Props(new MonitorChildActor())) extends FinalCountDown {
+class MonitorActor(workerProps: Props = Props(new MonitorChildActor())) extends Actor with ActorLogging {
 
 	import context._
 	var worker = watch(context.actorOf(workerProps, name = "worker"))

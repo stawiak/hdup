@@ -5,7 +5,6 @@ import akka.routing.{RoundRobinRouter, DefaultResizer}
 import akka.actor.SupervisorStrategy.{ Resume, Escalate}
 import concurrent.duration._
 import akka.util.Timeout
-import com.os.actor.util.FinalCountDown
 import com.os.Settings
 import org.joda.time.Interval
 import com.os.util.{JMXActorBean, MappableActorCache, MappableCachingActorFactory}
@@ -26,7 +25,7 @@ case class InterpolatorStateReadRequest() extends ReadRequest
 case class LoadState(id: AnyRef) extends ReadRequest
 
 trait ReadMasterActorMBean
-class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, ReaderFactory]] = None) extends FinalCountDown with ReadMasterActorMBean with JMXActorBean {
+class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, ReaderFactory]] = None) extends Actor with ActorLogging with ReadMasterActorMBean with JMXActorBean {
 
 	import context._
 	override val jmxName = new ObjectName("com.os.chaos:type=Reader,name=readMaster")

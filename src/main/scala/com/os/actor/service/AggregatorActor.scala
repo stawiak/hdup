@@ -1,6 +1,6 @@
 package com.os.actor.service
 
-import akka.actor.Props
+import akka.actor.{ActorLogging, Props}
 import com.os.measurement._
 import com.os.actor.write.WriterMasterAware
 import com.os.actor._
@@ -34,7 +34,7 @@ class AggregatorActor(
 						 mockFactory: Option[ActorCache[String]] = None
 					)
 
-	extends JMXNotifier with JMXActorBean with FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with AggregatorActorMBean {
+	extends JMXNotifier with JMXActorBean with ActorLogging with WriterMasterAware with ReadMasterAware with TimedActor with AggregatorActorMBean {
 
 
 	import context._
@@ -53,9 +53,6 @@ class AggregatorActor(
 	var reportDisabledId: UUID = _
 
 	def getInterpolatorInfo:Array[String] = interpolators.keys.toArray
-
-
-	override val lastWill: () => Unit = flush
 
 	override def receive: Receive = {
 

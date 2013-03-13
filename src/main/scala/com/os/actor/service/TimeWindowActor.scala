@@ -1,6 +1,6 @@
 package com.os.actor.service
 
-import akka.actor.{OneForOneStrategy, Props}
+import akka.actor.{Actor, ActorLogging, OneForOneStrategy, Props}
 import com.os.measurement.{EnergyMeasurement, Measurement}
 import com.os.actor._
 import read.{LoadState, ReadMasterAware}
@@ -20,7 +20,7 @@ import akka.actor.SupervisorStrategy.Stop
 /**
   * @author Vadim Bobrov
   */
-class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown {
+class TimeWindowActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends Actor with ActorLogging {
 
 	import context._
 	var worker = watch(context.actorOf(Props(new TimeWindowChildActor(expiredTimeWindow, timeSource, mockFactory)), name = "worker"))
@@ -35,7 +35,7 @@ trait TimeWindowChildActorMBean {
 	def getTimeWindowSize:Long
 	def getAggregators:Long
 }
-class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends FinalCountDown with WriterMasterAware with ReadMasterAware with TimedActor with TimeWindowChildActorMBean with JMXActorBean {
+class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: TimeSource = new TimeSource {}, mockFactory: Option[ActorCache[(String, String)]] = None) extends Actor with ActorLogging with WriterMasterAware with ReadMasterAware with TimedActor with TimeWindowChildActorMBean with JMXActorBean {
 
 	import context._
 
