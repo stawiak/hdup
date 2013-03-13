@@ -42,7 +42,7 @@ trait MonitorChildActorMBean {
 case object Monitor
 case object GracefulStop
 case object SaveState
-case object DoneMark
+case object Done
 case class Disable(override val id: UUID = UUID.randomUUID()) extends Ideable
 case class Disabled(override val id: UUID = UUID.randomUUID()) extends Ideable
 case object StartMessageListener
@@ -113,6 +113,8 @@ class MonitorChildActor extends JMXActorBean with Actor with ActorLogging with T
 
 
 		case Disable(id) =>
+			log.debug("received Disable")
+			cancelSchedule()
 			sender ! Disabled(id)
 	}
 

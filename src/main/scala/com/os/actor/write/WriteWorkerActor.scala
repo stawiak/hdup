@@ -41,7 +41,7 @@ class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with Acto
 				submitJob()
 
 			become(deaf)
-			sender ! new Disabled(id)
+			sender ! Disabled(id)
 
 	}
 

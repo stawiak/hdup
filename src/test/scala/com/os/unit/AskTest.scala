@@ -4,7 +4,6 @@ import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}
 import concurrent.duration._
-import akka.routing.{RouterRoutees, CurrentRoutees, RoundRobinRouter}
 import akka.pattern.ask
 import com.os.TestActors
 import akka.util.Timeout

@@ -36,20 +36,20 @@ class GracefulShutdownDailyTest(_system: ActorSystem) extends TestKit(_system) w
 
 	// run with both saveStateOnShutdown = on and off
 	"graceful shutdown" should "allow all measurements to be processed" in {
-		val dataGenerator = new DataGenerator()
+		val dataGenerator = new DataGenerator(20,2,30)
 		val timeWindow = system.actorFor("/user/top/timeWindow")
 
 		dataGenerator.dailyDataIterator(20, false) foreach (timeWindow ! _)
 
 
 		// original messages are not sent - they are handled around time window
-		// 20 * 2 * 300 = 12000 wires
-		// 5 * 12000 interpolated
-		// 5 * 40 rollup (why 405?)
-		// 1 SaveState
+		// 20 * 2 * 30 = 1200 wires
+		// 5 * 1200 interpolated
+		// 5 * 40 rollup (why 205?)
+		// 1 Disable
 		// 1 TimeWindowState
 		top ! GracefulStop
-		receiveN(4, 5 seconds)
+		receiveN(6207, 30 seconds)
 
 	}
 

@@ -90,7 +90,7 @@ class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: Tim
 			// flush remaining measurements to aggregators
 			flush()
 
-			val childrenDisabled = Future.traverse(children)(child => (child ? new Disable))
+			val childrenDisabled = Future.traverse(children)(child => (child ? Disable()))
 			Await.ready(childrenDisabled, 5 minutes)
 
 			become(disabled)
@@ -108,18 +108,17 @@ class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: Tim
 
 			// this must be fully synchronous or else write master could be killed prematurely
 			writeMaster ! Await.result(timeWindowState, 10 seconds)
+			sender ! Done
 	}
 
 	/**
 	 * send out remaining measurements
 	 */
 	private def flush() {
-		log.debug("started flushing")
 		for (tv <- measurements)
 			aggregators((tv.customer, tv.location)) ! tv
 		// this is important!!! or time window tick will kick in on the same msmts
 		measurements = new TimeWindowSortedSetBuffer[Measurement]()
-		log.debug("done flushing")
 	}
 
 	/**
@@ -127,7 +126,6 @@ class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: Tim
 	 * and remove them from window
 	 */
 	private def processWindow() {
-		log.debug("processing time window")
 		try {
 			val current = timeSource.now()
 			// if any of the existing measurements are more than 9.5 minutes old
@@ -143,7 +141,6 @@ class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: Tim
 			case e: Exception =>
 				log.error(e, e.getMessage)
 		}
-		log.debug("done processing time window")
 
 	}
 

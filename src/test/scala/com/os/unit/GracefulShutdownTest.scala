@@ -10,6 +10,7 @@ import com.os.{TestActors, Settings}
 import concurrent.duration._
 import service.TimeWindowActor
 import com.os.measurement.EnergyMeasurement
+import util.DeadLetterListener
 
 /**
  * @author Vadim Bobrov
@@ -26,7 +27,7 @@ class GracefulShutdownTest(_system: ActorSystem) extends TestKit(_system) with T
 		Props(new ForwarderActor),
 		Props(new NoGoodnik),
 		Props(new NoGoodnik),
-		Props(new NoGoodnik),
+		Props(new DeadLetterListener),
 		Props(new NoGoodnik)
 	)), name = "top")
 
@@ -48,9 +49,10 @@ class GracefulShutdownTest(_system: ActorSystem) extends TestKit(_system) with T
 		// 4 original messages are not sent - they are handled around time window
 		// 1 interpolated
 		// 1 rollup
+		// saving state is not invoked in this test
 		// 1 SaveState
 		// 1 TimeWindowState
-		receiveN(4, 5 seconds)
+		receiveN(4, 15 seconds)
 	}
 
 }

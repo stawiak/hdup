@@ -98,34 +98,23 @@ class TopActor(   // props of top-level actors to start
 
 			// shut down message listener then have everyone save state
 			if (messageListener.isDefined && !messageListener.get.isTerminated)
-				Await.ready(messageListener.get ? new Disable, 5 minutes)
-
-
-			//TODO: is this synchronous? can we proceed?
-			if (Settings().SaveStateOnShutdown) {
-				log.debug("saving state on shutdown")
-			//	children foreach (_ ! SaveState)
-			}
+				Await.ready(messageListener.get ? Disable(), 5 minutes)
 
 			// time window must be flushed before stopping write master
-			log.debug("killing timeWindow")
+			log.debug("disabling timeWindow")
 
-			Await.ready(timeWindow ? new Disable, 5 minutes)
-/*
-			match {
-				case Success(s) => log.debug("success {}", s)
-				case Failure(thrown) => log.debug("failure {}", thrown.toString)
+			Await.ready(timeWindow ? Disable(), 5 minutes) //.onFailure( { case _ => log.debug("failed disabling time window") } )
+
+			if (Settings().SaveStateOnShutdown) {
+				log.debug("saving state on shutdown")
+				Await.ready(timeWindow ? SaveState, 5 minutes)
 			}
-*/
 
+			log.debug("disabling writeMaster")
+			Await.ready(writeMaster ? Disable(), 5 minutes) //.onFailure( { case _ => log.debug("failed disabling write master") } )
 
-			log.debug("killing writeMaster")
-			Await.ready(writeMaster ? new Disable, 5 minutes)
-
-			// do the rest
-			log.debug("killing rest")
-			children foreach(x => log.debug("" + x.path))
-			self ! PoisonPill
+			log.debug("shutting down system")
+			system.shutdown()
 	}
 
 }

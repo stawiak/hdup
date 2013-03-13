@@ -125,14 +125,16 @@ class MessageListenerActor(host: String, port: Int, queue: String) extends JMXNo
 			case Disable(id) =>
 				reportDisabledId = id
 				self ! Disconnect
-				// send marker to be added after all other messages have been processed
-				self ! DoneMark
+
 				become(collecting)
+				// send marker to be added after all other messages have been processed
+				self ! Done
+
 
 		}
 
 		def collecting(): Receive = {
-			case DoneMark =>
+			case Done =>
 				become(FSM.NullFunction)
 				sender ! Disabled(reportDisabledId)
 		}

@@ -49,7 +49,7 @@ class AggregatorActor(
 	val interpolators: ActorCache[String] = mockFactory.getOrElse(defaultFactory)
 
 	var rollups: TimeWindowMap[Long, Double] = new TimeWindowSortedMap[Long, Double]()
-	val doneCollector = new Collector
+	val doneCollector = new Collector(self)
 	var reportDisabledId: UUID = _
 
 	def getInterpolatorInfo:Array[String] = interpolators.keys.toArray
@@ -77,11 +77,13 @@ class AggregatorActor(
 			// they will not be processed as we become collecting/deaf at the end of Disable
 			cancelSchedule()
 
-			// ask children to send Done when done
-			children foreach (doneCollector.send(_, new Disable))
 			// we need to continue processing interpolations until all kids report done
 			// expect Done and Interpolation only
 			become(collecting)
+
+			// ask children to send Done when done
+			children foreach (doneCollector.send(_, Disable()))
+
 	}
 
 	def collecting: Receive = {

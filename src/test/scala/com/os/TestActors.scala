@@ -15,15 +15,14 @@ trait TestActors {
 
 		var counterMap = new CounterMap[String]()
 
-		override def receive: Receive = {
-			case GracefulStop =>
-				log.debug("received graceful stop")
-				log.debug("forwarder log")
-				log.debug(counterMap.toString)
-				self ! PoisonPill
+		override def postStop() {
+			println("forwarder log")
+			println(counterMap.toString)
+		}
 
+		override def receive: Receive = {
 			case x =>
-				log.debug("forwarding {}", x)
+				//log.debug("forwarding {}", x)
 				counterMap incr x.getClass.getName
 				testActor ! x
 		}
@@ -31,11 +30,6 @@ trait TestActors {
 
 	class NoGoodnik extends Actor with ActorLogging {
 		override def receive: Receive = {
-
-			case GracefulStop =>
-				log.debug("received graceful stop")
-				self ! PoisonPill
-
 			case _ =>
 		}
 	}
@@ -50,20 +44,12 @@ trait TestActors {
 
 	class Crasher extends Actor with ActorLogging {
 		override def receive: Receive = {
-			case GracefulStop =>
-				log.debug("received graceful stop")
-				self ! PoisonPill
-
 			case _ => throw new Exception
 		}
 	}
 
 	class SlowActor extends Actor with ActorLogging {
 		override def receive: Receive = {
-			case GracefulStop =>
-				log.debug("received graceful stop")
-				self ! PoisonPill
-
 			case _ =>
 				log.debug("starting my long work")
 				Thread.sleep(60000)

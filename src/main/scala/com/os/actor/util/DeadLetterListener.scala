@@ -1,7 +1,6 @@
 package com.os.actor.util
 
 import akka.actor._
-import com.os.measurement.Measurement
 import akka.actor.Terminated
 import akka.actor.DeadLetter
 import com.os.actor.{Disabled, Disable}
@@ -19,13 +18,10 @@ class DeadLetterListener extends JMXNotifier with Actor with ActorLogging with D
 
 	def receive = {
 		case Terminated => ;
-		case DeadLetter(msmt: Measurement, sender: ActorRef, recipient: ActorRef) =>  {
+		case DeadLetter(msg: Any, sender: ActorRef, recipient: ActorRef) =>  {
+			log.debug("dead letter: {} {} {}", sender, recipient, msg)
 
-			lostMsmt += 1
-			log.debug("lost {}", lostMsmt )
-			log.debug("dead letter: {} {} {}", sender, recipient, msmt)
-
-			notify("deadletter", msmt.toString)
+			notify("deadletter", msg.toString)
 		}
 
 		case Disable(id) =>

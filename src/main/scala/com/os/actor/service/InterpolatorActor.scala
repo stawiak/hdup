@@ -30,7 +30,7 @@ class InterpolatorActor(loadQueue: Option[NQueue] = None, boundary: Int = 60000)
 
 		case Disable(id) =>
 			become(disabled)
-			sender ! new Disabled(id)
+			sender ! Disabled(id)
 
 	}
 

@@ -36,7 +36,7 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 	)
 
 	val routers = mockFactory.getOrElse(defaultFactory)
-	val doneCollector = new Collector
+	val doneCollector = new Collector(self)
 	var reportDisabledId: UUID = _
 
 	override val supervisorStrategy =
@@ -52,11 +52,11 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 			routers(msmt) ! msmt
 
 		case Disable(id) =>
-			log.debug("write master received Disable")
+			log.debug("received Disable")
 			reportDisabledId = id
 
-			children foreach (doneCollector.broadcast(_, () => new Disable))
 			become(collecting)
+			children foreach (doneCollector.broadcast(_, () => Disable()))
 	}
 
 	def collecting: Receive = {

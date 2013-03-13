@@ -4,10 +4,7 @@ import org.scalatest.{FlatSpec, BeforeAndAfterAll}
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit}
 import concurrent.duration._
-import akka.routing.{Broadcast, RoundRobinRouter}
-import akka.pattern.ask
-import akka.pattern.pipe
-import com.os.util.{Pong, Ping}
+import akka.routing.RoundRobinRouter
 import com.os.TestActors
 import akka.util.Timeout
 import com.os.actor.util.Collector

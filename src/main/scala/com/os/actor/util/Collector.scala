@@ -10,13 +10,13 @@ import concurrent.duration._
 import akka.pattern.ask
 
 
-class Collector {
+class Collector(senderRef: ActorRef) {
 	//TODO: consider using children paths instead of UUID
 	val ids = mutable.Set[UUID]()
 	implicit val timeout: Timeout = 10 seconds
 
 	def send(actorRef: ActorRef, msg: Ideable) {
-		actorRef ! msg
+		actorRef.tell(msg, senderRef)
 		ids += msg.id
 	}
 
@@ -25,7 +25,7 @@ class Collector {
 
 		routees foreach { routee =>
 			val msg = messageFactory()
-			routee ! msg
+			routee.tell(msg, senderRef)
 			ids += msg.id
 		}
 	}
