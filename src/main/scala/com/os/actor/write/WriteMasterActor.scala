@@ -36,7 +36,7 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 	)
 
 	val routers = mockFactory.getOrElse(defaultFactory)
-	val doneCollector = new Collector(self)
+	val doneCollector = new Collector()
 	var reportDisabledId: UUID = _
 
 	override val supervisorStrategy =

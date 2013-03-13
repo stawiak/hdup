@@ -49,7 +49,7 @@ class AggregatorActor(
 	val interpolators: ActorCache[String] = mockFactory.getOrElse(defaultFactory)
 
 	var rollups: TimeWindowMap[Long, Double] = new TimeWindowSortedMap[Long, Double]()
-	val doneCollector = new Collector(self)
+	val doneCollector = new Collector()
 	var reportDisabledId: UUID = _
 
 	def getInterpolatorInfo:Array[String] = interpolators.keys.toArray

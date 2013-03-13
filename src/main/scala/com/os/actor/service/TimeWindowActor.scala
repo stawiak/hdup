@@ -98,6 +98,9 @@ class TimeWindowChildActor(var expiredTimeWindow : Duration, val timeSource: Tim
 	}
 
 	def disabled: Receive = {
+		case Enable =>
+			unbecome()
+
 		case SaveState =>
 			log.debug("time window received SaveState")
 			flush()

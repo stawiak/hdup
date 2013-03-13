@@ -107,11 +107,11 @@ class TopActor(   // props of top-level actors to start
 
 			if (Settings().SaveStateOnShutdown) {
 				log.debug("saving state on shutdown")
-				Await.ready(timeWindow ? SaveState, 5 minutes)
+				Await.ready(timeWindow ? SaveState, 10 minutes)
 			}
 
 			log.debug("disabling writeMaster")
-			Await.ready(writeMaster ? Disable(), 5 minutes) //.onFailure( { case _ => log.debug("failed disabling write master") } )
+			Await.ready(writeMaster ? Disable(), 10 minutes) //.onFailure( { case _ => log.debug("failed disabling write master") } )
 
 			log.debug("shutting down system")
 			system.shutdown()

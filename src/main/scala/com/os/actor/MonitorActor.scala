@@ -27,7 +27,7 @@ trait MonitorChildActorMBean {
 	def stop: Unit
 	def startMessageListener: Unit
 	def stopMessageListener: Unit
-	def saveState: Unit
+	//def saveState: Unit
 	def loadState: Unit
 
 	def getTimeWindowSize:Long
@@ -45,6 +45,7 @@ case object SaveState
 case object Done
 case class Disable(override val id: UUID = UUID.randomUUID()) extends Ideable
 case class Disabled(override val id: UUID = UUID.randomUUID()) extends Ideable
+case object Enable
 case object StartMessageListener
 case object StopMessageListener
 

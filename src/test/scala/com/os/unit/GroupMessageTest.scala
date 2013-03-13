@@ -7,17 +7,17 @@ import concurrent.duration._
 import akka.routing.RoundRobinRouter
 import com.os.TestActors
 import akka.util.Timeout
-import com.os.actor.util.Collector
-import com.os.actor.{Disabled, Disable}
-import java.util.UUID
+import com.os.actor.util.GroupMessage
 
 /**
  * @author Vadim Bobrov
  */
-class CollectorTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ImplicitSender with BeforeAndAfterAll {
+class GroupMessageTest(_system: ActorSystem) extends TestKit(_system) with TestActors with FlatSpec with ImplicitSender with BeforeAndAfterAll {
 
 	implicit val timeout: Timeout = 10 seconds
 	def this() = this(ActorSystem())
+
+	case class TestMessage()
 
 	override def afterAll() {
 		system.shutdown()
@@ -25,7 +25,7 @@ class CollectorTest(_system: ActorSystem) extends TestKit(_system) with TestActo
 
 	"collecting over actors" should "fill when all replies are back" in {
 		val testActor = system.actorOf(Props(new TestSenderActor))
-		testActor ! Disable()
+		testActor ! TestMessage()
 		receiveN(1, 1 second)
 	}
 
@@ -33,7 +33,7 @@ class CollectorTest(_system: ActorSystem) extends TestKit(_system) with TestActo
 	"collecting over routers" should "fill when all replies are back" in {
 		val testActor = system.actorOf(Props(new TestRouterSenderActor))
 
-		testActor ! Disable()
+		testActor ! TestMessage()
 		receiveN(1, 1 second)
 	}
 
@@ -46,13 +46,12 @@ class CollectorTest(_system: ActorSystem) extends TestKit(_system) with TestActo
 		val testActor3 = actorOf(Props(new TestWorkerActor))
 
 		override def receive: Receive = {
-			case Disable(id) =>
+			case TestMessage() =>
 				toSendBack = sender
-				reportDisabledId = id
 				become(collecting)
-				doneCollector.send(testActor1, Disable())
-				doneCollector.send(testActor2, Disable())
-				doneCollector.send(testActor3, Disable())
+				testActor1 ! disableGroup.newMessage()
+				testActor2 ! disableGroup.newMessage()
+				testActor3 ! disableGroup.newMessage()
 
 		}
 	}
@@ -63,26 +62,24 @@ class CollectorTest(_system: ActorSystem) extends TestKit(_system) with TestActo
 		val router = context.actorOf(Props(new TestWorkerActor()).withRouter(new RoundRobinRouter(4)))
 
 		override def receive: Receive = {
-			case Disable(id) =>
+			case TestMessage() =>
 				toSendBack = sender
-				reportDisabledId = id
 				become(collecting)
-				doneCollector.broadcast(router, () => Disable())
+				disableGroup.broadcast(router)
 		}
 	}
 
 	private abstract class TestBaseSenderActor extends Actor with ActorLogging {
-		val doneCollector = new Collector()
-		var reportDisabledId: UUID = _
+		val disableGroup = GroupMessage(() => TestMessage())
 		var toSendBack: ActorRef = _
 
 		def collecting: Receive = {
-			case Disabled(id) =>
+			case x @ TestMessage() =>
 				println("received disabled from child " + sender.path)
-				doneCollector.receive(id)
-				if (doneCollector.isDone) {
+				disableGroup.receive(x)
+				if (disableGroup.isDone) {
 					println("reporting disabled")
-					toSendBack ! Disabled(reportDisabledId)
+					toSendBack ! x
 				}
 
 		}
@@ -91,8 +88,8 @@ class CollectorTest(_system: ActorSystem) extends TestKit(_system) with TestActo
 
 	private class TestWorkerActor extends Actor with ActorLogging {
 		override def receive: Receive = {
-			case Disable(id) =>
-				sender ! Disabled(id)
+			case x @ TestMessage() =>
+				sender ! x
 		}
 	}
 

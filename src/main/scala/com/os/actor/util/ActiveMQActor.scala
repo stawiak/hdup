@@ -52,6 +52,7 @@ abstract class ActiveMQActor(host: String, port: Int, queue: String) extends Act
 		consumer.close()
 		session.close()
 		connection.close()
+		log.debug("ActiveMQ connection closed")
 	}
 
 	override def postStop() {

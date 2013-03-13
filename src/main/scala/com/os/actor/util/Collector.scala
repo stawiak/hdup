@@ -10,7 +10,7 @@ import concurrent.duration._
 import akka.pattern.ask
 
 
-class Collector(senderRef: ActorRef) {
+class Collector(implicit senderRef: ActorRef) {
 	//TODO: consider using children paths instead of UUID
 	val ids = mutable.Set[UUID]()
 	implicit val timeout: Timeout = 10 seconds
