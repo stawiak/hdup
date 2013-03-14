@@ -19,7 +19,7 @@ import com.os.dao.write.{SingleWriterFactory, WriterFactory}
  * @author Vadim Bobrov
  */
 trait WriteMasterActorMBean
-class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFactory]] = None) extends JMXNotifier with ActorLogging with WriteMasterActorMBean with JMXActorBean {
+class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFactory]] = None) extends JMXNotifier with WriteMasterActorMBean with JMXActorBean with Actor with ActorLogging {
 
 	import context._
 
