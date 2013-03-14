@@ -16,6 +16,7 @@ import concurrent.Await
  * responsible for: global fault tolerance, startup and graceful shutdown of actor system
  * @author Vadim Bobrov
  */
+case object PostStart
 case object GetWebService
 class TopActor(   // props of top-level actors to start
 				  val mqlHandlerProps: Props,
@@ -56,13 +57,14 @@ class TopActor(   // props of top-level actors to start
 
 		system.eventStream.subscribe(deadLetterListener, classOf[DeadLetter])
 
+		self ! PostStart
 		super.preStart()
 	}
 
 	override val supervisorStrategy =
-		OneForOneStrategy(maxNrOfRetries = 100, withinTimeRange = Duration.Inf) {
-			case _: Exception     				⇒ Resume
-			case _: Throwable                	⇒ Escalate
+		OneForOneStrategy(maxNrOfRetries = 20, withinTimeRange = Duration.Inf) {
+			case _: Exception     				=> Resume
+			case _: Throwable                	=> Escalate
 		}
 
 
@@ -84,6 +86,10 @@ class TopActor(   // props of top-level actors to start
 		case StopMessageListener =>
 			if (messageListener.isDefined && !messageListener.get.isTerminated)
 				messageListener.get ! GracefulStop
+
+		case PostStart =>
+			if(Settings().LoadStateOnStartup)
+				timeWindow ! LoadState
 
 		case SaveState =>
 			log.debug("top received SaveState from " + sender.path)
