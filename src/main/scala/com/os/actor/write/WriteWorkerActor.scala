@@ -1,12 +1,13 @@
 package com.os.actor.write
 
 import akka.actor.{ActorLogging, Actor}
-import com.os.dao.{TimeWindowState, WriterFactory}
+import com.os.dao.{TimeWindowState}
 import com.os.util.Util._
 import com.os.measurement.Measurement
 import com.os.actor.{Disabled, Disable}
 import javax.management.ObjectName
 import com.os.util.JMXActorBean
+import com.os.dao.write.WriterFactory
 
 /**
   * @author Vadim Bobrov

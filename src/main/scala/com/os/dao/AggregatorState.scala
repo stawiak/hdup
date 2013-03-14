@@ -1,6 +1,7 @@
 package com.os.dao
 
 import com.os.interpolation.NQueue
+import write.Saveable
 
 /**
  * @author Vadim Bobrov

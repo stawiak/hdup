@@ -1,6 +1,6 @@
 package com.os
 
-import dao.Writer
+import dao.write.Writer
 
 
 /**

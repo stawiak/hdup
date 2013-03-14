@@ -1,29 +1,16 @@
-package com.os.dao
+package com.os.dao.write
 
 import com.os.Settings
 import org.apache.hadoop.hbase.client.{HTableInterface, Put}
 import com.os.measurement._
 import com.os.util.BytesWrapper._
 import com.os.util.{Loggable, BytesWrapper}
+import com.os.dao.{TableFactory, RowKeyUtils, TimeWindowState}
 
 /**
  * @author Vadim Bobrov
  */
-trait Saveable
-trait Writer {
-	def open()
-	def write(obj: AnyRef)
-	def close()
-}
-
-trait WriterFactory {
-	val batchSize: Int
-	val id: Int
-	val name: String
-	def createWriter: Writer
-}
-
-object WriterFactory {
+object NestWriterFactory {
 	def apply(obj: AnyRef): WriterFactory = {
 		// returned concrete factory based on object type
 		obj match {
@@ -126,13 +113,13 @@ object WriterFactory {
 					val p = new Put(state.customer << RowKeyUtils.Separator << state.location)
 
 					state.interpolatorStates foreach { item =>
-							val (name, queue) = item
-							val content = queue.content()
+						val (name, queue) = item
+						val content = queue.content()
 
-							if (content.size != 0) {
-								val interpolatorValues = content map(BytesWrapper.pimpBytes(_)) reduce(_ << _)
-								p.add(Settings.InterpolatorStateColumnFamilyName, name, interpolatorValues)
-							}
+						if (content.size != 0) {
+							val interpolatorValues = content map(BytesWrapper.pimpBytes(_)) reduce(_ << _)
+							p.add(Settings.InterpolatorStateColumnFamilyName, name, interpolatorValues)
+						}
 					}
 
 					table.put(p)

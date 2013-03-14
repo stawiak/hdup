@@ -1,6 +1,6 @@
 package com.os.measurement
 
-import com.os.dao.Saveable
+import com.os.dao.write.Saveable
 
 
 /**

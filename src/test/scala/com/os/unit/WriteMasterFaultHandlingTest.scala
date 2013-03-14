@@ -9,7 +9,7 @@ import com.typesafe.config.ConfigFactory
 import com.os.measurement.{EnergyMeasurement, Measurement}
 import concurrent.duration._
 import com.os.util.MappableActorCache
-import com.os.dao.WriterFactory
+import com.os.dao.write.WriterFactory
 
 /**
  * @author Vadim Bobrov

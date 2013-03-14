@@ -1,6 +1,6 @@
 package com.os
 
-import dao.Writer
+import dao.write.Writer
 import measurement.EnergyMeasurement
 import org.joda.time.DateTime
 import util.Loggable
