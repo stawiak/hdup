@@ -2,38 +2,28 @@ package com.os.dao
 
 import org.apache.hadoop.hbase.util.Bytes
 import java.security.MessageDigest
-import scala.Byte
 import com.os.util.BytesWrapper._
 
 /**
  * @author Vadim Bobrov
  */
-object RowKeyUtils {
-
-	private val SIZEOF_STRING = 16
+object RowKeyUtil {
 	val Separator:Byte = 0x00
 
 	/**
-	 * create rowkey using customer, location, wireid and reversed timestamp
-	 * @param customer
-	 * @param location
-	 * @param wireid
-	 * @param timestamp
-	 * @return
+	 * extract two strings left and right of separator
+	 * @param bytes to split
+	 * @return left and right part
 	 */
-	def createRowKey(customer : String, location : String, wireid : String, timestamp : Long) : Array[Byte] = {
-
-		val rowkey = new Array[Byte](SIZEOF_STRING + SIZEOF_STRING + SIZEOF_STRING + Bytes.SIZEOF_LONG)
-
-		Bytes.putBytes(rowkey, 0, getHash(customer), 0, SIZEOF_STRING)
-		Bytes.putBytes(rowkey, SIZEOF_STRING, getHash(location), 0, SIZEOF_STRING)
-		Bytes.putBytes(rowkey, SIZEOF_STRING + SIZEOF_STRING, getHash(wireid), 0, SIZEOF_STRING)
-
-		val reverseTimestamp = Long.MaxValue - timestamp
-		Bytes.putLong(rowkey, SIZEOF_STRING + SIZEOF_STRING + SIZEOF_STRING, reverseTimestamp)
-
-		rowkey
+	def split(bytes : Array[Byte]) : (String, String) = {
+		val(left, right) = bytes.span(_ != RowKeyUtil.Separator)
+		(left, right.tail)
 	}
+}
+
+trait RowKeyUtil {
+	protected val SIZEOF_STRING = 16
+
 
 	/**
 	 * create rowkey using customer, location and reversed timestamp
@@ -73,9 +63,9 @@ object RowKeyUtils {
 
 
 	/*
-	  * get a unique (almost) hash for a string to use in row key
-	   */
-	private def getHash(s : String) : Array[Byte] = {
+	 * get a unique (almost) hash for a string to use in row key
+	 */
+	protected def getHash(s : String) : Array[Byte] = {
 
 		val md = MessageDigest.getInstance("MD5")
 
@@ -88,29 +78,9 @@ object RowKeyUtils {
 	 * @param rowkey bytes to extract from
 	 * @return
 	 */
-	def getTimestamp(rowkey : Array[Byte]) : Long = {
-		val reverseTimestamp = Bytes.toLong(rowkey, SIZEOF_STRING + SIZEOF_STRING + SIZEOF_STRING)
-		Long.MaxValue - reverseTimestamp
-	}
-
-	/**
-	 * extract timestamp from rowkey bytes
-	 * @param rowkey bytes to extract from
-	 * @return
-	 */
 	def getTimestampFromRollup(rowkey : Array[Byte]) : Long = {
 		val reverseTimestamp = Bytes.toLong(rowkey, SIZEOF_STRING + SIZEOF_STRING)
 		Long.MaxValue - reverseTimestamp
-	}
-
-	/**
-	 * extract two strings left and right of separator
-	 * @param bytes to split
-	 * @return left and right part
-	 */
-	def split(bytes : Array[Byte]) : (String, String) = {
-		val(left, right) = bytes.span(_ != Separator)
-		(left, right.tail)
 	}
 
 }

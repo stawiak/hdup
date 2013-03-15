@@ -1,6 +1,7 @@
 package com.os
 
-import dao.{AggregatorState, Scanner}
+import dao.read.Scanner
+import dao.AggregatorState
 import measurement.TimedValue
 
 /**

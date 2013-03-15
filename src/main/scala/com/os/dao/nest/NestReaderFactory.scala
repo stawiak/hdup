@@ -1,22 +1,13 @@
-package com.os.dao
+package com.os.dao.nest
 
 import com.os.actor.read.{LoadState, InterpolatorStateReadRequest, RollupReadRequest, MeasurementReadRequest}
 import com.os.Settings
+import com.os.dao.read.{Scanner, Reader, ReaderFactory}
 
 /**
  * @author Vadim Bobrov
  */
-trait Reader {
-	def read(readRequest: AnyRef): AnyRef
-}
-
-trait ReaderFactory {
-	val id: Int
-	val name: String
-	def createReader: Reader
-}
-
-object ReaderFactory {
+object NestReaderFactory {
 	def apply(obj: AnyRef): ReaderFactory = {
 		// returned concrete factory based on object type
 		obj match {
@@ -87,6 +78,5 @@ object ReaderFactory {
 		}
 	}
 
+
 }
-
-

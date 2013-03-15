@@ -9,9 +9,10 @@ import com.os.Settings
 import org.joda.time.Interval
 import com.os.util.{JMXActorBean, MappableActorCache, MappableCachingActorFactory}
 import akka.actor.OneForOneStrategy
-import com.os.dao.ReaderFactory
 import com.os.actor.{Disabled, Disable}
 import javax.management.ObjectName
+import com.os.dao.read.ReaderFactory
+import com.os.dao.clwt.CLWTReaderFactory
 
 
 /**
@@ -38,7 +39,7 @@ class ReadMasterActor(mockFactory: Option[MappableActorCache[ReadRequest, Reader
 	val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
 	val defaultFactory = MappableCachingActorFactory[ReadRequest, ReaderFactory](
-		ReaderFactory(_),
+		CLWTReaderFactory(_),
 		(factory: ReaderFactory) =>
 			actorOf(
 				Props(new ReadWorkerActor(factory)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher")

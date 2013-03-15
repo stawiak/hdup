@@ -1,9 +1,9 @@
 package com.os.actor.read
 
 import akka.actor.{ActorLogging, Actor}
-import com.os.dao.ReaderFactory
 import javax.management.ObjectName
 import com.os.util.JMXActorBean
+import com.os.dao.read.ReaderFactory
 
 /**
   * @author Vadim Bobrov

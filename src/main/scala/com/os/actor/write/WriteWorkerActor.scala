@@ -1,7 +1,7 @@
 package com.os.actor.write
 
 import akka.actor.{ActorLogging, Actor}
-import com.os.dao.{TimeWindowState}
+import com.os.dao.TimeWindowState
 import com.os.util.Util._
 import com.os.measurement.Measurement
 import com.os.actor.{Disabled, Disable}

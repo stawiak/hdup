@@ -8,11 +8,12 @@ import com.os.actor.util.GroupMessage
 import com.os.measurement._
 import com.os.util.{JMXActorBean, JMXNotifier, MappableCachingActorFactory, MappableActorCache}
 import akka.actor.OneForOneStrategy
-import com.os.dao.{TimeWindowState}
+import com.os.dao.TimeWindowState
 import com.os.actor.{Disabled, Disable}
 import javax.management.ObjectName
 import java.util.UUID
-import com.os.dao.write.{SingleWriterFactory, WriterFactory}
+import com.os.dao.write.WriterFactory
+import com.os.dao.clwt.CLWTWriterFactory
 
 
 /**
@@ -31,7 +32,7 @@ class WriteMasterActor(mockFactory: Option[MappableActorCache[AnyRef, WriterFact
 
 
 	val defaultFactory = MappableCachingActorFactory[AnyRef, WriterFactory](
-		SingleWriterFactory(_),
+		CLWTWriterFactory(_),
 		(factory: WriterFactory) =>
 			actorOf(Props(new WriteWorkerActor(factory)).withRouter(new RoundRobinRouter(3)).withDispatcher("akka.actor.deployment.workers-dispatcher"))
 	)

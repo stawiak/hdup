@@ -13,7 +13,7 @@ import com.os.util._
 import com.os.{Settings, TestActors}
 import com.os.actor.read.MeasurementReadRequest
 import scala.Some
-import com.os.dao.ReaderFactory
+import com.os.dao.read.ReaderFactory
 
 /**
  * @author Vadim Bobrov

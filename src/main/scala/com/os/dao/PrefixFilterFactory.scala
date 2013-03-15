@@ -1,5 +1,6 @@
 package com.os.dao
 
+import clwt.CLWTRowKeyUtils
 import org.apache.hadoop.hbase.filter.{PrefixFilter, Filter}
 
 /**
@@ -18,7 +19,7 @@ object PrefixFilterFactory {
    * @return
    */
   def createFilter(customer: String, location: String): Filter = {
-    new PrefixFilter(RowKeyUtils.createRowKeyPrefix(customer, location))
+    new PrefixFilter(CLWTRowKeyUtils.createRowKeyPrefix(customer, location))
   }
 
 }

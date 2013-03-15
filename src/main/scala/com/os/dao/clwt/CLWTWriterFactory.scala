@@ -1,16 +1,19 @@
-package com.os.dao.write
+package com.os.dao.clwt
 
 import com.os.Settings
-import org.apache.hadoop.hbase.client.{HTableInterface, Put}
+import org.apache.hadoop.hbase.client.Put
 import com.os.measurement._
 import com.os.util.BytesWrapper._
-import com.os.util.{Loggable, BytesWrapper}
-import com.os.dao.{TableFactory, RowKeyUtils, TimeWindowState}
+import com.os.dao._
+import write._
 
 /**
+ * A writer factory that stores each measurement in a separate cell
+ * Rowkey - hash(customer) hash(location) hash(wireid) reverse timestamp -> value
+ * column qualifier and hbase timestamp are not used
  * @author Vadim Bobrov
  */
-object NestWriterFactory {
+object CLWTWriterFactory {
 	def apply(obj: AnyRef): WriterFactory = {
 		// returned concrete factory based on object type
 		obj match {
@@ -59,9 +62,9 @@ object NestWriterFactory {
 			def write(obj: AnyRef) {
 				val msmt = obj.asInstanceOf[Measurement]
 				val rowkey = if(tableName == Settings.RollupTableName)
-					RowKeyUtils.createRollupRowKey(msmt.customer, msmt.location, msmt.timestamp)
+					CLWTRowKeyUtils.createRollupRowKey(msmt.customer, msmt.location, msmt.timestamp)
 				else
-					RowKeyUtils.createRowKey(msmt.customer, msmt.location, msmt.wireid, msmt.timestamp)
+					CLWTRowKeyUtils.createRowKey(msmt.customer, msmt.location, msmt.wireid, msmt.timestamp)
 
 				val p = new Put(rowkey)
 
@@ -98,75 +101,6 @@ object NestWriterFactory {
 	object InterpolatedMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.MinuteInterpolatedTableName) {
 		override val id = 5
 		override def batchSize = Settings().LargeBatchSize
-	}
-
-	object InterpolatorStateWriterFactory extends WriterFactory {
-		override val id: Int = 6
-		override val name = "interpolatorstate"
-		override def batchSize = Settings().SmallBatchSize
-
-		def createWriter: Writer = new AbstractWriterWithTableCleanout(Settings.InterpolatorStateTableName) with Loggable {
-			def write(obj: AnyRef) {
-				val states = obj.asInstanceOf[TimeWindowState]
-
-				states.aggs foreach { state =>
-					val p = new Put(state.customer << RowKeyUtils.Separator << state.location)
-
-					state.interpolatorStates foreach { item =>
-						val (name, queue) = item
-						val content = queue.content()
-
-						if (content.size != 0) {
-							val interpolatorValues = content map(BytesWrapper.pimpBytes(_)) reduce(_ << _)
-							p.add(Settings.InterpolatorStateColumnFamilyName, name, interpolatorValues)
-						}
-					}
-
-					table.put(p)
-				}
-			}
-		}
-
-	}
-
-
-	private abstract class AbstractWriter(private val tableName : String) extends Writer {
-		protected var table: HTableInterface = _
-
-		def open() { table = TableFactory(tableName) }
-
-		def close()  {
-			table.flushCommits()
-			table.close()
-		}
-	}
-
-	private abstract class AbstractWriterWithTableCleanout(private val tableName : String) extends Writer with Loggable{
-		protected var table: HTableInterface = _
-
-		def open() {
-			log.info("dropping and recreating table {}", tableName)
-			dropRecreateTable()
-			log.info("table recreated {}", tableName)
-			table = TableFactory(tableName)
-		}
-
-		def close()  {
-			table.flushCommits()
-			table.close()
-		}
-
-		private def dropRecreateTable() {
-			// drop and recreate table each write
-			val tableDescriptor = TableFactory.admin.getTableDescriptor(tableName)
-			TableFactory.admin.disableTable(tableName)
-			log.debug("table disabled {}", tableName)
-			TableFactory.admin.deleteTable(tableName)
-			log.debug("table deleted {}", tableName)
-			TableFactory.admin.createTable(tableDescriptor)
-			log.debug("table created {}", tableName)
-		}
-
 	}
 
 }

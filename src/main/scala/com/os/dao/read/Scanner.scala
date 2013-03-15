@@ -1,4 +1,4 @@
-package com.os.dao
+package com.os.dao.read
 
 import org.joda.time.Interval
 import org.apache.hadoop.hbase.client.Scan
@@ -7,6 +7,8 @@ import collection.mutable.ListBuffer
 import com.os.measurement.TimedValue
 import com.os.util.BytesWrapper._
 import com.os.interpolation.{NQueueImpl, NQueue}
+import com.os.dao.{RowKeyUtil, TableFactory, AggregatorState}
+import com.os.dao.clwt.CLWTRowKeyUtils
 
 /**
  * @author Vadim Bobrov
@@ -58,15 +60,15 @@ object Scanner {
 		  */
 
 		def scan(customer : String, location : String, wireid : String, start : Long, end : Long): Iterable[TimedValue] = {
-			val startRowKey = RowKeyUtils.createRowKey(customer, location, wireid, end)
-			val endRowKey = RowKeyUtils.createRowKey(customer, location, wireid, start)
-			scan(startRowKey, endRowKey, RowKeyUtils.getTimestamp(_) )
+			val startRowKey = CLWTRowKeyUtils.createRowKey(customer, location, wireid, end)
+			val endRowKey = CLWTRowKeyUtils.createRowKey(customer, location, wireid, start)
+			scan(startRowKey, endRowKey, CLWTRowKeyUtils.getTimestamp(_) )
 		}
 
 		def scan(customer : String, location : String, start : Long, end : Long): Iterable[TimedValue] = {
-			val startRowKey = RowKeyUtils.createRollupRowKey(customer, location, end)
-			val endRowKey = RowKeyUtils.createRollupRowKey(customer, location, start)
-			scan(startRowKey, endRowKey, RowKeyUtils.getTimestampFromRollup(_))
+			val startRowKey = CLWTRowKeyUtils.createRollupRowKey(customer, location, end)
+			val endRowKey = CLWTRowKeyUtils.createRollupRowKey(customer, location, start)
+			scan(startRowKey, endRowKey, CLWTRowKeyUtils.getTimestampFromRollup(_))
 		}
 
 		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte], timestampExtractor:(Array[Byte]) => Long): Iterable[TimedValue] = {
@@ -118,7 +120,7 @@ object Scanner {
 			iterator foreach (res => {
 				val familyMap = res.getFamilyMap(Settings.ColumnFamilyName)
 				val interpolatorStates = familyMap.keySet() map {key => ( bytesToString(key), bytesToNQueue(familyMap.get(key)))}
-				val (customer, location) = RowKeyUtils.split(res.getRow)
+				val (customer, location) = RowKeyUtil.split(res.getRow)
 
 				output += ((customer, location) -> new AggregatorState(customer, location, interpolatorStates))
 			})
