@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HBase schema design</title>
+</head>
+<body>
+
+<h1>Energy measurements</h1>
+
+<h2>Abbreviations</h2>
+
+<strong>C</strong> - customer<br/>
+<strong>L</strong> - location<br/>
+<strong>W</strong> - wireid<br/>
+<strong>T</strong> - timestamp<br/>
+<strong>Ts</strong> - timestamp<br/>
+<strong>Tr</strong> - timerange<br/>
+<strong>V</strong> - value<br/>
+<strong>(T,V)</strong> - timestamp-value pair<br/>
+<strong>OOO</strong> - out-of-order<br/>
+rowkey -> [column qualifier[:ts] ->] value
+
+
+<h2>Requirements</h2>
+
+<h3>Access by wireid</h3>
+Analytics clients need to access the table by <strong>C L Tr W</strong>
+
+<h3>Access by time range</h3>
+Interpolation-rollup map-reduce jobs need to access the table by <strong>C L Tr</strong>
+
+<h3>Compactness</h3>
+Storing each value in a separate cell is a lot of space overhead
+
+<h2>Problems with specific designs</h2>
+
+<h3>C L W T -> V</h3>
+<ul>
+<li>To interpolate-rollup we need access by <strong>C L Tr</strong> and we cannot skip W</li>
+<li>not compact</li>
+</ul>
+
+<h3>C L T W -> V</h3>
+<ul>
+    <li>To query analytics by wire we will have to filter by  <strong>W</strong> (which is not that bad after all)</li>
+    <li>not compact</li>
+</ul>
+
+<h1>Bucket design problems</h1>
+
+<h2>Fixed bucket rowkey</h2>
+
+E.g. HOUR. Cannot be updated. PUT requires a GET first to retrieve the content to be updated
+
+<h2>Dynamic bucket rowkey</h2>
+
+E.g. StartTs or StartTs-EndTs. How to perform linear search (they can overlap because of OOO measurements)
+
+<h1>Ideas</h1>
+
+<h2>Compact later</h2>
+
+<p>Each new value is saved in a separate cell at <strong>C L StartTs -> W -> (T,V)</strong> where StartTs = T</p>
+<p>It is later compacted to <strong>C L StartTs -> W -> (T,V),(T,V),(T,V),(T,V)</strong> where StartTs != T (every hour e.g.)</p>
+
+
+</body>
+</html>
