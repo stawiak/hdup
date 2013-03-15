@@ -2,13 +2,12 @@ package com.os.dao.nest
 
 import com.os.measurement.TimedValue
 import com.os.dao.nest.NestRowKeyUtils._
-import com.os.dao.{RowKeyUtil, AggregatorState, TableFactory}
 import collection.mutable.ListBuffer
 import org.apache.hadoop.hbase.client.Scan
 import com.os.Settings
 import com.os.util.BytesWrapper._
-import com.os.interpolation.{NQueueImpl, NQueue}
-import com.os.dao.read.Scanner
+import com.os.dao.read.{AbstractScanner, Scanner}
+import com.os.dao.TableFactory
 
 /**
  * @author Vadim Bobrov
@@ -17,7 +16,7 @@ object NestScanner {
 	def apply(tableName: String) : Scanner = new ScannerImpl(tableName)
 
 
-	private class ScannerImpl(private val tableName: String) extends Scanner {
+	private class ScannerImpl(private val tableName: String) extends AbstractScanner with Scanner {
 
 		/**
 		Sometimes it might be necessary to find a specific row, or the one just before the re-
@@ -84,41 +83,6 @@ object NestScanner {
 			results.close()
 			output
 		}
-
-		def scanInterpolatorStates: Map[(String, String), AggregatorState] = {
-			import scala.collection.JavaConversions._
-
-			val table = TableFactory(Settings.InterpolatorStateTableName)
-
-			var output = Map[(String, String), AggregatorState]()
-			val scan = new Scan()
-
-			scan.addFamily(Settings.InterpolatorStateColumnFamilyName)
-
-			// how many rows are retrieved with every RPC call
-			scan.setCaching(Settings().ScanCacheSize)
-
-			val results = table.getScanner(scan)
-			val iterator = Iterator.continually(results.next()) takeWhile (_ != null)
-
-			iterator foreach (res => {
-				val familyMap = res.getFamilyMap(Settings.ColumnFamilyName)
-				val interpolatorStates = familyMap.keySet() map {key => ( bytesToString(key), bytesToNQueue(familyMap.get(key)))}
-				val (customer, location) = RowKeyUtil.split(res.getRow)
-
-				output += ((customer, location) -> new AggregatorState(customer, location, interpolatorStates))
-			})
-
-			results.close()
-			output
-		}
-
-		private def bytesToNQueue(in: Array[Byte]): NQueue = {
-			val queue = new NQueueImpl()
-			in.extractTimedValues foreach ( queue offer _)
-			queue
-		}
-
 
 	}
 
