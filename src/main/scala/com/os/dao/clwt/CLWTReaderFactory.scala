@@ -1,8 +1,8 @@
 package com.os.dao.clwt
 
-import com.os.actor.read.{LoadState, InterpolatorStateReadRequest, RollupReadRequest, MeasurementReadRequest}
+import com.os.actor.read.{LoadState, RollupReadRequest, MeasurementReadRequest}
 import com.os.Settings
-import com.os.dao.read.{Scanner, Reader, ReaderFactory}
+import com.os.dao.read.{Reader, ReaderFactory}
 
 /**
  * @author Vadim Bobrov
@@ -13,7 +13,6 @@ object CLWTReaderFactory {
 		obj match {
 			case _: MeasurementReadRequest => MeasurementReaderFactory
 			case _: RollupReadRequest => RollupReaderFactory
-			case _: InterpolatorStateReadRequest => InterpolatorStateReaderFactory
 			case _: LoadState => TimeWindowStateReaderFactory
 		}
 	}
@@ -26,7 +25,7 @@ object CLWTReaderFactory {
 		def createReader: Reader = new Reader {
 			def read(readRequest: AnyRef):AnyRef = {
 				val request = readRequest.asInstanceOf[MeasurementReadRequest]
-				val scanner = Scanner(request.tableName)
+				val scanner = CLWTScanner(request.tableName)
 				scanner.scan(request.customer, request.location, request.wireid, request.period)
 			}
 		}
@@ -39,32 +38,12 @@ object CLWTReaderFactory {
 		def createReader: Reader = new Reader {
 			def read(readRequest: AnyRef):AnyRef = {
 				val request = readRequest.asInstanceOf[RollupReadRequest]
-				val scanner = Scanner(Settings.RollupTableName)
+				val scanner = CLWTScanner(Settings.RollupTableName)
 				scanner.scan(request.customer, request.location, request.period)
 			}
 		}
 	}
 
-
-	object InterpolatorStateReaderFactory extends ReaderFactory {
-		override val id: Int = 6
-		override val name = "istate"
-
-		def createReader: Reader = new Reader {
-			def read(readRequest: AnyRef):AnyRef = {
-				null
-
-				/*
-							val rowkey = 	RowKeyUtils.createRollupRowKey(msmt.customer, msmt.location)
-
-							val p = new Put(rowkey)
-
-							p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.ValueQualifierName),Bytes.toBytes(msmt.value))
-							table.put(p)
-				*/
-			}
-		}
-	}
 
 	object TimeWindowStateReaderFactory extends ReaderFactory {
 		override val id: Int = 6
@@ -72,7 +51,7 @@ object CLWTReaderFactory {
 
 		def createReader: Reader = new Reader {
 			def read(readRequest: AnyRef):AnyRef = {
-				val scanner = Scanner(Settings.InterpolatorStateTableName)
+				val scanner = CLWTScanner(Settings.InterpolatorStateTableName)
 				scanner.scanInterpolatorStates
 			}
 		}

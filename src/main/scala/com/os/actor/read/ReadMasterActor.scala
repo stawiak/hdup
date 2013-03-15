@@ -21,7 +21,6 @@ import com.os.dao.clwt.CLWTReaderFactory
 sealed abstract class ReadRequest
 case class MeasurementReadRequest(tableName: String, customer: String, location: String, wireid: String, period: Interval) extends ReadRequest
 case class RollupReadRequest(customer: String, location: String, period: Interval) extends ReadRequest
-case class InterpolatorStateReadRequest() extends ReadRequest
 
 case class LoadState(id: AnyRef) extends ReadRequest
 
