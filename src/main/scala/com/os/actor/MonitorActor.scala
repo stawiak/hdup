@@ -28,7 +28,7 @@ trait MonitorChildActorMBean {
 	def startMessageListener: Unit
 	def stopMessageListener: Unit
 	//def saveState: Unit
-	def loadState: Unit
+	//def loadState: Unit
 
 	def getTimeWindowSize:Long
 	def getAggregators:Long
