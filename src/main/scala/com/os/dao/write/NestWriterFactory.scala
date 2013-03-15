@@ -77,33 +77,33 @@ object NestWriterFactory {
 
 	object EnergyMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.EnergyTableName) {
 		override val id = 1
-		override val batchSize = Settings().LargeBatchSize
+		override def batchSize = Settings().LargeBatchSize
 	}
 
 	object CurrentMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.CurrentTableName) {
 		override val id = 2
-		override val batchSize = Settings().LargeBatchSize
+		override def batchSize = Settings().LargeBatchSize
 	}
 
 	object VampsMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.VampsTableName) {
 		override val id = 3
-		override val batchSize = Settings().LargeBatchSize
+		override def batchSize = Settings().LargeBatchSize
 	}
 
 	object RollupMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.RollupTableName) {
 		override val id = 4
-		override val batchSize = Settings().SmallBatchSize
+		override def batchSize = Settings().SmallBatchSize
 	}
 
 	object InterpolatedMeasurementWriterFactory extends AbstractMeasurementWriterFactory(Settings.MinuteInterpolatedTableName) {
 		override val id = 5
-		override val batchSize = Settings().LargeBatchSize
+		override def batchSize = Settings().LargeBatchSize
 	}
 
 	object InterpolatorStateWriterFactory extends WriterFactory {
 		override val id: Int = 6
 		override val name = "interpolatorstate"
-		override val batchSize = Settings().SmallBatchSize
+		override def batchSize = Settings().SmallBatchSize
 
 		def createWriter: Writer = new AbstractWriterWithTableCleanout(Settings.InterpolatorStateTableName) with Loggable {
 			def write(obj: AnyRef) {

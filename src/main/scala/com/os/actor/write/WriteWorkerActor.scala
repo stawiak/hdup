@@ -28,7 +28,8 @@ class WriteWorkerActor(val writerFactory: WriterFactory) extends Actor with Acto
 			measurements = msmt :: measurements
 			counter += 1
 
-			if(counter == writerFactory.batchSize) {
+			// it could be bigger if settings have been changed
+			if(counter >= writerFactory.batchSize) {
 				submitJob()
 				counter = 0
 			}

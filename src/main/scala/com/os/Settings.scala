@@ -113,11 +113,17 @@ final class Settings(val config: Config) extends SettingsMBean {
 
 	var LargeBatchSize = hBaseConfig.getInt("largeBatchSize")     								// default writer batch size - can be lost
 	def getLargeBatchSize = LargeBatchSize
-	def setLargeBatchSize(size: Int) { LargeBatchSize = size }
+	def setLargeBatchSize(size: Int) {
+		if (size >= 1)
+			LargeBatchSize = size
+	}
 
 	var SmallBatchSize = hBaseConfig.getInt("smallBatchSize")									// writer batch size for minute interpolations- can be lost
 	def getSmallBatchSize = SmallBatchSize
-	def setSmallBatchSize(size: Int) { SmallBatchSize = size }
+	def setSmallBatchSize(size: Int) {
+		if (size >= 1)
+			SmallBatchSize = size
+	}
 
 	val SingleBatchSize = 1
 
@@ -133,7 +139,8 @@ final class Settings(val config: Config) extends SettingsMBean {
 	var TimeWindowProcessInterval = FiniteDuration(config.getMilliseconds("timeWindowProcessInterval"), MILLISECONDS)
 	def getTimeWindowProcessInterval = TimeWindowProcessInterval.toMillis
 	def setTimeWindowProcessInterval(millis: Long) {
-		TimeWindowProcessInterval = FiniteDuration(millis, MILLISECONDS)
+		if (millis >= 1)
+			TimeWindowProcessInterval = FiniteDuration(millis, MILLISECONDS)
 	}
 	// time between time window processing
 

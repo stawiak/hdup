@@ -11,7 +11,7 @@ trait Writer {
 }
 
 trait WriterFactory {
-	val batchSize: Int
+	def batchSize: Int
 	val id: Int
 	val name: String
 	def createWriter: Writer
