@@ -48,16 +48,25 @@ trait SettingsMBean {
 	def getActiveMQQueue:String
 	def getHBaseHost:String
 	def getScanCacheSize:Int
+
 	def getLargeBatchSize:Int
+	def setLargeBatchSize(size: Int)
+
 	def getSmallBatchSize:Int
+	def setSmallBatchSize(size: Int)
+
 	def getTablePoolSize:Int
 	def getExpiredTimeWindow:Long
+
 	def getTimeWindowProcessInterval:Long
 	def setTimeWindowProcessInterval(millis: Long)
+
 	def getInterpolation:Boolean
 	def getReadTimeout:Long
+
 	def getSaveStateOnShutdown:Boolean
 	def setSaveStateOnShutdown(b: Boolean)
+
 	def getLoadStateOnStartup:Boolean
 }
 final class Settings(val config: Config) extends SettingsMBean {
@@ -101,10 +110,15 @@ final class Settings(val config: Config) extends SettingsMBean {
 	@scala.beans.BeanProperty
 	val ScanCacheSize = hBaseConfig.getInt("scanCacheSize")    									// how many rows are retrieved with every RPC call
 
-	@scala.beans.BeanProperty
-	val LargeBatchSize = hBaseConfig.getInt("largeBatchSize")            									// default writer batch size - can be lost
-	@scala.beans.BeanProperty
-	val SmallBatchSize = hBaseConfig.getInt("smallBatchSize")						// writer batch size for minute interpolations- can be lost
+
+	var LargeBatchSize = hBaseConfig.getInt("largeBatchSize")     								// default writer batch size - can be lost
+	def getLargeBatchSize = LargeBatchSize
+	def setLargeBatchSize(size: Int) { LargeBatchSize = size }
+
+	var SmallBatchSize = hBaseConfig.getInt("smallBatchSize")									// writer batch size for minute interpolations- can be lost
+	def getSmallBatchSize = SmallBatchSize
+	def setSmallBatchSize(size: Int) { SmallBatchSize = size }
+
 	val SingleBatchSize = 1
 
 	@scala.beans.BeanProperty
