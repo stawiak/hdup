@@ -102,7 +102,7 @@ object SingleWriterFactory {
 
 	object InterpolatorStateWriterFactory extends WriterFactory {
 		override val id: Int = 6
-		override val name = "interpolatorstate"
+		override val name = "istate"
 		override val batchSize = Settings().SmallBatchSize
 
 		def createWriter: Writer = new AbstractWriterWithTableCleanout(Settings.InterpolatorStateTableName) with Loggable {

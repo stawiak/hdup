@@ -11,7 +11,7 @@ import com.os.util.JMXActorBean
 trait ReadWorkerActorMBean
 class ReadWorkerActor(val readerFactory : ReaderFactory) extends Actor with ActorLogging with ReadWorkerActorMBean with JMXActorBean {
 
-	override val jmxName = new ObjectName("com.os.chaos:type=Reader,Reader=workers,name=\"" + self.path.name + "\"")
+	override val jmxName = new ObjectName("com.os.chaos:type=Reader,Reader=workers,name=\"" + readerFactory.name + self.path.name + "\"")
 	val reader = readerFactory.createReader
 
 	override def receive: Receive = {

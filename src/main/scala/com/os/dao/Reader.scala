@@ -12,6 +12,7 @@ trait Reader {
 
 trait ReaderFactory {
 	val id: Int
+	val name: String
 	def createReader: Reader
 }
 
@@ -29,6 +30,7 @@ object ReaderFactory {
 
 	object MeasurementReaderFactory extends ReaderFactory {
 		override val id: Int = 1
+		override val name = "msmt"
 
 		def createReader: Reader = new Reader {
 			def read(readRequest: AnyRef):AnyRef = {
@@ -41,6 +43,7 @@ object ReaderFactory {
 
 	object RollupReaderFactory extends ReaderFactory {
 		override val id: Int = 2
+		override val name = "rollup"
 
 		def createReader: Reader = new Reader {
 			def read(readRequest: AnyRef):AnyRef = {
@@ -54,6 +57,7 @@ object ReaderFactory {
 
 	object InterpolatorStateReaderFactory extends ReaderFactory {
 		override val id: Int = 6
+		override val name = "istate"
 
 		def createReader: Reader = new Reader {
 			def read(readRequest: AnyRef):AnyRef = {
@@ -73,6 +77,7 @@ object ReaderFactory {
 
 	object TimeWindowStateReaderFactory extends ReaderFactory {
 		override val id: Int = 6
+		override val name = "tstate"
 
 		def createReader: Reader = new Reader {
 			def read(readRequest: AnyRef):AnyRef = {
