@@ -8,6 +8,7 @@ import com.os.Settings
 import com.os.util.BytesWrapper._
 import com.os.dao.read.{AbstractScanner, Scanner}
 import com.os.dao.TableFactory
+import com.os.util.BytesWrapper
 
 /**
  * @author Vadim Bobrov
@@ -43,26 +44,46 @@ object NestScanner {
 		  */
 
 		def scan(customer : String, location : String, wireid : String, start : Long, end : Long): Iterable[TimedValue] = {
-			val startRowKey = createRowKey(customer, location, end)
-			val endRowKey = createRowKey(customer, location, start)
-			scan(startRowKey, endRowKey, getTimestamp(_) )
-		}
-
-		def scan(customer : String, location : String, start : Long, end : Long): Iterable[TimedValue] = {
-			val startRowKey = createRollupRowKey(customer, location, end)
-			val endRowKey = createRollupRowKey(customer, location, start)
-			scan(startRowKey, endRowKey, getTimestampFromRollup(_))
-		}
-
-		private def scan(startRowKey: Array[Byte], endRowKey: Array[Byte], timestampExtractor:(Array[Byte]) => Long): Iterable[TimedValue] = {
 
 			val table = TableFactory(tableName)
 			val output = new ListBuffer[TimedValue]()
+
+			val startRowKey = createRowKey(customer, location, end)
+			val endRowKey = createRowKey(customer, location, start)
+
+			val scan = new Scan(startRowKey, endRowKey)
+
+			scan.addColumn(Settings.ColumnFamilyName, wireid)
+
+			//TODO: we cannot filter out those outside of time range because we need to take all data from a nest
+			//val filter = new ValueFilter(CompareFilter.CompareOp.EQUAL, new SubstringComparator(".4"))
+			//scan.setFilter(filter)
+
+			// how many rows are retrieved with every RPC call
+			scan.setCaching(Settings().ScanCacheSize)
+
+			val results = table.getScanner(scan)
+			val iterator = Iterator.continually(results.next()) takeWhile (_ != null)
+
+			iterator foreach (res => {
+				output ++=  BytesWrapper(res.getValue(Settings.ColumnFamilyName, wireid))
+			})
+
+			results.close()
+			output filter ( tv => tv.timestamp >= start && tv.timestamp <= end )
+		}
+
+		def scan(customer : String, location : String, start : Long, end : Long): Iterable[TimedValue] = {
+
+			val table = TableFactory(tableName)
+			val output = new ListBuffer[TimedValue]()
+
+			val startRowKey = createRollupRowKey(customer, location, end)
+			val endRowKey = createRollupRowKey(customer, location, start)
+
 			val scan = new Scan(startRowKey, endRowKey)
 
 			scan.addColumn(Settings.ColumnFamilyName, Settings.ValueQualifierName)
-			//scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.CurrentQualifierName))
-			//scan.addColumn(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.VampireQualifierName))
 
 			// how many rows are retrieved with every RPC call
 			scan.setCaching(Settings().ScanCacheSize)
@@ -72,12 +93,9 @@ object NestScanner {
 
 			iterator foreach (res => {
 				val energy = res.getValue(Settings.ColumnFamilyName, Settings.ValueQualifierName)
-				//val current = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.CurrentQualifierName))
-				//val vampire = res.getValue(Bytes.toBytes(settings.ColumnFamilyName), Bytes.toBytes(settings.VampireQualifierName))
 
 				val rowkey = res.getRow
-				//output += new MeasuredValue(RowKeyUtils.getTimestamp(row), Bytes.toDouble(energy), Bytes.toDouble(current), Bytes.toDouble(vampire))
-				output += new TimedValue(timestampExtractor(rowkey), energy)
+				output += new TimedValue(getTimestampFromRollup(rowkey), energy)
 			})
 
 			results.close()

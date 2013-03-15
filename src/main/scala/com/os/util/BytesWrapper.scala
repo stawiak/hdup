@@ -11,6 +11,8 @@ import com.os.interpolation.{NQueueImpl, NQueue}
 object BytesWrapper {
 	val empty = new BytesWrapper(Array.empty[Byte])
 
+	def apply(bytes: Array[Byte] = Array.empty[Byte]): BytesWrapper = new BytesWrapper(bytes)
+
 	implicit def pimpBytes(in: Array[Byte]): BytesWrapper = new BytesWrapper(in)
 
 	implicit def pimpBytes(in: String): BytesWrapper = new BytesWrapper(Bytes.toBytes(in))
@@ -40,6 +42,7 @@ object BytesWrapper {
 		queue
 	}
 
+	implicit def bytesWrapperToTimedValues(in: BytesWrapper): Traversable[TimedValue] = in.extractTimedValues
 
 	implicit def bytesToString(in: Array[Byte]): String = Bytes.toString(in)
 	implicit def bytesToLong(in: Array[Byte]): Long = Bytes.toLong(in)

@@ -64,6 +64,8 @@ E.g. StartTs or StartTs-EndTs. How to perform linear search (they can overlap be
 <p>It is later compacted to <strong>C L StartTs -> W -> (T,V),(T,V),(T,V),(T,V)</strong> where StartTs != T (every hour e.g.)</p>
 <p>API is the same - assuming multiple values per cell</p>
 
+<h3>Drawbacks</h3>
+One drawback is that we cannot filter values by time on the server because the entire bucket needs to be pulled in as a single value first
 
 </body>
 </html>

@@ -5,7 +5,6 @@ import org.apache.hadoop.hbase.client.Put
 import com.os.measurement._
 import com.os.util.BytesWrapper._
 import com.os.dao._
-import clwt.CLWTRowKeyUtils
 import write._
 
 /**
@@ -63,15 +62,14 @@ object NestWriterFactory {
 			def write(obj: AnyRef) {
 				val msmt = obj.asInstanceOf[Measurement]
 				val rowkey = if(tableName == Settings.RollupTableName)
-					CLWTRowKeyUtils.createRollupRowKey(msmt.customer, msmt.location, msmt.timestamp)
+					NestRowKeyUtils.createRollupRowKey(msmt.customer, msmt.location, msmt.timestamp)
 				else
-					CLWTRowKeyUtils.createRowKey(msmt.customer, msmt.location, msmt.wireid, msmt.timestamp)
+					NestRowKeyUtils.createRowKey(msmt.customer, msmt.location, msmt.timestamp)
 
 				val p = new Put(rowkey)
 
-				p.add(Settings.ColumnFamilyName, Settings.ValueQualifierName, msmt.value)
-				//p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.CurrentQualifierName),Bytes.toBytes(msmt.current))
-				//p.add(Bytes.toBytes(Settings.ColumnFamilyName), Bytes.toBytes(Settings.VampireQualifierName),Bytes.toBytes(msmt.vampire))
+				p.add(Settings.ColumnFamilyName, msmt.wireid, msmt.timestamp << msmt.value)
+
 				// alternatively use
 				// void put(List<Put> puts) throws IOException
 				table.put(p)
